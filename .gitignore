@@ -1,0 +1,5 @@
+node_modules/
+.DS_Store
+*.log
+# Obsidian runtime settings (created in the vault, not part of the repo)
+data.json

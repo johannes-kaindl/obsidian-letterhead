@@ -1,0 +1,10 @@
+{
+  "id": "briefkopf",
+  "name": "Briefkopf – Letter Generator",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Geschäftsbriefe aus Notizen erzeugen: Absender/Empfänger/Betreff aus dem Frontmatter, CSS-Themes (DIN 5008 + Modern), PDF-Export per Druckdialog – auch auf dem iPhone.",
+  "author": "Johannes Kaindl",
+  "authorUrl": "https://jkaindl.de",
+  "isDesktopOnly": false
+}
