@@ -62,15 +62,12 @@ npm run deploy    # copy manifest.json main.js styles.css versions.json → $OBS
 
 This is a deliberate deviation from the workspace `ts-node · obsidian-plugin` profile — see `AGENTS.md` → *Abweichungen von der Leitkonvention*.
 
-## Before publishing (this is an anonymised template)
+## Before publishing
 
-Search-and-replace the placeholders before the first public release:
-
-- `Your Name` → maintainer name/handle in `manifest.json`, `package.json`, `main.js` header.
-- `you@example.com` → real contact in `SECURITY.md`, `LICENSING.md`, `CLA.md`.
 - Add Release/CI/Downloads badges with your forge owner once the repo is pushed (see `../_docs/templates/badges.md`).
 - Set the repo description + topics on the forge (consistent with `package.json` keywords).
 - The official Obsidian directory and **BRAT** pull releases from **GitHub** — create a GitHub mirror and a release (tag = version without `v`; assets `main.js`, `manifest.json`, `styles.css`).
+- The example data (Max Mustermann, Muster GmbH, example.com) is intentionally sample/placeholder content.
 
 ## License
 

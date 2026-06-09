@@ -2,10 +2,6 @@
 
 `Briefkopf` is **dual-licensed**.
 
-> **Note (anonymised template):** the maintainer name and contact below are
-> placeholders (`Your Name`, `you@example.com`). Fill them in before publishing —
-> the dual-license model below relies on a single, identified copyright holder.
-
 ## 1. Open-source license (default)
 
 The source code is licensed under the **GNU Affero General Public License,
@@ -38,12 +34,12 @@ A commercial license grants the same software under permissive terms
 (no copyleft, no source-disclosure obligation) for a fee, optionally bundled
 with support.
 
-**To enquire:** email **Your Name** at `you@example.com` with a short
+**To enquire:** email **Johannes Kaindl** at `code@jkaindl.de` with a short
 description of your intended use.
 
 ## Why this is possible
 
-`Briefkopf` is authored by a single copyright holder. Because all copyright is
+`Briefkopf` is authored by a single copyright holder (Johannes Kaindl). Because all copyright is
 held in one place — and because every external contribution is made under the
 [Contributor License Agreement](CLA.md), which grants the maintainer the right to
 relicense — the project can be offered under both the AGPL and a commercial

@@ -13,7 +13,7 @@
   ],
   "main": "main.js",
   "license": "AGPL-3.0-or-later",
-  "author": "Your Name",
+  "author": "Johannes Kaindl <code@jkaindl.de>",
   "private": true,
   "scripts": {
     "check": "node --check main.js",

@@ -5,10 +5,6 @@ Public License v3.0 or later** (AGPL-3.0-or-later). To keep the Project healthy 
 and to keep a small, deliberate option open (see *Why this exists* below) — every
 contribution is accepted under the terms of this Agreement.
 
-> **Note (anonymised template):** "Maintainer" and the contact address are
-> placeholders (`Your Name`, `you@example.com`). Fill them in before accepting
-> external contributions.
-
 This is a lightweight, inbound CLA. It does **not** take your copyright away. It
 asks you to grant the maintainer the rights needed to keep distributing the
 Project, including the ability to offer it under a separate commercial license.
@@ -19,7 +15,7 @@ Project, **You** agree to the following.
 ## 1. Definitions
 
 - **You** / **Your** — the individual or legal entity submitting the contribution.
-- **Maintainer** — Your Name, the copyright holder and project lead.
+- **Maintainer** — Johannes Kaindl, the copyright holder and project lead.
 - **Contribution** — any original work of authorship (code, documentation, assets,
   configuration) You intentionally submit to the Project for inclusion.
 
@@ -86,7 +82,7 @@ non-trivial contribution, please make it explicit by adding a sign-off line to y
 commit (`git commit -s`):
 
 ```
-Signed-off-by: Your Name <your-email@example.com>
+Signed-off-by: Jane Doe <jane@example.com>
 ```
 
 A `Signed-off-by` line certifies that You have read and agree to this CLA. For
@@ -108,4 +104,4 @@ permanently remove the Maintainer's ability to dual-license. This CLA is the
 lightweight insurance against that one irreversible mistake. It costs contributors
 nothing and takes nothing away.
 
-Questions about this Agreement or about a commercial license: **you@example.com**.
+Questions about this Agreement or about a commercial license: **code@jkaindl.de**.

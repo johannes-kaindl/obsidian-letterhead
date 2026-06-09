@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "minAppVersion": "1.4.0",
   "description": "Generate professionally formatted business letters (DIN 5008 + modern) from note frontmatter and export to PDF via the print dialog — desktop and iPhone.",
-  "author": "Your Name",
+  "author": "Johannes Kaindl",
+  "authorUrl": "https://jkaindl.de",
   "isDesktopOnly": false
 }

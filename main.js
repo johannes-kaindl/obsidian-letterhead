@@ -2,8 +2,7 @@
 
 /*
  * Briefkopf – Letter Generator for Obsidian
- * Copyright (C) 2026 Your Name — AGPL-3.0-or-later
- * (Before publishing, replace "Your Name" — see README "Before publishing".)
+ * Copyright (C) 2026 Johannes Kaindl — AGPL-3.0-or-later
  *
  * Turns the active note into a formatted business letter:
  *   - metadata (sender / recipient / subject / date / reference line) from frontmatter
