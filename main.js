@@ -2,7 +2,8 @@
 
 /*
  * Briefkopf – Letter Generator for Obsidian
- * Copyright (C) 2026 Johannes Kaindl — AGPL-3.0-or-later
+ * Copyright (C) 2026 Your Name — AGPL-3.0-or-later
+ * (Before publishing, replace "Your Name" — see README "Before publishing".)
  *
  * Turns the active note into a formatted business letter:
  *   - metadata (sender / recipient / subject / date / reference line) from frontmatter
@@ -111,6 +112,12 @@ function arrayBufferToBase64(buf) {
 
 /* ------------------------------------------------------------------ *
  *  CSS generation (themes)
+ *
+ *  All visual values are exposed as CSS custom properties ("design
+ *  tokens") in :root, so the whole look can be re-themed by overriding
+ *  tokens in the "Eigenes CSS" setting (see PRESET_CSS / presets/).
+ *  Geometry tokens marked DIN-critical keep the address block aligned
+ *  with a DIN-long window envelope — change them only deliberately.
  * ------------------------------------------------------------------ */
 
 function buildCss(s) {
@@ -122,47 +129,63 @@ function buildCss(s) {
 
   return `
   :root{
-    --bk-page-w:210mm; --bk-page-h:297mm;
-    --bk-ml:25mm; --bk-mr:20mm;
-    --bk-head-h:${form.head};
-    --bk-addr-top:${form.addrTop}; --bk-addr-left:25mm; --bk-addr-w:85mm; --bk-addr-h:40mm;
-    --bk-f1:${form.f1}; --bk-f2:${form.f2}; --bk-loch:148.5mm;
-    --bk-font:${font}; --bk-fs:${fs}pt;
+    /* --- Page geometry (DIN-critical: envelope-window alignment) --- */
+    --bk-page-width:210mm; --bk-page-height:297mm;
+    --bk-margin-left:25mm; --bk-margin-right:20mm;
+    --bk-din-head-height:${form.head};
+    --bk-din-address-top:${form.addrTop}; --bk-din-address-left:25mm;
+    --bk-din-address-width:85mm; --bk-din-address-height:40mm;
+    --bk-din-fold-1:${form.f1}; --bk-din-fold-2:${form.f2}; --bk-din-hole:148.5mm;
+    --bk-din-content-top:98.46mm;
+    /* --- Typography (safe to customize) --- */
+    --bk-font-family:${font};
+    --bk-font-size:${fs}pt;
+    --bk-line-height:1.4;
+    /* --- Colors (safe to customize) --- */
+    --bk-color-text:#111111;
+    --bk-color-muted:#555555;       /* reference-line labels */
+    --bk-color-rule:#000000;        /* fold/hole marks + return-address underline */
+    --bk-color-hairline:#bbbbbb;    /* reference-line separator */
+    /* --- Spacing (safe to customize) --- */
+    --bk-space:2.6mm;               /* base paragraph rhythm */
+    --bk-block-gap:6mm;             /* gap between letter blocks */
+    --bk-signature-gap:16mm;        /* room for a handwritten signature */
   }
-  .bk-letter{ position:relative; box-sizing:border-box; width:var(--bk-page-w); min-height:var(--bk-page-h);
-    margin:0 auto; background:#fff; color:#111; font-family:var(--bk-font); font-size:var(--bk-fs); line-height:1.4; }
+  .bk-letter{ position:relative; box-sizing:border-box; width:var(--bk-page-width); min-height:var(--bk-page-height);
+    margin:0 auto; background:#fff; color:var(--bk-color-text);
+    font-family:var(--bk-font-family); font-size:var(--bk-font-size); line-height:var(--bk-line-height); }
   .bk-letter *{ box-sizing:border-box; }
 
   /* fold + hole marks (left margin / Heftrand) */
-  .bk-mark{ position:absolute; left:0; width:5mm; height:0; border-top:0.3mm solid #000; }
+  .bk-mark{ position:absolute; left:0; width:5mm; height:0; border-top:0.3mm solid var(--bk-color-rule); }
   .bk-mark.bk-lo{ width:8mm; }
-  .bk-f1{ top:var(--bk-f1); } .bk-f2{ top:var(--bk-f2); } .bk-lo{ top:var(--bk-loch); }
+  .bk-f1{ top:var(--bk-din-fold-1); } .bk-f2{ top:var(--bk-din-fold-2); } .bk-lo{ top:var(--bk-din-hole); }
 
   /* ---- DIN 5008 theme ---- */
-  .bk-din .bk-head{ position:absolute; top:0; left:var(--bk-ml); right:var(--bk-mr); height:var(--bk-head-h);
+  .bk-din .bk-head{ position:absolute; top:0; left:var(--bk-margin-left); right:var(--bk-margin-right); height:var(--bk-din-head-height);
     display:flex; align-items:flex-end; justify-content:flex-end; }
-  .bk-din .bk-head img{ max-height:calc(var(--bk-head-h) - 4mm); max-width:90mm; }
+  .bk-din .bk-head img{ max-height:calc(var(--bk-din-head-height) - 4mm); max-width:90mm; }
   .bk-din .bk-head .bk-head-name{ font-weight:bold; font-size:14pt; }
 
-  .bk-din .bk-anschrift{ position:absolute; top:var(--bk-addr-top); left:var(--bk-addr-left);
-    width:var(--bk-addr-w); height:var(--bk-addr-h); overflow:hidden; }
-  .bk-din .bk-ruecksende{ font-size:7pt; line-height:1.1; border-bottom:0.2mm solid #000;
+  .bk-din .bk-anschrift{ position:absolute; top:var(--bk-din-address-top); left:var(--bk-din-address-left);
+    width:var(--bk-din-address-width); height:var(--bk-din-address-height); overflow:hidden; }
+  .bk-din .bk-ruecksende{ font-size:7pt; line-height:1.1; border-bottom:0.2mm solid var(--bk-color-rule);
     padding-bottom:0.5mm; margin-bottom:3mm; display:inline-block; }
   .bk-din .bk-empf{ white-space:pre-line; line-height:1.3; }
 
-  .bk-din .bk-info{ position:absolute; top:var(--bk-addr-top); right:var(--bk-mr); width:72mm;
+  .bk-din .bk-info{ position:absolute; top:var(--bk-din-address-top); right:var(--bk-margin-right); width:72mm;
     font-size:9pt; line-height:1.3; }
   .bk-din .bk-info-name{ font-weight:bold; }
   .bk-din .bk-info-sp{ height:3mm; }
 
-  .bk-din .bk-content{ margin-left:var(--bk-ml); margin-right:var(--bk-mr); padding-top:98.46mm; }
-  .bk-din .bk-date{ text-align:right; margin-bottom:6mm; }
-  .bk-din .bk-bezug{ display:flex; gap:7mm; font-size:8pt; border-bottom:0.2mm solid #bbb;
+  .bk-din .bk-content{ margin-left:var(--bk-margin-left); margin-right:var(--bk-margin-right); padding-top:var(--bk-din-content-top); }
+  .bk-din .bk-date{ text-align:right; margin-bottom:var(--bk-block-gap); }
+  .bk-din .bk-bezug{ display:flex; gap:7mm; font-size:8pt; border-bottom:0.2mm solid var(--bk-color-hairline);
     padding-bottom:1mm; margin-bottom:7mm; }
-  .bk-din .bk-bezug .bk-col .lbl{ display:block; font-size:7pt; color:#555; }
+  .bk-din .bk-bezug .bk-col .lbl{ display:block; font-size:7pt; color:var(--bk-color-muted); }
 
   /* ---- Modern theme ---- */
-  .bk-modern{ padding:25mm 20mm; }
+  .bk-modern{ padding:var(--bk-margin-left) var(--bk-margin-right); }
   .bk-modern .bk-m-head{ display:flex; justify-content:space-between; align-items:flex-start;
     gap:10mm; margin-bottom:16mm; }
   .bk-modern .bk-m-logo{ max-height:22mm; max-width:80mm; }
@@ -174,12 +197,12 @@ function buildCss(s) {
   /* ---- shared body blocks ---- */
   .bk-betreff{ font-weight:bold; margin:0 0 5mm; }
   .bk-anrede{ margin:0 0 3mm; }
-  .bk-body p{ margin:0 0 2.6mm; }
-  .bk-body ul, .bk-body ol{ margin:0 0 2.6mm; padding-left:6mm; }
+  .bk-body p{ margin:0 0 var(--bk-space); }
+  .bk-body ul, .bk-body ol{ margin:0 0 var(--bk-space); padding-left:6mm; }
   .bk-body h1, .bk-body h2, .bk-body h3{ font-size:1em; font-weight:bold; margin:4mm 0 2mm; }
   .bk-body{ text-align:left; }
-  .bk-gruss{ margin-top:6mm; }
-  .bk-signatur{ margin-top:16mm; white-space:pre-line; }
+  .bk-gruss{ margin-top:var(--bk-block-gap); }
+  .bk-signatur{ margin-top:var(--bk-signature-gap); white-space:pre-line; }
   ${s.customCss || ''}
   `;
 }
@@ -198,6 +221,56 @@ const SCREEN_PREVIEW_CSS = `
   html,body{ margin:0; padding:0; }
   body{ background:#d9d9d9; display:flex; justify-content:center; padding:14px 0; }
   .bk-letter{ box-shadow:0 2px 14px rgba(0,0,0,.35); }
+`;
+
+/* Commented starter the user can load into the "Eigenes CSS" field via the
+   settings button. Kept identical to presets/briefkopf-theme.css. */
+const PRESET_CSS = `/* =====================================================================
+   Briefkopf – CSS-Preset (Best-Practice-Startpunkt zum Selbstanpassen)
+   ---------------------------------------------------------------------
+   - Dieses CSS wird NACH dem Theme geladen und überschreibt es.
+   - Du änderst v. a. die Design-Tokens unten (CSS Custom Properties).
+   - "SICHER" = frei anpassbar. "DIN-KRITISCH" = Fensterkuvert-Position.
+   - Workflow: Token ändern -> Befehl "Brief-Vorschau" -> prüfen.
+   ===================================================================== */
+:root {
+  /* ---------- SICHER: Typografie ---------- */
+  --bk-font-family: "Helvetica Neue", Arial, system-ui, sans-serif;
+  --bk-font-size: 11pt;          /* 10-12pt üblich */
+  --bk-line-height: 1.45;        /* 1.3-1.6 */
+
+  /* ---------- SICHER: Farben ---------- */
+  --bk-color-text: #1a1a1a;      /* Fließtext */
+  --bk-color-muted: #555;        /* Labels der Bezugszeichenzeile */
+  --bk-color-rule: #000;         /* Faltmarken + Rücksende-Unterstrich */
+  --bk-color-hairline: #c8c8c8;  /* Trennlinie der Bezugszeile */
+
+  /* ---------- SICHER: Abstände ---------- */
+  --bk-space: 2.6mm;             /* Absatz-Rhythmus */
+  --bk-block-gap: 6mm;           /* Abstand zwischen Blöcken */
+  --bk-signature-gap: 16mm;      /* Platz für die Unterschrift */
+
+  /* ---------- DIN-KRITISCH: Seitengeometrie ----------
+     Standard = DIN 5008 Form B; hält die Anschrift im Fensterkuvert.
+     Nur ändern, wenn dein Kuvert abweicht. Auskommentiert lassen = Default. */
+  /* --bk-margin-left: 25mm;
+     --bk-margin-right: 20mm;
+     --bk-din-address-top: 45mm;
+     --bk-din-content-top: 98.46mm; */
+}
+
+/* ---------- Beispiel: einzelne Komponenten überschreiben ----------
+.bk-betreff { color: #0a7d3c; }
+.bk-din .bk-head .bk-head-name { letter-spacing: .3px; }
+*/
+
+/* ---------- Beispiel: klassischer Serifen-Brief ----------
+:root {
+  --bk-font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --bk-font-size: 11.5pt;
+  --bk-line-height: 1.5;
+}
+*/
 `;
 
 /* ------------------------------------------------------------------ *
@@ -542,13 +615,13 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
       .addText((t) => t.setPlaceholder(ph || '').setValue(s.sender[key] || '')
         .onChange(async (v) => { s.sender[key] = v; await this.plugin.saveSettings(); }));
 
-    senderField('Name', 'name', 'Johannes Kaindl');
-    senderField('Zusatz / Firma', 'zusatz', 'Die Metzgerei');
+    senderField('Name', 'name', 'Max Mustermann');
+    senderField('Zusatz / Firma', 'zusatz', 'Muster GmbH');
     senderField('Straße', 'strasse', 'Musterstraße 1');
-    senderField('PLZ + Ort', 'plzOrt', '80331 München');
-    senderField('Telefon', 'telefon', '+49 89 1234567');
-    senderField('E-Mail', 'email', 'post@jkaindl.de');
-    senderField('Website', 'web', 'jkaindl.de');
+    senderField('PLZ + Ort', 'plzOrt', '12345 Musterstadt');
+    senderField('Telefon', 'telefon', '+49 30 1234567');
+    senderField('E-Mail', 'email', 'kontakt@example.com');
+    senderField('Website', 'web', 'www.example.com');
 
     new obsidian.Setting(containerEl)
       .setName('Rücksendeangabe')
@@ -598,8 +671,20 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
         .onChange(async (v) => { s.defaultGruss = v; await this.plugin.saveSettings(); }));
 
     new obsidian.Setting(containerEl).setName('Eigenes CSS')
-      .setDesc('Wird ans Theme angehängt – volle Kontrolle übers Styling.')
-      .addTextArea((t) => { t.setValue(s.customCss).onChange(async (v) => { s.customCss = v; await this.plugin.saveSettings(); }); t.inputEl.rows = 6; t.inputEl.style.width = '100%'; });
+      .setDesc('Wird ans Theme angehängt – volle Kontrolle übers Styling. „Preset einfügen" lädt einen kommentierten Startpunkt (überschreibt das Feld).')
+      .addButton((b) => b.setButtonText('Preset einfügen').onClick(async () => {
+        s.customCss = PRESET_CSS;
+        await this.plugin.saveSettings();
+        this.display();
+      }));
+
+    new obsidian.Setting(containerEl)
+      .addTextArea((t) => {
+        t.setValue(s.customCss).onChange(async (v) => { s.customCss = v; await this.plugin.saveSettings(); });
+        t.inputEl.rows = 12;
+        t.inputEl.style.width = '100%';
+        t.inputEl.style.fontFamily = 'var(--font-monospace)';
+      });
   }
 }
 

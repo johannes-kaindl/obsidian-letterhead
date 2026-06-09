@@ -1,0 +1,22 @@
+{
+  "name": "obsidian-briefkopf",
+  "version": "1.0.0",
+  "description": "Obsidian plugin: generate professionally formatted business letters (DIN 5008 + modern) from note frontmatter and export to PDF via the print dialog — desktop and iOS.",
+  "keywords": [
+    "obsidian",
+    "obsidian-plugin",
+    "pdf",
+    "letter",
+    "din-5008",
+    "geschaeftsbrief",
+    "print"
+  ],
+  "main": "main.js",
+  "license": "AGPL-3.0-or-later",
+  "author": "Your Name",
+  "private": true,
+  "scripts": {
+    "check": "node --check main.js",
+    "deploy": "mkdir -p \"${OBSIDIAN_PLUGIN_DIR:?set OBSIDIAN_PLUGIN_DIR to <vault>/.obsidian/plugins/briefkopf}\" && cp manifest.json main.js styles.css versions.json \"${OBSIDIAN_PLUGIN_DIR}/\""
+  }
+}

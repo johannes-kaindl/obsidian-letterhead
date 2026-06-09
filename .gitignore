@@ -1,5 +1,15 @@
+# Node
 node_modules/
-.DS_Store
+dist/
+build/
 *.log
-# Obsidian runtime settings (created in the vault, not part of the repo)
+
+# Obsidian plugin runtime settings (created in the vault, not part of the repo)
 data.json
+
+# Agent-/Session-State (CORE-AGENT-03/05)
+.claude/
+.remember/
+
+# macOS
+.DS_Store

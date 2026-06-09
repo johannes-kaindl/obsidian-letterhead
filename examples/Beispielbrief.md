@@ -1,30 +1,35 @@
 ---
 empfaenger: |
-  Mustermann GmbH
-  Herr Max Mustermann
+  Muster GmbH
+  Frau Erika Beispiel
   Musterstraße 12
   12345 Musterstadt
-betreff: Angebot Nr. 2026-0042 – Lokale LLM-Workflow-Automatisierung
-anrede: Sehr geehrter Herr Mustermann,
+betreff: Angebot Nr. 2026-0042
+anrede: Sehr geehrte Frau Beispiel,
 gruss: Mit freundlichen Grüßen
-unterschrift: Johannes Kaindl
-ort: München
+unterschrift: Max Mustermann
+ort: Musterstadt
 datum: 2026-06-09
-ihr_zeichen: MM-2026
+ihr_zeichen: EB-2026
 ihr_schreiben: 2026-05-30
-unser_zeichen: JK
+unser_zeichen: MM
+# Absender direkt in der Notiz (sonst aus den Plugin-Einstellungen)
+absender_name: Max Mustermann
+absender_zusatz: Muster GmbH
+absender_strasse: Musterstraße 1
+absender_plz_ort: 12345 Musterstadt
+absender_telefon: +49 30 1234567
+absender_email: kontakt@example.com
 ---
 
-vielen Dank für Ihr Interesse und das angenehme Gespräch vergangene Woche. Wie
-besprochen erhalten Sie hiermit mein Angebot für die Einrichtung einer **lokal
-laufenden Automatisierungslösung**.
+vielen Dank für Ihre Anfrage und das freundliche Gespräch. Wie besprochen
+erhalten Sie hiermit unser Angebot.
 
 Der Leistungsumfang im Überblick:
 
-- Analyse Ihrer bestehenden Dokumenten- und Ablageprozesse
-- Einrichtung eines lokal betriebenen Sprachmodells (keine Cloud, DSGVO-konform)
-- Zwei Automatisierungs-Workflows nach Ihren Anforderungen
-- Einweisung Ihres Teams (halber Tag vor Ort)
+- Position eins der angebotenen Leistung
+- Position zwei mit kurzer Beschreibung
+- Position drei nach Ihren Anforderungen
 
-Gerne stelle ich Ihnen die Lösung in einem kurzen Termin live vor. Für Rückfragen
-stehe ich Ihnen jederzeit zur Verfügung.
+Gerne stellen wir Ihnen das Angebot in einem kurzen Termin persönlich vor.
+Für Rückfragen stehen wir Ihnen jederzeit zur Verfügung.

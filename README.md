@@ -1,124 +1,78 @@
-# Briefkopf – Letter Generator (Obsidian)
+# Briefkopf – Letter Generator
 
-Erzeugt aus einer Notiz einen sauber formatierten Geschäftsbrief und exportiert ihn
-als PDF – **auf Desktop und iPhone/iPad**. Metadaten (Absender, Empfänger, Betreff,
-Datum, Bezugszeichen) kommen aus dem Frontmatter, das Styling aus CSS-Themes.
+> 🇬🇧 English · [🇩🇪 Deutsch](README.de.md)
 
-- **Zwei Themes:** `DIN 5008` (deutscher Standard, fertig fürs Fensterkuvert) und `Modern`.
-- **PDF-Export per Druckdialog** → „Als PDF sichern". Funktioniert plattformübergreifend,
-  weil das Betriebssystem dein CSS rendert (kein Electron, kein Node nötig).
-- **Mobil-tauglich:** `isDesktopOnly: false`, keine Desktop-only-APIs.
-- Abhängigkeitsfrei (Vanilla JS) und AGPL-3.0.
+An Obsidian plugin that turns a note into a professionally formatted business letter — German **DIN 5008** or a clean **modern** layout — and exports it to PDF through the OS print dialog, on desktop **and iPhone/iPad**.
 
-## Installation
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+[![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
+![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
-1. Ordner `briefkopf/` in deinen Vault kopieren nach:
-   `<DeinVault>/.obsidian/plugins/briefkopf/`
-   (muss `main.js`, `manifest.json`, `styles.css` enthalten).
-2. Obsidian → Einstellungen → Community-Plugins → neu laden → **Briefkopf** aktivieren.
-3. In den Plugin-Einstellungen dein **Absender-Profil** ausfüllen.
+![Briefkopf — DIN 5008 letter](docs/images/hero.png)
 
-## Nutzung
+## Features
 
-1. Notiz mit Frontmatter (siehe unten) öffnen.
-2. Befehl **„Brief als PDF exportieren / drucken"** (Befehlspalette oder Briefumschlag-Icon
-   in der linken Leiste). Alternativ **„Brief-Vorschau öffnen"** zum Prüfen.
-3. Im Druckdialog **„Als PDF sichern"** wählen.
-   - macOS: PDF-Dropdown unten links → „Als PDF sichern".
-   - iPhone/iPad: Teilen-Symbol → „In Dateien sichern" (das Vorschaubild zwei Finger
-     auseinanderziehen erzeugt ebenfalls ein PDF).
+- **Two themes:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international).
+- **Metadata from frontmatter:** recipient, subject, salutation, closing, date, reference line, sender overrides — German and English field aliases.
+- **Sender profile** in the settings, overridable per letter.
+- **PDF export via the print dialog** → “Save as PDF”. Cross-platform (desktop + iOS) because the OS renders the CSS — no Electron, no Node.
+- **DIN extras:** fold marks (105/210 mm or 87/192 mm) and hole mark (148.5 mm).
+- **Fully themeable** via documented CSS design tokens + a one-click commented preset.
+- Dependency-free, mobile-ready (`isDesktopOnly: false`), AGPL-3.0.
 
-## Frontmatter-Felder
+## Quick Start
 
-Alles ist optional; fehlt ein Wert, greift der Standard aus den Einstellungen.
+```bash
+# Manual install: copy the plugin into your vault
+cp manifest.json main.js styles.css versions.json \
+   "<your-vault>/.obsidian/plugins/briefkopf/"
 
-```yaml
----
-empfaenger: |
-  Mustermann GmbH
-  Herr Max Mustermann
-  Musterstraße 12
-  12345 Musterstadt
-betreff: Angebot Nr. 2026-0042
-anrede: Sehr geehrter Herr Mustermann,
-gruss: Mit freundlichen Grüßen
-unterschrift: Johannes Kaindl
-ort: München
-datum: 2026-06-09          # fehlt = heute
-# Bezugszeichenzeile (optional)
-ihr_zeichen: MM-2026
-ihr_schreiben: 2026-05-30
-unser_zeichen: JK
-# Absender pro Brief überschreiben (sonst aus den Einstellungen)
-absender_name: Johannes Kaindl
-absender_strasse: Musterstraße 1
-absender_plz_ort: 80331 München
----
-
-Sehr gerne unterbreite ich Ihnen das folgende Angebot …
-
-Der **Brieftext** ist einfach der Notiz-Inhalt unter dem Frontmatter und wird
-als Markdown gerendert (Absätze, Listen, Fett/Kursiv).
+# …or, with OBSIDIAN_PLUGIN_DIR exported:
+npm run deploy
 ```
 
-### Feld-Aliasse
+Then: Obsidian → Settings → Community plugins → reload → enable **Briefkopf** → fill in your sender profile.
 
-Deutsch und Englisch funktionieren, Groß/Kleinschreibung und `_`/Leerzeichen egal:
+## Usage
 
-| Zweck | mögliche Schlüssel |
-|---|---|
-| Empfänger | `empfaenger`, `empfänger`, `recipient`, `an`, `to` |
-| Betreff | `betreff`, `subject`, `thema` |
-| Anrede | `anrede`, `salutation` |
-| Grußformel | `gruss`, `grußformel`, `closing` |
-| Unterschrift | `unterschrift`, `signatur`, `signature` |
-| Ort | `ort`, `place`, `stadt` |
-| Datum | `datum`, `date` |
-| Ihr Zeichen | `ihr_zeichen` · Ihr Schreiben `ihr_schreiben` · Unser Zeichen `unser_zeichen` |
-| Absender | `absender_name`, `absender_strasse`, `absender_plz_ort`, `absender_telefon`, `absender_email`, `absender_web` |
+1. Open a note with letter frontmatter (see the [example](examples/Beispielbrief.md)).
+2. Run **“Brief als PDF exportieren / drucken”** (command palette or the envelope ribbon icon). Use **“Brief-Vorschau öffnen”** to preview first.
+3. In the print dialog choose **Save as PDF** (macOS: PDF dropdown; iOS: Share → Save to Files).
 
-## DIN 5008 – Maße (Stand März 2020)
+The note body below the frontmatter is the letter text and is rendered as Markdown.
 
-Im DIN-Theme exakt umgesetzt, damit der Brief ins Fensterkuvert (DIN lang) passt:
+## Documentation
 
-| Element | Form A | Form B |
-|---|---|---|
-| Briefkopfhöhe | 27 mm | 45 mm |
-| Falzmarke 1 | 87 mm | 105 mm |
-| Lochmarke | 148,5 mm | 148,5 mm |
-| Falzmarke 2 | 192 mm | 210 mm |
-| Schreibrand links / rechts | 25 mm / 20 mm | 25 mm / 20 mm |
-| Anschriftfeld | 85 × 40 mm | 85 × 40 mm |
+- [Tutorial — your first letter](docs/tutorial.md)
+- [Reference — frontmatter fields](docs/reference/frontmatter.md) · [settings](docs/reference/settings.md) · [theming / CSS tokens](docs/reference/theming.md)
+- [Explanation — DIN 5008 measurements](docs/explanation/din5008.md)
 
-Alle Positionen liegen als CSS-Variablen (`--bk-…`) vor und lassen sich im Feld
-**„Eigenes CSS"** der Einstellungen feinjustieren, falls dein Kuvert minimal abweicht.
+## Theming
 
-## Hinweise & Grenzen
+The look is driven entirely by CSS custom properties (design tokens). Open **Settings → Eigenes CSS → “Preset einfügen”** for a commented starter, or copy [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
 
-- **Mehrseitige Briefe:** Adressfeld/Faltmarken stehen auf Seite 1; Folgeseiten haben
-  (noch) keinen Briefkopf. Für klassische 1-Seiten-Briefe ideal.
-- **iOS-Seitenränder:** iOS bestimmt die Papiergröße im Druckdialog. Für A4 dort A4
-  wählen; das mm-genaue Layout bleibt erhalten.
-- **Modern-Theme** ist für Korrespondenz ohne Fensterkuvert gedacht (Empfänger im Fluss,
-  nicht an der DIN-Fensterposition).
+## Development
 
-## Lizenz
+Dependency-free vanilla JS: `main.js` is both source and build output — no npm install, no build step. Edit it and `npm run deploy` (or copy the files) into your vault, then reload Obsidian.
 
-AGPL-3.0-or-later — siehe `LICENSE`. Vollständigen Lizenztext beim Verteilen beilegen.
+```bash
+npm run check     # node --check main.js (syntax gate)
+npm run deploy    # copy manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
+```
 
-## Entwicklung
+This is a deliberate deviation from the workspace `ts-node · obsidian-plugin` profile — see `AGENTS.md` → *Abweichungen von der Leitkonvention*.
 
-Abhängigkeitsfreies Vanilla JS: `main.js` ist zugleich Quelle und Build-Output –
-kein npm, kein Build-Schritt. Editieren und nach
-`<vault>/.obsidian/plugins/briefkopf/` kopieren, dann Obsidian neu laden.
+## Before publishing (this is an anonymised template)
 
-## Hosting & Veröffentlichung
+Search-and-replace the placeholders before the first public release:
 
-- **Codeberg** ist die AGPL-Heimat dieses Repos.
-- Das **offizielle Obsidian-Verzeichnis** und **BRAT** ziehen Releases aber von
-  **GitHub**. Für Verzeichnis-Einreichung oder Beta-Tests daher einen
-  GitHub-Mirror anlegen und dort ein Release (Tag = Version ohne „v",
-  Assets: `main.js`, `manifest.json`, `styles.css`) veröffentlichen.
-- Vor der Veröffentlichung: vollständigen AGPL-Text in `LICENSE` ergänzen
-  (`curl -o LICENSE https://www.gnu.org/licenses/agpl-3.0.txt`, Copyright-Zeile
-  wieder voranstellen).
+- `Your Name` → maintainer name/handle in `manifest.json`, `package.json`, `main.js` header.
+- `you@example.com` → real contact in `SECURITY.md`, `LICENSING.md`, `CLA.md`.
+- Add Release/CI/Downloads badges with your forge owner once the repo is pushed (see `../_docs/templates/badges.md`).
+- Set the repo description + topics on the forge (consistent with `package.json` keywords).
+- The official Obsidian directory and **BRAT** pull releases from **GitHub** — create a GitHub mirror and a release (tag = version without `v`; assets `main.js`, `manifest.json`, `styles.css`).
+
+## License
+
+Code: **AGPL-3.0-or-later** — see [`LICENSE`](LICENSE); commercial dual-license option in [`LICENSING.md`](LICENSING.md).
+Documentation/text: **CC BY-SA 4.0** — see [`LICENSE-DOCS`](LICENSE-DOCS).

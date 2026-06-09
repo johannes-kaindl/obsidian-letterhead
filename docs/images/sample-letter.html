@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Briefkopf – Beispiel (DIN 5008 Form B)</title>
+<!--
+  Reproducible source for docs/images/hero.png.
+  Mirrors the plugin's DIN 5008 token CSS. Render with tools/render-hero.sh.
+  Content is sample/placeholder data only.
+-->
+<style>
+  @page { size: A4; margin: 0; }
+  html, body { margin: 0; padding: 0; }
+  body { background: #ececec; }
+  :root{
+    --bk-page-width:210mm; --bk-page-height:297mm;
+    --bk-margin-left:25mm; --bk-margin-right:20mm;
+    --bk-din-head-height:45mm;
+    --bk-din-address-top:45mm; --bk-din-address-left:25mm;
+    --bk-din-address-width:85mm; --bk-din-address-height:40mm;
+    --bk-din-fold-1:105mm; --bk-din-fold-2:210mm; --bk-din-hole:148.5mm;
+    --bk-din-content-top:98.46mm;
+    --bk-font-family:Helvetica, Arial, sans-serif;
+    --bk-font-size:11pt; --bk-line-height:1.4;
+    --bk-color-text:#111111; --bk-color-muted:#555555;
+    --bk-color-rule:#000000; --bk-color-hairline:#bbbbbb;
+    --bk-space:2.6mm; --bk-block-gap:6mm; --bk-signature-gap:16mm;
+  }
+  .bk-letter{ position:relative; box-sizing:border-box; width:var(--bk-page-width); min-height:var(--bk-page-height);
+    margin:0 auto; background:#fff; color:var(--bk-color-text);
+    font-family:var(--bk-font-family); font-size:var(--bk-font-size); line-height:var(--bk-line-height);
+    box-shadow:0 1px 10px rgba(0,0,0,.25); }
+  .bk-letter *{ box-sizing:border-box; }
+  .bk-mark{ position:absolute; left:0; width:5mm; height:0; border-top:0.3mm solid var(--bk-color-rule); }
+  .bk-mark.bk-lo{ width:8mm; }
+  .bk-f1{ top:var(--bk-din-fold-1); } .bk-f2{ top:var(--bk-din-fold-2); } .bk-lo{ top:var(--bk-din-hole); }
+  .bk-din .bk-head{ position:absolute; top:0; left:var(--bk-margin-left); right:var(--bk-margin-right); height:var(--bk-din-head-height);
+    display:flex; align-items:flex-end; justify-content:flex-end; }
+  .bk-din .bk-head .bk-head-name{ font-weight:bold; font-size:14pt; }
+  .bk-din .bk-anschrift{ position:absolute; top:var(--bk-din-address-top); left:var(--bk-din-address-left);
+    width:var(--bk-din-address-width); height:var(--bk-din-address-height); overflow:hidden; }
+  .bk-din .bk-ruecksende{ font-size:7pt; line-height:1.1; border-bottom:0.2mm solid var(--bk-color-rule);
+    padding-bottom:0.5mm; margin-bottom:3mm; display:inline-block; }
+  .bk-din .bk-empf{ white-space:pre-line; line-height:1.3; }
+  .bk-din .bk-info{ position:absolute; top:var(--bk-din-address-top); right:var(--bk-margin-right); width:72mm;
+    font-size:9pt; line-height:1.3; }
+  .bk-din .bk-info-name{ font-weight:bold; }
+  .bk-din .bk-info-sp{ height:3mm; }
+  .bk-din .bk-content{ margin-left:var(--bk-margin-left); margin-right:var(--bk-margin-right); padding-top:var(--bk-din-content-top); }
+  .bk-din .bk-bezug{ display:flex; gap:7mm; font-size:8pt; border-bottom:0.2mm solid var(--bk-color-hairline);
+    padding-bottom:1mm; margin-bottom:7mm; }
+  .bk-din .bk-bezug .bk-col .lbl{ display:block; font-size:7pt; color:var(--bk-color-muted); }
+  .bk-betreff{ font-weight:bold; margin:0 0 5mm; }
+  .bk-anrede{ margin:0 0 3mm; }
+  .bk-body p{ margin:0 0 var(--bk-space); }
+  .bk-body ul{ margin:0 0 var(--bk-space); padding-left:6mm; }
+  .bk-gruss{ margin-top:var(--bk-block-gap); }
+  .bk-signatur{ margin-top:var(--bk-signature-gap); }
+</style>
+</head>
+<body>
+  <div class="bk-letter bk-din">
+    <div class="bk-mark bk-f1"></div><div class="bk-mark bk-f2"></div><div class="bk-mark bk-lo"></div>
+    <header class="bk-head"><div class="bk-head-name">Max Mustermann</div></header>
+    <section class="bk-anschrift">
+      <div class="bk-ruecksende">Max Mustermann · Musterstraße 1 · 12345 Musterstadt</div>
+      <div class="bk-empf">Muster GmbH
+Frau Erika Beispiel
+Musterstraße 12
+12345 Musterstadt</div>
+    </section>
+    <section class="bk-info">
+      <div class="bk-info-name">Max Mustermann</div>
+      <div>Muster GmbH</div><div>Musterstraße 1</div><div>12345 Musterstadt</div>
+      <div class="bk-info-sp"></div>
+      <div>Tel.: +49 30 1234567</div><div>kontakt@example.com</div><div>www.example.com</div>
+    </section>
+    <div class="bk-content">
+      <div class="bk-bezug">
+        <div class="bk-col"><span class="lbl">Ihr Zeichen</span>EB-2026</div>
+        <div class="bk-col"><span class="lbl">Ihr Schreiben vom</span>2026-05-30</div>
+        <div class="bk-col"><span class="lbl">Unser Zeichen</span>MM</div>
+        <div class="bk-col"><span class="lbl">Datum</span>9.6.2026</div>
+      </div>
+      <div class="bk-betreff">Angebot Nr. 2026-0042</div>
+      <div class="bk-anrede">Sehr geehrte Frau Beispiel,</div>
+      <div class="bk-body">
+        <p>vielen Dank für Ihre Anfrage und das freundliche Gespräch. Wie besprochen erhalten Sie hiermit unser Angebot.</p>
+        <p>Der Leistungsumfang im Überblick:</p>
+        <ul>
+          <li>Position eins der angebotenen Leistung</li>
+          <li>Position zwei mit kurzer Beschreibung</li>
+          <li>Position drei nach Ihren Anforderungen</li>
+        </ul>
+        <p>Gerne stellen wir Ihnen das Angebot in einem kurzen Termin persönlich vor. Für Rückfragen stehen wir Ihnen jederzeit zur Verfügung.</p>
+      </div>
+      <div class="bk-gruss">Mit freundlichen Grüßen</div>
+      <div class="bk-signatur">Max Mustermann</div>
+    </div>
+  </div>
+</body>
+</html>
