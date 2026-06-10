@@ -17,7 +17,7 @@ zeigen zusätzlich eine kompakte Feldübersicht.
 | `empfaenger` | `empfänger`, `recipient`, `an`, `to`, `adresse`, `anschrift` | Empfängeranschrift als Liste — ein Listenpunkt pro Kuvertzeile (alternativ Blockskalar). |
 | `betreff` | `subject`, `thema`, `re` | Betreffzeile. |
 | `anrede` | `salutation`, `greeting` | z. B. „Sehr geehrte Frau Beispiel,". |
-| `gruss` | `grußformel`, `grussformel`, `closing`, `signoff` | Grußformel; Default aus Einstellungen. |
+| `gruss` | `grußformel`, `grussformel`, `closing`, `signoff` | Grußformel; Default aus Einstellungen, sonst Sprach-Standard („Mit freundlichen Grüßen“ / „Kind regards“). |
 | `unterschrift` | `signatur`, `signature`, `gezeichnet` | Name unter dem Gruß; Default = Absendername. |
 | `ort` | `place`, `stadt`, `city` | Ort für die Orts-/Datumszeile. |
 | `datum` | `date` | ISO `2026-06-09` empfohlen; fehlt = heute. Formatierung über die Einstellung **Date locale**. |
@@ -25,12 +25,13 @@ zeigen zusätzlich eine kompakte Feldübersicht.
 
 ## Design pro Brief
 
-Überschreibt die Einstellungen **Style** und **Info line** für diesen einen Brief.
+Überschreibt die Einstellungen **Style**, **Info line** und **Letter language** für diesen einen Brief.
 
 | Feld | Aliasse | Werte |
 |------|---------|-------|
 | `stil` | `style`, `design`, `variante` | `sachlich` (`a`), `klassisch` (`b`), `technisch` (`c`) |
 | `infozeile` | `layout` | `vollstaendig` (auch `full`, `infoblock`) · `nurdatum` (auch `minimal`, `datum`) |
+| `sprache` | `language`, `lang` | `de` · `en` — Sprache der gedruckten Labels (Anlagen/Enclosures, Infoblock, Standard-Grußformel). |
 
 ## Infoblock (DIN-Layout, Infozeile „Vollständig")
 

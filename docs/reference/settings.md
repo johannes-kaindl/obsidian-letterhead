@@ -1,8 +1,9 @@
 # Referenz — Einstellungen
 
-Einstellungen → Community-Plugins → **Briefkopf**. Die UI ist gemäß den
-Obsidian-Richtlinien englisch; diese Referenz erklärt jede Einstellung auf
-Deutsch.
+Einstellungen → Community-Plugins → **Briefkopf**. Die Plugin-UI folgt der
+Obsidian-App-Sprache (Englisch als Standard, Deutsch lokalisiert); diese
+Referenz nennt die englischen Bezeichnungen und erklärt auf Deutsch. Die
+Sprache des **Briefs** ist davon unabhängig (Einstellung **Letter language**).
 
 ## Layout & Stil
 
@@ -44,14 +45,15 @@ erscheint links im Briefkopf, die Kontaktdaten rechts.
 | **Print offset top (mm)** | Druckversatz-Feinjustierung (Standard 0): schiebt den gesamten Briefinhalt nach unten, falls die Anschrift im Kuvertfenster zu hoch sitzt; 2–4 mm probieren. Falt-/Lochmarken bleiben papierbezogen unverändert, damit die Faltung stimmt. Druckränder setzt das Plugin immer automatisch: Seite 1 oben 10 mm (der DIN-Briefkopf sitzt konstruktionsbedingt hoch), Folgeseiten oben 25 mm, unten überall 20 mm. |
 | **Show logo** + **Logo path** | Bild statt Name im Briefkopf; vault-relativer Pfad (z. B. `assets/logo.png`), als data-URL eingebettet. |
 
-## Typography (Typografie)
+## Typography & language (Typografie & Sprache)
 
 | Einstellung | Bedeutung |
 |-------------|-----------|
 | **Font (CSS font-family)** | Optionaler Override. Leer = Standard des gewählten Stils; der Platzhalter zeigt den wirksamen Wert. |
 | **Font size (pt)** | Optionaler Override. Leer = Stil-Standard (10 pt); der Platzhalter zeigt den wirksamen Wert. |
 | **Date locale** | z. B. `de-DE`, `en-GB`, `en-US` — Format der Datumsausgabe. |
-| **Default closing** | Standard-Grußformel, wenn `gruss` im Frontmatter fehlt. |
+| **Letter language** | Sprache der gedruckten Labels: `Deutsch` (Anlagen, Ihr Zeichen, Datum, Tel.) oder `English` (Enclosures, Your ref., Date, Phone). Pro Brief per Frontmatter `sprache` überschreibbar. |
+| **Default closing** | Standard-Grußformel, wenn `gruss` im Frontmatter fehlt. Leer = Sprach-Standard („Mit freundlichen Grüßen“ / „Kind regards“). |
 
 ## Frontmatter (per letter)
 

@@ -41,10 +41,49 @@ const DEFAULT_SETTINGS = {
   fontFamily: '',            // empty => style default
   fontSizePt: '',            // empty => style default
   locale: 'de-DE',
-  defaultGruss: 'Mit freundlichen Grüßen',
+  briefSprache: 'de',        // letter label language ('de' | 'en'); UI language follows the app
+  defaultGruss: '',          // empty => language default ("Mit freundlichen Grüßen" / "Kind regards")
   printOffsetTopMm: 0,       // shifts the letter content down (fold marks stay paper-true)
   customCss: ''
 };
+
+/* ------------------------------------------------------------------ *
+ *  Languages
+ *
+ *  Two independent axes:
+ *  - LETTER_LABELS: the language of the printed letter (enclosure label,
+ *    info-block labels, default closing). Setting "Letter language",
+ *    overridable per letter via the `sprache` frontmatter field.
+ *  - UI_STRINGS: the plugin UI (settings, commands, notices). English by
+ *    default, localized automatically when the Obsidian app language matches.
+ * ------------------------------------------------------------------ */
+
+const LETTER_LABELS = {
+  de: {
+    anlage: 'Anlage', anlagen: 'Anlagen',
+    steuernummer: 'Steuernummer', ihrZeichen: 'Ihr Zeichen', ihrSchreiben: 'Ihr Schreiben',
+    unserZeichen: 'Unser Zeichen', telefon: 'Telefon', datum: 'Datum',
+    telPrefix: 'Tel. ',
+    closing: 'Mit freundlichen Grüßen',
+    salutation: 'Sehr geehrte Damen und Herren,'
+  },
+  en: {
+    anlage: 'Enclosure', anlagen: 'Enclosures',
+    steuernummer: 'Tax number', ihrZeichen: 'Your ref.', ihrSchreiben: 'Your letter',
+    unserZeichen: 'Our ref.', telefon: 'Phone', datum: 'Date',
+    telPrefix: 'Phone ',
+    closing: 'Kind regards',
+    salutation: 'Dear Sir or Madam,'
+  }
+};
+
+function normSprache(v) {
+  if (v == null) return null;
+  const k = norm(v);
+  if (k === 'de' || k === 'deutsch' || k === 'german' || k === 'dede') return 'de';
+  if (k === 'en' || k === 'englisch' || k === 'english' || k === 'engb' || k === 'enus') return 'en';
+  return null;
+}
 
 /* ------------------------------------------------------------------ *
  *  Built-in styles ("Stile")
@@ -108,6 +147,173 @@ const STILE = {
   }
 };
 
+/* ------------------------------------------------------------------ *
+ *  UI strings (English default, German when the app language is German)
+ * ------------------------------------------------------------------ */
+
+const UI_STRINGS = {
+  en: {
+    cmd_export: 'Export letter as PDF / print',
+    cmd_preview: 'Open letter preview',
+    cmd_insert_fm: 'Insert letter frontmatter into note',
+    notice_open_note: 'Briefkopf: Open a Markdown note first.',
+    notice_fm_added: 'Briefkopf: Frontmatter fields added.',
+    notice_fm_failed: 'Briefkopf: Could not update the frontmatter.',
+    notice_logo_failed: 'Briefkopf: Could not load the logo – ',
+    notice_no_recipient: 'Briefkopf: No recipient in the frontmatter (field "empfaenger").',
+    notice_print_failed: 'Briefkopf: Printing is not possible.',
+    modal_title: 'Letter preview',
+    modal_export: 'Export to PDF',
+    modal_close: 'Close',
+    set_layout: 'Layout', set_layout_desc: 'Base layout of the letter.',
+    opt_layout_din: 'DIN 5008 (German standard)', opt_layout_modern: 'Modern / international',
+    set_style: 'Style',
+    set_style_desc: 'Complete look (font, colors, spacing, letterhead). Sachlich: neutral sans-serif. Klassisch: serif, formal. Technisch: monospaced accents. Override per letter via the "stil" frontmatter field.',
+    opt_style_a: 'A · Sachlich (neutral sans)', opt_style_b: 'B · Klassisch (serif)', opt_style_c: 'C · Technisch (monospaced accents)',
+    set_infoline: 'Info line',
+    set_infoline_desc: 'Full: info block on the right (tax number, references, date). Date only: a plain place/date line, e.g. for private correspondence. Override per letter via the "infozeile" frontmatter field.',
+    opt_info_full: 'Full (info block)', opt_info_date: 'Date only',
+    set_dinform: 'DIN 5008 form',
+    set_dinform_desc: 'Form A: address field at 27 mm. Form B: address field at 45 mm (standard, more room for the letterhead).',
+    head_sender: 'Sender profile',
+    sender_intro: 'Default sender. Override per letter in the frontmatter (e.g. absender_name or the "absender" list).',
+    f_name: 'Name', f_company: 'Company / addition', f_street: 'Street', f_city: 'Postal code and city',
+    f_phone: 'Phone', f_email: 'Email', f_web: 'Website',
+    set_return: 'Return address line',
+    set_return_desc: 'Small line above the recipient address (for the envelope window). Empty = automatic (name · street · city).',
+    ph_automatic: 'automatic',
+    head_elements: 'Elements',
+    set_fold: 'Fold marks', set_fold_desc: 'Two marks for folding to fit a window envelope (DIN 5008).',
+    set_hole: 'Hole mark', set_hole_desc: 'Mark at 148.5 mm for filing.',
+    set_offset: 'Print offset top (mm)',
+    set_offset_desc: 'Fine-tuning: shifts the letter content down if the address sits too high in the envelope window (try 2–4 mm). Fold and hole marks stay in place.',
+    set_logo: 'Show logo', set_logo_desc: 'Replaces the name in the letterhead with an image.',
+    set_logopath: 'Logo path', set_logopath_desc: 'Vault-relative path to an image, e.g. assets/logo.png',
+    head_typo: 'Typography & language',
+    set_font: 'Font (CSS font-family)',
+    set_font_desc: 'Empty = default of the selected style (the placeholder shows the current value).',
+    set_fontsize: 'Font size (pt)',
+    set_fontsize_desc: 'Empty = default of the selected style (the placeholder shows the current value).',
+    set_locale: 'Date locale', set_locale_desc: 'For example de-DE, en-GB, en-US — controls the date format.',
+    set_letterlang: 'Letter language',
+    set_letterlang_desc: 'Language of the printed labels (enclosures, info block, default closing). Override per letter via the "sprache" frontmatter field.',
+    opt_lang_de: 'Deutsch', opt_lang_en: 'English',
+    set_closing: 'Default closing',
+    set_closing_desc: 'Used when the "gruss" frontmatter field is missing. Empty = language default.',
+    head_fm: 'Frontmatter (per letter)',
+    fm_intro: 'These fields control a letter per note and override the settings above. Keys are case-insensitive; see the documentation for English aliases (docs/reference/frontmatter.md).',
+    set_insertfm: 'Insert frontmatter template',
+    set_insertfm_desc: 'Adds the most important fields (recipient, subject, salutation, place, date, enclosures) to the active note without touching existing values.',
+    btn_insertfm: 'Insert into active note',
+    fm_empfaenger: 'Recipient address as a list — one item per envelope line.',
+    fm_absender: 'Sender as a list (name first; phone, email and web are detected automatically). Alternative: the individual fields absender_name, absender_strasse, absender_plz_ort, …',
+    fm_betreff: 'Subject line.',
+    fm_anrede: 'Salutation, e.g. "Sehr geehrte Frau Beispiel,".',
+    fm_ort: 'Place for the place/date line.',
+    fm_datum: 'ISO date (2026-06-10); empty = today.',
+    fm_anlagen: 'Enclosures as a list — one item per enclosure.',
+    fm_gruss: 'Closing; default from the settings.',
+    fm_unterschrift: 'Name below the closing; default = sender name.',
+    fm_stil: 'sachlich · klassisch · technisch (overrides the style setting).',
+    fm_infozeile: 'vollstaendig · nurdatum (overrides the info line setting).',
+    fm_sprache: 'de · en (overrides the letter language setting).',
+    fm_refs: 'Fixed rows in the info block; empty fields are omitted.',
+    fm_info: 'Custom info block rows as a map, e.g. Kundennummer: 12345.',
+    head_advanced: 'Advanced',
+    set_css: 'Custom CSS (optional)',
+    set_css_desc: 'For fine-tuning beyond style and info line. Loaded last and wins. "Insert preset" loads a commented starting point (overwrites the field).',
+    btn_preset: 'Insert preset'
+  },
+  de: {
+    cmd_export: 'Brief als PDF exportieren / drucken',
+    cmd_preview: 'Brief-Vorschau öffnen',
+    cmd_insert_fm: 'Brief-Frontmatter in Notiz einfügen',
+    notice_open_note: 'Briefkopf: Bitte zuerst eine Markdown-Notiz öffnen.',
+    notice_fm_added: 'Briefkopf: Frontmatter-Felder ergänzt.',
+    notice_fm_failed: 'Briefkopf: Frontmatter konnte nicht ergänzt werden.',
+    notice_logo_failed: 'Briefkopf: Logo konnte nicht geladen werden – ',
+    notice_no_recipient: 'Briefkopf: Kein Empfänger im Frontmatter (Feld „empfaenger").',
+    notice_print_failed: 'Briefkopf: Druck nicht möglich.',
+    modal_title: 'Brief-Vorschau',
+    modal_export: 'Als PDF exportieren',
+    modal_close: 'Schließen',
+    set_layout: 'Layout', set_layout_desc: 'Grundlayout des Briefs.',
+    opt_layout_din: 'DIN 5008 (deutscher Standard)', opt_layout_modern: 'Modern / international',
+    set_style: 'Stil',
+    set_style_desc: 'Komplettes Erscheinungsbild (Schrift, Farben, Abstände, Briefkopf). Sachlich: neutral serifenlos. Klassisch: Serife, gediegen. Technisch: monospaced Akzente. Pro Brief per Frontmatter-Feld „stil" überschreibbar.',
+    opt_style_a: 'A · Sachlich (neutral serifenlos)', opt_style_b: 'B · Klassisch (Serife)', opt_style_c: 'C · Technisch (monospaced Akzente)',
+    set_infoline: 'Infozeile',
+    set_infoline_desc: 'Vollständig: Infoblock rechts (Steuernummer, Zeichen, Datum). Nur Datum: schlichte Orts-/Datumszeile, z. B. für Privatkorrespondenz. Pro Brief per Frontmatter-Feld „infozeile" überschreibbar.',
+    opt_info_full: 'Vollständig (Infoblock)', opt_info_date: 'Nur Datum',
+    set_dinform: 'DIN-5008-Form',
+    set_dinform_desc: 'Form A: Anschrift bei 27 mm. Form B: Anschrift bei 45 mm (Standard, mehr Platz für den Briefkopf).',
+    head_sender: 'Absender-Profil',
+    sender_intro: 'Standard-Absender. Pro Brief im Frontmatter überschreibbar (z. B. absender_name oder die Liste „absender").',
+    f_name: 'Name', f_company: 'Zusatz / Firma', f_street: 'Straße', f_city: 'PLZ und Ort',
+    f_phone: 'Telefon', f_email: 'E-Mail', f_web: 'Website',
+    set_return: 'Rücksendeangabe',
+    set_return_desc: 'Kleine Zeile über der Empfängeranschrift (fürs Fensterkuvert). Leer = automatisch (Name · Straße · PLZ Ort).',
+    ph_automatic: 'automatisch',
+    head_elements: 'Elemente',
+    set_fold: 'Faltmarken', set_fold_desc: 'Zwei Markierungen zum Falten fürs Fensterkuvert (DIN 5008).',
+    set_hole: 'Lochmarke', set_hole_desc: 'Markierung bei 148,5 mm zum Abheften.',
+    set_offset: 'Druckversatz oben (mm)',
+    set_offset_desc: 'Feinjustierung: schiebt den Briefinhalt nach unten, falls die Anschrift im Kuvertfenster zu hoch sitzt (2–4 mm probieren). Falt-/Lochmarken bleiben unverändert.',
+    set_logo: 'Logo anzeigen', set_logo_desc: 'Ersetzt den Namen im Briefkopf durch ein Bild.',
+    set_logopath: 'Logo-Pfad', set_logopath_desc: 'Vault-relativer Pfad zu einer Bilddatei, z. B. assets/logo.png',
+    head_typo: 'Typografie & Sprache',
+    set_font: 'Schriftart (CSS font-family)',
+    set_font_desc: 'Leer = Standard des gewählten Stils (Platzhalter zeigt den aktuellen Wert).',
+    set_fontsize: 'Schriftgröße (pt)',
+    set_fontsize_desc: 'Leer = Standard des gewählten Stils (Platzhalter zeigt den aktuellen Wert).',
+    set_locale: 'Datums-Locale', set_locale_desc: 'z. B. de-DE, en-GB, en-US — bestimmt das Datumsformat.',
+    set_letterlang: 'Briefsprache',
+    set_letterlang_desc: 'Sprache der gedruckten Labels (Anlagen, Infoblock, Standard-Grußformel). Pro Brief per Frontmatter-Feld „sprache" überschreibbar.',
+    opt_lang_de: 'Deutsch', opt_lang_en: 'Englisch',
+    set_closing: 'Standard-Grußformel',
+    set_closing_desc: 'Greift, wenn das Frontmatter-Feld „gruss" fehlt. Leer = Sprach-Standard.',
+    head_fm: 'Frontmatter (pro Brief)',
+    fm_intro: 'Diese Felder steuern den Brief pro Notiz und überschreiben die Einstellungen oben. Schlüssel sind case-insensitive; englische Aliasse siehe Doku (docs/reference/frontmatter.md).',
+    set_insertfm: 'Frontmatter-Vorlage einfügen',
+    set_insertfm_desc: 'Ergänzt die wichtigsten Felder (Empfänger, Betreff, Anrede, Ort, Datum, Anlagen) im Frontmatter der aktiven Notiz — vorhandene Werte bleiben unangetastet.',
+    btn_insertfm: 'In aktive Notiz einfügen',
+    fm_empfaenger: 'Empfängeranschrift als Liste — ein Listenpunkt pro Kuvertzeile.',
+    fm_absender: 'Absender als Liste (Name zuerst; Telefon, E-Mail und Web werden automatisch erkannt). Alternativ Einzelfelder absender_name, absender_strasse, absender_plz_ort, …',
+    fm_betreff: 'Betreffzeile.',
+    fm_anrede: 'Anrede, z. B. „Sehr geehrte Frau Beispiel,".',
+    fm_ort: 'Ort für die Orts-/Datumszeile.',
+    fm_datum: 'ISO-Datum (2026-06-10); leer = heute.',
+    fm_anlagen: 'Anlagenvermerk als Liste — ein Listenpunkt pro Anlage.',
+    fm_gruss: 'Grußformel; Standard aus den Einstellungen.',
+    fm_unterschrift: 'Name unter dem Gruß; Standard = Absendername.',
+    fm_stil: 'sachlich · klassisch · technisch (überschreibt die Stil-Einstellung).',
+    fm_infozeile: 'vollstaendig · nurdatum (überschreibt die Infozeilen-Einstellung).',
+    fm_sprache: 'de · en (überschreibt die Briefsprache-Einstellung).',
+    fm_refs: 'Feste Zeilen im Infoblock; leere Felder werden weggelassen.',
+    fm_info: 'Eigene Infoblock-Zeilen als Map, z. B. Kundennummer: 12345.',
+    head_advanced: 'Erweitert',
+    set_css: 'Eigenes CSS (optional)',
+    set_css_desc: 'Für Feinheiten jenseits von Stil + Infozeile. Wird zuletzt geladen und gewinnt. „Insert preset" lädt einen kommentierten Startpunkt (überschreibt das Feld).',
+    btn_preset: 'Preset einfügen'
+  }
+};
+
+/* Obsidian stores the app language in localStorage ('de', 'en' = null/absent).
+   English is the default and the fallback for every missing key. */
+function detectUiLang() {
+  try {
+    const l = window.localStorage.getItem('language');
+    if (l && String(l).toLowerCase().startsWith('de')) return 'de';
+  } catch (e) { /* no localStorage (tests) — default to English */ }
+  return 'en';
+}
+
+const UI_LANG = detectUiLang();
+
+function t(key) {
+  return (UI_STRINGS[UI_LANG] && UI_STRINGS[UI_LANG][key]) || UI_STRINGS.en[key] || key;
+}
+
 /* Accepts setting values and frontmatter spellings: a/b/c, German names,
    English-ish aliases. Returns a STILE key or null. */
 function normStil(v) {
@@ -143,6 +349,7 @@ const ALIASES = {
   anlagen:     ['anlagen', 'anlage', 'attachments', 'enclosures'],
   absender:    ['absender', 'sender', 'von', 'from'],
   stil:        ['stil', 'style', 'design', 'variante'],
+  sprache:     ['sprache', 'language', 'lang', 'briefsprache'],
   infozeile:   ['infozeile', 'layout'],
   info:        ['info', 'bezugszeichen', 'infoblock'],
   steuernummer:['steuernummer', 'steuernr', 'st_nr', 'tax_number'],
@@ -447,21 +654,21 @@ class BriefkopfPlugin extends obsidian.Plugin {
     await this.loadSettings();
     this.addSettingTab(new BriefkopfSettingTab(this.app, this));
 
-    this.addRibbonIcon('mail', 'Export letter as PDF', () => this.exportLetter());
+    this.addRibbonIcon('mail', t('cmd_export'), () => this.exportLetter());
 
     this.addCommand({
       id: 'export-letter',
-      name: 'Export letter as PDF / print',
+      name: t('cmd_export'),
       callback: () => this.exportLetter()
     });
     this.addCommand({
       id: 'open-preview',
-      name: 'Open letter preview',
+      name: t('cmd_preview'),
       callback: () => this.previewLetter()
     });
     this.addCommand({
       id: 'insert-frontmatter',
-      name: 'Insert letter frontmatter into note',
+      name: t('cmd_insert_fm'),
       callback: () => this.insertFrontmatterTemplate()
     });
   }
@@ -471,7 +678,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
   async insertFrontmatterTemplate() {
     const file = this.app.workspace.getActiveFile();
     if (!file || file.extension !== 'md') {
-      new obsidian.Notice('Briefkopf: Open a Markdown note first.');
+      new obsidian.Notice(t('notice_open_note'));
       return;
     }
     const now = new Date();
@@ -485,15 +692,15 @@ class BriefkopfPlugin extends obsidian.Plugin {
           fm.empfaenger = ['', '', '', ''];
         }
         if (!has('betreff', 'subject', 'thema')) fm.betreff = '';
-        if (!has('anrede', 'salutation')) fm.anrede = 'Sehr geehrte Damen und Herren,';
+        if (!has('anrede', 'salutation')) fm.anrede = (LETTER_LABELS[normSprache(this.settings.briefSprache) || 'de'] || LETTER_LABELS.de).salutation;
         if (!has('ort', 'place', 'stadt', 'city')) fm.ort = '';
         if (!has('datum', 'date')) fm.datum = iso;
         if (!has('anlagen', 'anlage', 'attachments', 'enclosures')) fm.anlagen = [];
       });
-      new obsidian.Notice('Briefkopf: Frontmatter fields added.');
+      new obsidian.Notice(t('notice_fm_added'));
     } catch (e) {
       console.error('Briefkopf: frontmatter insert failed', e);
-      new obsidian.Notice('Briefkopf: Could not update the frontmatter.');
+      new obsidian.Notice(t('notice_fm_failed'));
     }
   }
 
@@ -511,6 +718,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
     }
     if (data.fontFamily === 'Helvetica, Arial, sans-serif') { this.settings.fontFamily = ''; migrated = true; }
     if (data.fontSizePt === 11) { this.settings.fontSizePt = ''; migrated = true; }
+    if (data.defaultGruss === 'Mit freundlichen Grüßen') { this.settings.defaultGruss = ''; migrated = true; }
     /* If a design-variant file (design/css/briefkopf-*.css) was pasted into
        "Eigenes CSS", adopt it as the built-in Stil/Infozeile and clear the
        field — the variants ship built in since 1.1.0. */
@@ -580,7 +788,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
         : 'image/jpeg';
       return `data:${mime};base64,${arrayBufferToBase64(ab)}`;
     } catch (e) {
-      new obsidian.Notice('Briefkopf: Could not load the logo – ' + p);
+      new obsidian.Notice(t('notice_logo_failed') + p);
       return '';
     }
   }
@@ -590,7 +798,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
   async resolveLetter() {
     const file = this.app.workspace.getActiveFile();
     if (!file || file.extension !== 'md') {
-      new obsidian.Notice('Briefkopf: Open a Markdown note first.');
+      new obsidian.Notice(t('notice_open_note'));
       return null;
     }
     const cache = this.app.metadataCache.getFileCache(file);
@@ -629,17 +837,22 @@ class BriefkopfPlugin extends obsidian.Plugin {
 
     const ihrSchreibenRaw = getField(idx, ALIASES.ihrSchreiben);
 
+    const sprache = normSprache(getField(idx, ALIASES.sprache)) || normSprache(s.briefSprache) || 'de';
+    const labels = LETTER_LABELS[sprache] || LETTER_LABELS.de;
+
     const model = {
       recipient: toLines(getField(idx, ALIASES.recipient)),
       betreff: getField(idx, ALIASES.betreff) || '',
       anrede: getField(idx, ALIASES.anrede) || '',
-      gruss: getField(idx, ALIASES.gruss) || s.defaultGruss || '',
+      gruss: getField(idx, ALIASES.gruss) || s.defaultGruss || labels.closing,
       unterschrift: getField(idx, ALIASES.unterschrift) || senderName || '',
       ort: getField(idx, ALIASES.ort) || '',
       datum: this.formatDate(getField(idx, ALIASES.datum)),
       anlagen: toLines(getField(idx, ALIASES.anlagen)),
       stil: normStil(getField(idx, ALIASES.stil)) || normStil(s.stil) || 'sachlich',
       infozeile: normInfozeile(getField(idx, ALIASES.infozeile)) || normInfozeile(s.infozeile) || 'vollstaendig',
+      sprache,
+      labels,
       steuernummer: getField(idx, ALIASES.steuernummer) || '',
       ihrZeichen: getField(idx, ALIASES.ihrZeichen) || '',
       ihrSchreiben: ihrSchreibenRaw ? this.formatDate(ihrSchreibenRaw) : '',
@@ -654,14 +867,15 @@ class BriefkopfPlugin extends obsidian.Plugin {
     };
 
     if (model.recipient.length === 0) {
-      new obsidian.Notice('Briefkopf: No recipient in the frontmatter (field "empfaenger").');
+      new obsidian.Notice(t('notice_no_recipient'));
     }
     return model;
   }
 
   buildEnclosuresHtml(m) {
     if (!m.anlagen || m.anlagen.length === 0) return '';
-    const label = m.anlagen.length === 1 ? 'Anlage' : 'Anlagen';
+    const L = m.labels || LETTER_LABELS.de;
+    const label = m.anlagen.length === 1 ? L.anlage : L.anlagen;
     const items = m.anlagen.map((a) => `<li>${esc(a)}</li>`).join('');
     return `<div class="bk-enclosures">
       <div class="bk-encl-label">${label}</div>
@@ -702,7 +916,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
     // DIN 5008 — letterhead: name (or logo) left, contact right, hairline below
     const contactLines = [
       [m.senderStrasse, m.senderPlzOrt].filter(Boolean).join(' · '),
-      [m.senderTelefon ? 'Tel. ' + m.senderTelefon : '', m.senderEmail].filter(Boolean).join(' · '),
+      [m.senderTelefon ? (m.labels || LETTER_LABELS.de).telPrefix + m.senderTelefon : '', m.senderEmail].filter(Boolean).join(' · '),
       m.senderWeb || ''
     ].filter(Boolean).map((x) => `<div>${esc(x)}</div>`).join('');
 
@@ -721,15 +935,16 @@ class BriefkopfPlugin extends obsidian.Plugin {
     if (m.infozeile === 'nurdatum') {
       infozone = `<div class="bk-dateline">${m.ort ? esc(m.ort) + ', ' : ''}${esc(m.datum)}</div>`;
     } else {
+      const L = m.labels || LETTER_LABELS.de;
       const rows = [];
       const addRow = (label, val) => { if (val) rows.push([label, val]); };
-      addRow('Steuernummer', m.steuernummer);
-      addRow('Ihr Zeichen', m.ihrZeichen);
-      addRow('Ihr Schreiben', m.ihrSchreiben);
-      addRow('Unser Zeichen', m.unserZeichen);
-      addRow('Telefon', m.telefonBezug);
+      addRow(L.steuernummer, m.steuernummer);
+      addRow(L.ihrZeichen, m.ihrZeichen);
+      addRow(L.ihrSchreiben, m.ihrSchreiben);
+      addRow(L.unserZeichen, m.unserZeichen);
+      addRow(L.telefon, m.telefonBezug);
       for (const [k, v] of m.infoExtra) addRow(k, v);
-      rows.push(['Datum', m.datum]);
+      rows.push([L.datum, m.datum]);
       infozone = `<div class="bk-infoblock">` + rows.map(([l, v]) =>
         `<div class="bk-info-item"><span class="bk-info-label">${esc(l)}</span><span class="bk-info-value">${esc(v)}</span></div>`
       ).join('') + `</div>`;
@@ -793,7 +1008,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
     };
     window.addEventListener('afterprint', cleanup);
     // give layout + embedded images a tick, then open the print/save-as-PDF dialog
-    setTimeout(() => { try { window.print(); } catch (e) { new obsidian.Notice('Briefkopf: Printing is not possible.'); cleanup(); } }, 150);
+    setTimeout(() => { try { window.print(); } catch (e) { new obsidian.Notice(t('notice_print_failed')); cleanup(); } }, 150);
     // safety net for platforms that never fire 'afterprint' (some iOS cases)
     setTimeout(cleanup, 60000);
   }
@@ -825,7 +1040,7 @@ class BriefkopfPreviewModal extends obsidian.Modal {
     this.modalEl.addClass('briefkopf-preview-modal');
     const { contentEl } = this;
     contentEl.empty();
-    contentEl.createEl('h3', { text: 'Letter preview' });
+    contentEl.createEl('h3', { text: t('modal_title') });
 
     const frame = contentEl.createEl('iframe', { cls: 'briefkopf-preview-frame' });
     frame.setAttribute('sandbox', 'allow-same-origin');
@@ -889,9 +1104,9 @@ class BriefkopfPreviewModal extends obsidian.Modal {
     this.resizeObserver.observe(frame);
 
     const actions = contentEl.createDiv({ cls: 'briefkopf-preview-actions' });
-    const exportBtn = actions.createEl('button', { text: 'Export to PDF', cls: 'mod-cta' });
+    const exportBtn = actions.createEl('button', { text: t('modal_export'), cls: 'mod-cta' });
     exportBtn.onclick = () => { this.close(); this.plugin.exportLetter(); };
-    const closeBtn = actions.createEl('button', { text: 'Close' });
+    const closeBtn = actions.createEl('button', { text: t('modal_close') });
     closeBtn.onclick = () => this.close();
   }
 
@@ -914,131 +1129,140 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
     containerEl.empty();
 
     new obsidian.Setting(containerEl)
-      .setName('Layout')
-      .setDesc('Base layout of the letter.')
+      .setName(t('set_layout'))
+      .setDesc(t('set_layout_desc'))
       .addDropdown((d) => d
-        .addOption('din5008', 'DIN 5008 (German standard)')
-        .addOption('modern', 'Modern / international')
+        .addOption('din5008', t('opt_layout_din'))
+        .addOption('modern', t('opt_layout_modern'))
         .setValue(s.theme)
         .onChange(async (v) => { s.theme = v; await this.plugin.saveSettings(); }));
 
     new obsidian.Setting(containerEl)
-      .setName('Style')
-      .setDesc('Complete look (font, colors, spacing, letterhead). Sachlich: neutral sans-serif. Klassisch: serif, formal. Technisch: monospaced accents. Override per letter via the "stil" frontmatter field.')
+      .setName(t('set_style'))
+      .setDesc(t('set_style_desc'))
       .addDropdown((d) => d
-        .addOption('sachlich', 'A · Sachlich (neutral sans)')
-        .addOption('klassisch', 'B · Klassisch (serif)')
-        .addOption('technisch', 'C · Technisch (monospaced accents)')
+        .addOption('sachlich', t('opt_style_a'))
+        .addOption('klassisch', t('opt_style_b'))
+        .addOption('technisch', t('opt_style_c'))
         .setValue(s.stil)
         .onChange(async (v) => { s.stil = v; await this.plugin.saveSettings(); this.display(); }));
 
     new obsidian.Setting(containerEl)
-      .setName('Info line')
-      .setDesc('Full: info block on the right (tax number, references, date). Date only: a plain place/date line, e.g. for private correspondence. Override per letter via the "infozeile" frontmatter field.')
+      .setName(t('set_infoline'))
+      .setDesc(t('set_infoline_desc'))
       .addDropdown((d) => d
-        .addOption('vollstaendig', 'Full (info block)')
-        .addOption('nurdatum', 'Date only')
+        .addOption('vollstaendig', t('opt_info_full'))
+        .addOption('nurdatum', t('opt_info_date'))
         .setValue(s.infozeile)
         .onChange(async (v) => { s.infozeile = v; await this.plugin.saveSettings(); }));
 
     new obsidian.Setting(containerEl)
-      .setName('DIN 5008 form')
-      .setDesc('Form A: address field at 27 mm. Form B: address field at 45 mm (standard, more room for the letterhead).')
+      .setName(t('set_dinform'))
+      .setDesc(t('set_dinform_desc'))
       .addDropdown((d) => d
         .addOption('A', 'Form A (27 mm)')
         .addOption('B', 'Form B (45 mm)')
         .setValue(s.dinForm)
         .onChange(async (v) => { s.dinForm = v; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Sender profile').setHeading();
-    containerEl.createEl('p', { text: 'Default sender. Override per letter in the frontmatter (e.g. absender_name or the "absender" list).', cls: 'setting-item-description' });
+    new obsidian.Setting(containerEl).setName(t('head_sender')).setHeading();
+    containerEl.createEl('p', { text: t('sender_intro'), cls: 'setting-item-description' });
 
     const senderField = (name, key, ph) => new obsidian.Setting(containerEl)
       .setName(name)
       .addText((t) => t.setPlaceholder(ph || '').setValue(s.sender[key] || '')
         .onChange(async (v) => { s.sender[key] = v; await this.plugin.saveSettings(); }));
 
-    senderField('Name', 'name', 'Max Mustermann');
-    senderField('Company / addition', 'zusatz', 'Muster GmbH');
-    senderField('Street', 'strasse', 'Musterstraße 1');
-    senderField('Postal code and city', 'plzOrt', '12345 Musterstadt');
-    senderField('Phone', 'telefon', '+49 30 1234567');
-    senderField('Email', 'email', 'kontakt@example.com');
-    senderField('Website', 'web', 'www.example.com');
+    senderField(t('f_name'), 'name', 'Max Mustermann');
+    senderField(t('f_company'), 'zusatz', 'Muster GmbH');
+    senderField(t('f_street'), 'strasse', 'Musterstraße 1');
+    senderField(t('f_city'), 'plzOrt', '12345 Musterstadt');
+    senderField(t('f_phone'), 'telefon', '+49 30 1234567');
+    senderField(t('f_email'), 'email', 'kontakt@example.com');
+    senderField(t('f_web'), 'web', 'www.example.com');
 
     const autoRuecksende = [s.sender.name, s.sender.strasse, s.sender.plzOrt].filter(Boolean).join(' · ');
     new obsidian.Setting(containerEl)
-      .setName('Return address line')
-      .setDesc('Small line above the recipient address (for the envelope window). Empty = automatic (name · street · city).')
-      .addText((t) => t.setPlaceholder(autoRuecksende || 'automatic').setValue(s.returnAddressLine)
+      .setName(t('set_return'))
+      .setDesc(t('set_return_desc'))
+      .addText((x) => x.setPlaceholder(autoRuecksende || t('ph_automatic')).setValue(s.returnAddressLine)
         .onChange(async (v) => { s.returnAddressLine = v; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Elements').setHeading();
+    new obsidian.Setting(containerEl).setName(t('head_elements')).setHeading();
 
-    new obsidian.Setting(containerEl).setName('Fold marks')
-      .setDesc('Two marks for folding to fit a window envelope (DIN 5008).')
-      .addToggle((t) => t.setValue(s.showFoldMarks).onChange(async (v) => { s.showFoldMarks = v; await this.plugin.saveSettings(); }));
+    new obsidian.Setting(containerEl).setName(t('set_fold'))
+      .setDesc(t('set_fold_desc'))
+      .addToggle((x) => x.setValue(s.showFoldMarks).onChange(async (v) => { s.showFoldMarks = v; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Hole mark')
-      .setDesc('Mark at 148.5 mm for filing.')
-      .addToggle((t) => t.setValue(s.showHoleMark).onChange(async (v) => { s.showHoleMark = v; await this.plugin.saveSettings(); }));
+    new obsidian.Setting(containerEl).setName(t('set_hole'))
+      .setDesc(t('set_hole_desc'))
+      .addToggle((x) => x.setValue(s.showHoleMark).onChange(async (v) => { s.showHoleMark = v; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Print offset top (mm)')
-      .setDesc('Fine-tuning: shifts the letter content down if the address sits too high in the envelope window (try 2–4 mm). Fold and hole marks stay in place.')
-      .addText((t) => t.setPlaceholder('0').setValue(s.printOffsetTopMm ? String(s.printOffsetTopMm) : '')
+    new obsidian.Setting(containerEl).setName(t('set_offset'))
+      .setDesc(t('set_offset_desc'))
+      .addText((x) => x.setPlaceholder('0').setValue(s.printOffsetTopMm ? String(s.printOffsetTopMm) : '')
         .onChange(async (v) => {
           const n = Number(String(v).replace(',', '.'));
           s.printOffsetTopMm = isFinite(n) && n > 0 ? Math.min(n, 25) : 0;
           await this.plugin.saveSettings();
         }));
 
-    new obsidian.Setting(containerEl).setName('Show logo')
-      .setDesc('Replaces the name in the letterhead with an image.')
-      .addToggle((t) => t.setValue(s.showLogo).onChange(async (v) => { s.showLogo = v; await this.plugin.saveSettings(); }));
+    new obsidian.Setting(containerEl).setName(t('set_logo'))
+      .setDesc(t('set_logo_desc'))
+      .addToggle((x) => x.setValue(s.showLogo).onChange(async (v) => { s.showLogo = v; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Logo path')
-      .setDesc('Vault-relative path to an image, e.g. assets/logo.png')
-      .addText((t) => t.setPlaceholder('assets/logo.png').setValue(s.logoPath)
+    new obsidian.Setting(containerEl).setName(t('set_logopath'))
+      .setDesc(t('set_logopath_desc'))
+      .addText((x) => x.setPlaceholder('assets/logo.png').setValue(s.logoPath)
         .onChange(async (v) => { s.logoPath = v; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Typography').setHeading();
+    new obsidian.Setting(containerEl).setName(t('head_typo')).setHeading();
 
     const stilTokens = (STILE[normStil(s.stil) || 'sachlich'] || STILE.sachlich).tokens;
 
-    new obsidian.Setting(containerEl).setName('Font (CSS font-family)')
-      .setDesc('Empty = default of the selected style (the placeholder shows the current value).')
-      .addText((t) => t.setPlaceholder(stilTokens.fontFamily).setValue(s.fontFamily || '')
+    new obsidian.Setting(containerEl).setName(t('set_font'))
+      .setDesc(t('set_font_desc'))
+      .addText((x) => x.setPlaceholder(stilTokens.fontFamily).setValue(s.fontFamily || '')
         .onChange(async (v) => { s.fontFamily = v.trim(); await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Font size (pt)')
-      .setDesc('Empty = default of the selected style (the placeholder shows the current value).')
-      .addText((t) => t.setPlaceholder(String(stilTokens.fontSizePt)).setValue(s.fontSizePt === '' || s.fontSizePt == null ? '' : String(s.fontSizePt))
+    new obsidian.Setting(containerEl).setName(t('set_fontsize'))
+      .setDesc(t('set_fontsize_desc'))
+      .addText((x) => x.setPlaceholder(String(stilTokens.fontSizePt)).setValue(s.fontSizePt === '' || s.fontSizePt == null ? '' : String(s.fontSizePt))
         .onChange(async (v) => {
           const n = Number(v);
           s.fontSizePt = v.trim() === '' || !isFinite(n) || n <= 0 ? '' : n;
           await this.plugin.saveSettings();
         }));
 
-    new obsidian.Setting(containerEl).setName('Date locale')
-      .setDesc('For example de-DE, en-GB, en-US — controls the date format.')
-      .addText((t) => t.setValue(s.locale)
+    new obsidian.Setting(containerEl).setName(t('set_locale'))
+      .setDesc(t('set_locale_desc'))
+      .addText((x) => x.setValue(s.locale)
         .onChange(async (v) => { s.locale = v || 'de-DE'; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Default closing')
-      .setDesc('Used when the "gruss" frontmatter field is missing.')
-      .addText((t) => t.setValue(s.defaultGruss)
+    new obsidian.Setting(containerEl).setName(t('set_letterlang'))
+      .setDesc(t('set_letterlang_desc'))
+      .addDropdown((d) => d
+        .addOption('de', t('opt_lang_de'))
+        .addOption('en', t('opt_lang_en'))
+        .setValue(normSprache(s.briefSprache) || 'de')
+        .onChange(async (v) => { s.briefSprache = v; await this.plugin.saveSettings(); this.display(); }));
+
+    const letterLabels = LETTER_LABELS[normSprache(s.briefSprache) || 'de'] || LETTER_LABELS.de;
+    new obsidian.Setting(containerEl).setName(t('set_closing'))
+      .setDesc(t('set_closing_desc'))
+      .addText((x) => x.setPlaceholder(letterLabels.closing).setValue(s.defaultGruss)
         .onChange(async (v) => { s.defaultGruss = v; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Frontmatter (per letter)').setHeading();
+    new obsidian.Setting(containerEl).setName(t('head_fm')).setHeading();
     containerEl.createEl('p', {
-      text: 'These fields control a letter per note and override the settings above. Keys are case-insensitive; see the documentation for English aliases (docs/reference/frontmatter.md).',
+      text: t('fm_intro'),
       cls: 'setting-item-description'
     });
 
     new obsidian.Setting(containerEl)
-      .setName('Insert frontmatter template')
-      .setDesc('Adds the most important fields (recipient, subject, salutation, place, date, enclosures) to the active note without touching existing values.')
-      .addButton((b) => b.setButtonText('Insert into active note').setCta()
+      .setName(t('set_insertfm'))
+      .setDesc(t('set_insertfm_desc'))
+      .addButton((b) => b.setButtonText(t('btn_insertfm')).setCta()
         .onClick(() => this.plugin.insertFrontmatterTemplate()));
 
     const fmTable = containerEl.createDiv({ cls: 'briefkopf-fm-table' });
@@ -1047,35 +1271,36 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
       r.createEl('code', { text: key });
       r.createSpan({ text: desc });
     };
-    fmRow('empfaenger', 'Recipient address as a list — one item per envelope line.');
-    fmRow('absender', 'Sender as a list (name first; phone, email and web are detected automatically). Alternative: the individual fields absender_name, absender_strasse, absender_plz_ort, …');
-    fmRow('betreff', 'Subject line.');
-    fmRow('anrede', 'Salutation, e.g. "Sehr geehrte Frau Beispiel,".');
-    fmRow('ort', 'Place for the place/date line.');
-    fmRow('datum', 'ISO date (2026-06-10); empty = today.');
-    fmRow('anlagen', 'Enclosures as a list — one item per enclosure.');
-    fmRow('gruss', 'Closing; default from the settings.');
-    fmRow('unterschrift', 'Name below the closing; default = sender name.');
-    fmRow('stil', 'sachlich · klassisch · technisch (overrides the style setting).');
-    fmRow('infozeile', 'vollstaendig · nurdatum (overrides the info line setting).');
-    fmRow('steuernummer, ihr_zeichen, ihr_schreiben, unser_zeichen, telefon_bezug', 'Fixed rows in the info block; empty fields are omitted.');
-    fmRow('info', 'Custom info block rows as a map, e.g. Kundennummer: 12345.');
+    fmRow('empfaenger', t('fm_empfaenger'));
+    fmRow('absender', t('fm_absender'));
+    fmRow('betreff', t('fm_betreff'));
+    fmRow('anrede', t('fm_anrede'));
+    fmRow('ort', t('fm_ort'));
+    fmRow('datum', t('fm_datum'));
+    fmRow('anlagen', t('fm_anlagen'));
+    fmRow('gruss', t('fm_gruss'));
+    fmRow('unterschrift', t('fm_unterschrift'));
+    fmRow('stil', t('fm_stil'));
+    fmRow('infozeile', t('fm_infozeile'));
+    fmRow('sprache', t('fm_sprache'));
+    fmRow('steuernummer, ihr_zeichen, ihr_schreiben, unser_zeichen, telefon_bezug', t('fm_refs'));
+    fmRow('info', t('fm_info'));
 
-    new obsidian.Setting(containerEl).setName('Advanced').setHeading();
+    new obsidian.Setting(containerEl).setName(t('head_advanced')).setHeading();
 
-    new obsidian.Setting(containerEl).setName('Custom CSS (optional)')
-      .setDesc('For fine-tuning beyond style and info line. Loaded last and wins. "Insert preset" loads a commented starting point (overwrites the field).')
-      .addButton((b) => b.setButtonText('Insert preset').onClick(async () => {
+    new obsidian.Setting(containerEl).setName(t('set_css'))
+      .setDesc(t('set_css_desc'))
+      .addButton((b) => b.setButtonText(t('btn_preset')).onClick(async () => {
         s.customCss = PRESET_CSS;
         await this.plugin.saveSettings();
         this.display();
       }));
 
     new obsidian.Setting(containerEl)
-      .addTextArea((t) => {
-        t.setValue(s.customCss).onChange(async (v) => { s.customCss = v; await this.plugin.saveSettings(); });
-        t.inputEl.rows = 12;
-        t.inputEl.addClass('briefkopf-css-input');
+      .addTextArea((x) => {
+        x.setValue(s.customCss).onChange(async (v) => { s.customCss = v; await this.plugin.saveSettings(); });
+        x.inputEl.rows = 12;
+        x.inputEl.addClass('briefkopf-css-input');
       });
   }
 }

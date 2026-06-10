@@ -41,6 +41,13 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   Einzelfeldern `absender_name` & Co., die weiterhin Feld für Feld gewinnen.
 - **Paginierte Brief-Vorschau**: zeigt echte A4-Blätter mit denselben
   Seitenumbruch-Positionen wie der Druck statt einer Endlos-Seite.
+- **Mehrsprachigkeit**: Die Plugin-UI folgt automatisch der
+  Obsidian-App-Sprache (Englisch Standard, Deutsch lokalisiert). Neu ist die
+  davon unabhängige Einstellung **Letter language** (Frontmatter `sprache`):
+  deutsche oder englische Brief-Labels (Anlage/Enclosure, Ihr Zeichen/Your
+  ref., Datum/Date, Tel./Phone) inkl. Sprach-Standard für die Grußformel
+  („Mit freundlichen Grüßen“ / „Kind regards“); „Standard-Grußformel“ leer =
+  Sprach-Standard (bestehender deutscher Default wird migriert).
 
 ### Changed
 - **DIN-Briefkopf neu**: Name (oder Logo) links, Kontaktdaten rechts, Hairline
