@@ -57,6 +57,14 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   hoch).
 - Einstellungen zeigen jetzt die wirksamen Standardwerte als Platzhalter
   (Schriftart/-größe je Stil, automatische Rücksendeangabe).
+- **UI auf Englisch** gemäß Obsidian-Community-Richtlinien (Sentence case,
+  `setHeading()` statt eigener Überschriften, kein Top-Level-Heading):
+  Befehle heißen jetzt „Export letter as PDF / print", „Open letter preview",
+  „Insert letter frontmatter into note". Die Befehl-IDs wurden bereinigt
+  (`export-letter`, `open-preview`, `insert-frontmatter` — ohne Plugin-Präfix);
+  zugewiesene Hotkeys müssen einmalig neu gesetzt werden. Brief-Inhalte
+  (Anlagen, Ihr Zeichen, Grußformel …) bleiben deutsch — sie sind Briefsprache
+  nach DIN, keine UI.
 - `ihr_schreiben` wird jetzt als Datum gemäß Locale formatiert; `telefon_bezug`
   hat keinen Absender-Default mehr (Telefon steht bereits im Briefkopf).
 - **Einstellungen ohne CSS-Pflicht**: Stil + Infozeile als Dropdowns;

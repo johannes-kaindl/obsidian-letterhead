@@ -14,7 +14,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 
 - **Zwei Layouts:** `DIN 5008` (deutscher Standard, fensterkuvert-tauglich) und `Modern` (international).
 - **Drei Stile per Dropdown:** Sachlich-modern, Klassisch-seriös, Technisch-präzise — plus Infozeile „Vollständig" (Infoblock) oder „Nur Datum"; beides pro Brief im Frontmatter überschreibbar.
-- **Metadaten aus dem Frontmatter:** Empfänger und Absender als YAML-Listen, Betreff, Anrede, Grußformel, Datum, Infoblock (inkl. Steuernummer + freie Zeilen), Anlagenvermerk — deutsche und englische Feld-Aliasse. Befehl **„Brief-Frontmatter in Notiz einfügen"** legt die Felder an; die Einstellungen zeigen eine Feldübersicht.
+- **Metadaten aus dem Frontmatter:** Empfänger und Absender als YAML-Listen, Betreff, Anrede, Grußformel, Datum, Infoblock (inkl. Steuernummer + freie Zeilen), Anlagenvermerk — deutsche und englische Feld-Aliasse. Befehl **Insert letter frontmatter into note** legt die Felder an; die Einstellungen zeigen eine Feldübersicht.
 - **Absender-Profil** in den Einstellungen, pro Brief überschreibbar (Liste `absender` oder Einzelfelder).
 - **PDF-Export per Druckdialog** → „Als PDF sichern". Plattformübergreifend (Desktop + iOS), weil das OS das CSS rendert — kein Electron, kein Node. Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau.
 - **Seitenechte Vorschau:** zeigt die fertigen A4-Blätter inklusive Seitenumbrüchen.
@@ -37,8 +37,8 @@ Dann: Obsidian → Einstellungen → Community-Plugins → neu laden → **Brief
 
 ## Nutzung
 
-1. Notiz öffnen und mit dem Befehl **„Brief-Frontmatter in Notiz einfügen"** die Felder anlegen (oder siehe [Beispiel](examples/Beispielbrief.md)), dann ausfüllen.
-2. Befehl **„Brief als PDF exportieren / drucken"** (Befehlspalette oder Briefumschlag-Icon). Mit **„Brief-Vorschau öffnen"** vorab seitenecht prüfen.
+1. Notiz öffnen und mit dem Befehl **Insert letter frontmatter into note** die Felder anlegen (oder siehe [Beispiel](examples/Beispielbrief.md)), dann ausfüllen.
+2. Befehl **Export letter as PDF / print** (Befehlspalette oder Briefumschlag-Icon). Mit **Open letter preview** vorab seitenecht prüfen.
 3. Im Druckdialog **„Als PDF sichern"** wählen (macOS: PDF-Dropdown; iOS: Teilen → „In Dateien sichern"), Skalierung auf 100 % lassen.
 
 Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gerendert.
@@ -51,7 +51,7 @@ Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gere
 
 ## Theming
 
-Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Für Feinschliff darüber hinaus läuft das Aussehen komplett über CSS Custom Properties (Design-Tokens): In **Einstellungen → Erweitert → „Preset einfügen"** gibt es einen kommentierten Startpunkt, alternativ [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.md](docs/reference/theming.md).
+Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Für Feinschliff darüber hinaus läuft das Aussehen komplett über CSS Custom Properties (Design-Tokens): In **Einstellungen → Advanced → Insert preset** gibt es einen kommentierten Startpunkt, alternativ [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.md](docs/reference/theming.md).
 
 ## Lizenz
 

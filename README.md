@@ -14,7 +14,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 
 - **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international).
 - **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
-- **Metadata from frontmatter:** recipient and sender as YAML lists, subject, salutation, closing, date, info block (incl. tax number + free-form rows), enclosures — German and English field aliases. The command **“Brief-Frontmatter in Notiz einfügen”** scaffolds the fields; the settings tab shows a field reference.
+- **Metadata from frontmatter:** recipient and sender as YAML lists, subject, salutation, closing, date, info block (incl. tax number + free-form rows), enclosures — German and English field aliases. The command **Insert letter frontmatter into note** scaffolds the fields; the settings tab shows a field reference.
 - **Sender profile** in the settings, overridable per letter (list `absender` or individual fields).
 - **PDF export via the print dialog** → “Save as PDF”. Cross-platform (desktop + iOS) because the OS renders the CSS — no Electron, no Node. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact.
 - **Paginated preview:** shows the final A4 sheets including page breaks.
@@ -37,8 +37,8 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Briefk
 
 ## Usage
 
-1. Open a note and scaffold the fields with **“Brief-Frontmatter in Notiz einfügen”** (or see the [example](examples/Beispielbrief.md)), then fill them in.
-2. Run **“Brief als PDF exportieren / drucken”** (command palette or the envelope ribbon icon). Use **“Brief-Vorschau öffnen”** for a paginated preview first.
+1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](examples/Beispielbrief.md)), then fill them in.
+2. Run **Export letter as PDF / print** (command palette or the envelope ribbon icon). Use **Open letter preview** for a paginated preview first.
 3. In the print dialog choose **Save as PDF** (macOS: PDF dropdown; iOS: Share → Save to Files); keep scaling at 100%.
 
 The note body below the frontmatter is the letter text and is rendered as Markdown.
@@ -51,7 +51,7 @@ The note body below the frontmatter is the letter text and is rendered as Markdo
 
 ## Theming
 
-Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): open **Settings → Erweitert → “Preset einfügen”** for a commented starter, or copy [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
+Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): open **Settings → Advanced → Insert preset** for a commented starter, or copy [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
 
 ## Development
 

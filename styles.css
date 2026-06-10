@@ -20,10 +20,9 @@
   justify-content: flex-end;
   margin-top: 10px;
 }
-.briefkopf-settings-section {
-  margin-top: 1.2em;
-  font-weight: var(--font-bold);
-  color: var(--text-accent);
+.briefkopf-css-input {
+  width: 100%;
+  font-family: var(--font-monospace);
 }
 
 /* compact frontmatter field reference in the settings tab */

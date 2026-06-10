@@ -2,11 +2,11 @@
 
 Das gesamte Aussehen läuft über **CSS Custom Properties** („Design-Tokens").
 Der in den Einstellungen gewählte **Stil** (Sachlich / Klassisch / Technisch)
-setzt die Token-Defaults; dein optionales Feld **Eigenes CSS** wird *danach*
+setzt die Token-Defaults; dein optionales Feld **Custom CSS** wird *danach*
 geladen und gewinnt. Du überschreibst also einfach die Tokens, die du ändern
 willst — für die meisten Anpassungen reicht aber schon die Stil-Auswahl.
 
-Schnellstart: **Einstellungen → Erweitert → „Preset einfügen"** lädt einen
+Schnellstart: **Einstellungen → Advanced → Insert preset** lädt einen
 kommentierten Startpunkt (Token-Body identisch mit
 [`presets/briefkopf-theme.css`](../../presets/briefkopf-theme.css)).
 
@@ -50,7 +50,7 @@ Papierpositionen exakt stimmen.
 | `--bk-page-width` / `--bk-page-height` | `210mm` / `297mm` | — |
 | `--bk-margin-left` / `--bk-margin-right` | `25mm` / `20mm` | — |
 | `--bk-print-margin-top` / `--bk-print-margin-bottom` | `10mm` / `20mm` (Seite 1; Folgeseiten oben `25mm`) | — |
-| `--bk-print-offset` | `0mm` (Einstellung „Druckversatz oben") | — |
+| `--bk-print-offset` | `0mm` (Einstellung **Print offset top**) | — |
 | `--bk-din-head-top` | `14mm` (+ Versatz) | `12mm` |
 | `--bk-din-address-top` | `45mm` (+ Versatz) | `27mm` |
 | `--bk-din-address-left` | `25mm` | — |

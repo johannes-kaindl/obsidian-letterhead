@@ -13,16 +13,16 @@ aktivieren.
 
 Einstellungen → **Briefkopf**:
 
-- **Absender-Profil** ausfüllen (Name, Firma, Straße, PLZ + Ort, Telefon,
+- **Sender profile** ausfüllen (Name, Firma, Straße, PLZ + Ort, Telefon,
   E-Mail, Website). Gilt für alle Briefe, pro Brief überschreibbar.
-- **Stil** wählen: Sachlich-modern, Klassisch-seriös oder Technisch-präzise.
-- **Infozeile**: „Vollständig" (Infoblock mit Zeichen/Datum) oder „Nur Datum"
+- **Style** wählen: Sachlich (sans), Klassisch (serif) oder Technisch (mono).
+- **Info line**: „Full" (Infoblock mit Zeichen/Datum) oder „Date only"
   (schlichte Orts-/Datumszeile, z. B. für Bewerbungen und Privatpost).
 
 ## 3. Eine Brief-Notiz anlegen
 
-Neue Notiz öffnen, dann Befehlspalette → **„Brief-Frontmatter in Notiz
-einfügen"** — das legt die wichtigsten Felder an (auch als Button in den
+Neue Notiz öffnen, dann Befehlspalette → **Insert letter frontmatter into
+note** — das legt die wichtigsten Felder an (auch als Button in den
 Einstellungen unter „Frontmatter"). Ausfüllen, darunter den Brieftext schreiben:
 
 ```markdown
@@ -51,12 +51,12 @@ liegt unter [`examples/Beispielbrief.md`](../examples/Beispielbrief.md).
 
 ## 4. Vorschau prüfen
 
-Befehlspalette → **„Brief-Vorschau öffnen"**. Die Vorschau zeigt die fertigen
+Befehlspalette → **Open letter preview**. Die Vorschau zeigt die fertigen
 A4-Seiten inklusive Seitenumbrüchen — so siehst du das Layout, ohne zu drucken.
 
 ## 5. Als PDF exportieren
 
-Befehlspalette oder Briefumschlag-Icon → **„Brief als PDF exportieren / drucken"** →
+Befehlspalette oder Briefumschlag-Icon → **Export letter as PDF / print** →
 im Druckdialog **„Als PDF sichern"**.
 
 - **macOS:** PDF-Dropdown unten links → „Als PDF sichern".
@@ -71,7 +71,7 @@ anpassen.
 An den Falzmarken (links, bei 105/210 mm) falten und so ins
 DIN-lang-Fensterkuvert stecken, dass die Anschrift im Fenster liegt. Sitzt sie
 bei deinem Kuvert ein paar Millimeter zu hoch, hilft die Einstellung
-**Druckversatz oben** (2–4 mm).
+**Print offset top (mm)** (2–4 mm).
 
 ## Weiter
 

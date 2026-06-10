@@ -5,7 +5,7 @@ Plugin-Einstellungen (Absender, Stil, Grußformel, Datum = heute). Schlüssel si
 case-insensitive; `_`, `-`, `.` und Leerzeichen werden ignoriert
 (`Ihr Zeichen` = `ihr_zeichen` = `ihrzeichen`).
 
-Schnellstart: Der Befehl **„Brief-Frontmatter in Notiz einfügen"** (auch als
+Schnellstart: Der Befehl **Insert letter frontmatter into note** (auch als
 Button in den Einstellungen unter „Frontmatter") ergänzt die wichtigsten Felder
 in der aktiven Notiz, ohne vorhandene Werte zu überschreiben. Die Einstellungen
 zeigen zusätzlich eine kompakte Feldübersicht.
@@ -20,12 +20,12 @@ zeigen zusätzlich eine kompakte Feldübersicht.
 | `gruss` | `grußformel`, `grussformel`, `closing`, `signoff` | Grußformel; Default aus Einstellungen. |
 | `unterschrift` | `signatur`, `signature`, `gezeichnet` | Name unter dem Gruß; Default = Absendername. |
 | `ort` | `place`, `stadt`, `city` | Ort für die Orts-/Datumszeile. |
-| `datum` | `date` | ISO `2026-06-09` empfohlen; fehlt = heute. Formatierung über `Datums-Locale`. |
+| `datum` | `date` | ISO `2026-06-09` empfohlen; fehlt = heute. Formatierung über die Einstellung **Date locale**. |
 | `anlagen` | `anlage`, `attachments`, `enclosures` | Anlagenvermerk unter der Unterschrift — Liste, ein Punkt pro Anlage. Bei genau einem Eintrag lautet das Label „Anlage", sonst „Anlagen". |
 
 ## Design pro Brief
 
-Überschreibt die Einstellungen **Stil** und **Infozeile** für diesen einen Brief.
+Überschreibt die Einstellungen **Style** und **Info line** für diesen einen Brief.
 
 | Feld | Aliasse | Werte |
 |------|---------|-------|
