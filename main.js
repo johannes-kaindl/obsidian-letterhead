@@ -209,11 +209,17 @@ function arrayBufferToBase64(buf) {
  *  with a DIN-long window envelope — change them only deliberately.
  * ------------------------------------------------------------------ */
 
+/* Fixed @page margins: printers cannot print borderless, and without page
+   margins multi-page letters break right at the paper edge. All DIN tokens
+   stay paper-relative; the components subtract the top margin internally. */
+const PRINT_MARGIN_TOP_MM = 10;
+const PRINT_MARGIN_BOTTOM_MM = 15;
+
 function buildCss(s, stilKey) {
   const stil = STILE[normStil(stilKey) || 'sachlich'] || STILE.sachlich;
   const t = stil.tokens;
   const form = s.dinForm === 'A'
-    ? { headTop: '10mm', f1: '87mm', f2: '192mm', addrTop: '27mm', infoTop: '32mm' }
+    ? { headTop: '12mm', f1: '87mm', f2: '192mm', addrTop: '27mm', infoTop: '32mm' }
     : { headTop: '14mm', f1: '105mm', f2: '210mm', addrTop: '45mm', infoTop: '50mm' };
   const font = String(s.fontFamily || '').trim() || t.fontFamily;
   const fs = Number(s.fontSizePt) || t.fontSizePt;
@@ -221,9 +227,13 @@ function buildCss(s, stilKey) {
 
   return `
   :root{
-    /* --- Page geometry (DIN-critical: envelope-window alignment) --- */
+    /* --- Page geometry (DIN-critical: envelope-window alignment) ---
+       All positions are measured from the PAPER edge; the components
+       subtract --bk-print-margin-top (the @page margin) internally. */
     --bk-page-width:210mm; --bk-page-height:297mm;
     --bk-margin-left:25mm; --bk-margin-right:20mm;
+    --bk-print-margin-top:${PRINT_MARGIN_TOP_MM}mm;
+    --bk-print-margin-bottom:${PRINT_MARGIN_BOTTOM_MM}mm;
     --bk-print-offset:${offset}mm;
     --bk-din-head-top:calc(${form.headTop} + var(--bk-print-offset));
     --bk-din-address-top:calc(${form.addrTop} + var(--bk-print-offset)); --bk-din-address-left:25mm;
@@ -252,18 +262,21 @@ function buildCss(s, stilKey) {
     --bk-block-gap:${t.blockGap};          /* gap between letter blocks */
     --bk-signature-gap:${t.signatureGap};  /* room for a handwritten signature */
   }
-  .bk-letter{ position:relative; box-sizing:border-box; width:var(--bk-page-width); min-height:var(--bk-page-height);
+  .bk-letter{ position:relative; box-sizing:border-box; width:var(--bk-page-width);
+    min-height:calc(var(--bk-page-height) - var(--bk-print-margin-top) - var(--bk-print-margin-bottom));
     margin:0 auto; background:#fff; color:var(--bk-color-text);
     font-family:var(--bk-font-family); font-size:var(--bk-font-size); line-height:var(--bk-line-height); }
   .bk-letter *{ box-sizing:border-box; }
 
-  /* fold + hole marks (left margin / Heftrand) */
+  /* fold + hole marks (left margin / Heftrand) — paper-true positions */
   .bk-mark{ position:absolute; left:0; width:5mm; height:0; border-top:0.3mm solid var(--bk-color-rule); }
   .bk-mark.bk-lo{ width:8mm; }
-  .bk-f1{ top:var(--bk-din-fold-1); } .bk-f2{ top:var(--bk-din-fold-2); } .bk-lo{ top:var(--bk-din-hole); }
+  .bk-f1{ top:calc(var(--bk-din-fold-1) - var(--bk-print-margin-top)); }
+  .bk-f2{ top:calc(var(--bk-din-fold-2) - var(--bk-print-margin-top)); }
+  .bk-lo{ top:calc(var(--bk-din-hole) - var(--bk-print-margin-top)); }
 
   /* ---- DIN 5008 layout ---- */
-  .bk-din .bk-head{ position:absolute; top:var(--bk-din-head-top);
+  .bk-din .bk-head{ position:absolute; top:calc(var(--bk-din-head-top) - var(--bk-print-margin-top));
     left:var(--bk-margin-left); right:var(--bk-margin-right);
     display:flex; justify-content:space-between; align-items:flex-end; gap:12mm;
     padding-bottom:3mm; border-bottom:0.3mm solid var(--bk-color-hairline); }
@@ -274,27 +287,31 @@ function buildCss(s, stilKey) {
   .bk-din .bk-head-zusatz{ font-size:9pt; color:var(--bk-color-muted); margin-top:1mm; }
   .bk-din .bk-head-contact{ text-align:right; font-size:8.5pt; line-height:1.5; color:var(--bk-color-muted); }
 
-  .bk-din .bk-address{ position:absolute; top:var(--bk-din-address-top); left:var(--bk-din-address-left);
+  .bk-din .bk-address{ position:absolute; top:calc(var(--bk-din-address-top) - var(--bk-print-margin-top));
+    left:var(--bk-din-address-left);
     width:var(--bk-din-address-width); height:var(--bk-din-address-height); overflow:hidden; }
   .bk-din .bk-return{ font-size:7pt; line-height:1.3; color:var(--bk-color-muted);
     padding-bottom:1.2mm; border-bottom:0.25mm solid var(--bk-color-rule);
     margin-bottom:4.5mm; white-space:nowrap; overflow:hidden; }
   .bk-din .bk-recipient{ white-space:pre-line; line-height:1.45; }
 
-  .bk-din .bk-infoblock{ position:absolute; top:var(--bk-din-info-top); right:var(--bk-margin-right);
+  .bk-din .bk-infoblock{ position:absolute; top:calc(var(--bk-din-info-top) - var(--bk-print-margin-top));
+    right:var(--bk-margin-right);
     width:var(--bk-din-info-width); font-size:9pt; line-height:1.35; }
   .bk-din .bk-info-item{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:0.7mm 0; }
   .bk-din .bk-info-label{ color:var(--bk-color-muted); white-space:nowrap; }
   .bk-din .bk-info-value{ text-align:right; }
 
-  .bk-din .bk-dateline{ position:absolute; top:var(--bk-din-dateline-top); right:var(--bk-margin-right);
+  .bk-din .bk-dateline{ position:absolute; top:calc(var(--bk-din-dateline-top) - var(--bk-print-margin-top));
+    right:var(--bk-margin-right);
     text-align:right; font-size:var(--bk-font-size); line-height:1.4; white-space:nowrap; }
 
   .bk-din .bk-content{ margin-left:var(--bk-margin-left); margin-right:var(--bk-margin-right);
-    padding-top:var(--bk-din-content-top); }
+    padding-top:calc(var(--bk-din-content-top) - var(--bk-print-margin-top)); }
 
   /* ---- Modern layout ---- */
-  .bk-modern{ padding:var(--bk-margin-left) var(--bk-margin-right); }
+  .bk-modern{ padding:calc(var(--bk-margin-left) - var(--bk-print-margin-top)) var(--bk-margin-right)
+    calc(var(--bk-margin-left) - var(--bk-print-margin-bottom)); }
   .bk-modern .bk-m-head{ display:flex; justify-content:space-between; align-items:flex-start;
     gap:10mm; margin-bottom:16mm; }
   .bk-modern .bk-m-logo{ max-height:22mm; max-width:80mm; }
@@ -325,10 +342,12 @@ function buildCss(s, stilKey) {
 const PRINT_WRAPPER_CSS = `
   #briefkopf-print-root{ display:none; }
   @media print{
-    @page{ size:A4; margin:0; }
+    @page{ size:A4; margin:${PRINT_MARGIN_TOP_MM}mm 0 ${PRINT_MARGIN_BOTTOM_MM}mm 0; }
     html, body{ margin:0 !important; padding:0 !important; background:#fff !important; height:auto !important; }
     body > *:not(#briefkopf-print-root){ display:none !important; }
     #briefkopf-print-root{ display:block !important; position:static !important; }
+    .bk-body p{ orphans:2; widows:2; }
+    .bk-signature, .bk-enclosures, .bk-closing{ break-inside:avoid; }
   }
 `;
 
@@ -338,6 +357,14 @@ const SCREEN_PREVIEW_CSS = `
   /* flex-shrink would squeeze the mm-sized page on narrow windows —
      scaling happens via body zoom (see fitPreview) */
   .bk-letter{ flex-shrink:0; margin:0 auto; box-shadow:0 2px 14px rgba(0,0,0,.35); }
+  /* simulate the @page print margins so the preview shows the full sheet
+     (white borders shift the absolutely positioned children like the
+     printed page margins do) */
+  .bk-letter{
+    border-top:var(--bk-print-margin-top) solid #fff;
+    border-bottom:var(--bk-print-margin-bottom) solid #fff;
+    min-height:var(--bk-page-height);
+  }
 `;
 
 /* Commented starter the user can load into the "Eigenes CSS" field via the
@@ -857,7 +884,7 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
       .addToggle((t) => t.setValue(s.showHoleMark).onChange(async (v) => { s.showHoleMark = v; await this.plugin.saveSettings(); }));
 
     new obsidian.Setting(containerEl).setName('Druckversatz oben (mm)')
-      .setDesc('Schiebt den Briefinhalt nach unten — falls der Drucker oben abschneidet oder die Anschrift im Kuvertfenster zu hoch sitzt (3–5 mm probieren). Falt-/Lochmarken bleiben unverändert.')
+      .setDesc('Feinjustierung: schiebt den Briefinhalt nach unten, falls die Anschrift im Kuvertfenster zu hoch sitzt (2–4 mm probieren). Falt-/Lochmarken bleiben unverändert.')
       .addText((t) => t.setPlaceholder('0').setValue(s.printOffsetTopMm ? String(s.printOffsetTopMm) : '')
         .onChange(async (v) => {
           const n = Number(String(v).replace(',', '.'));

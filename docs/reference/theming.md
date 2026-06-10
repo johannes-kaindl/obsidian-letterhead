@@ -38,12 +38,19 @@ Diese Werte halten die Anschrift im Sichtfenster eines DIN-lang-Kuverts. Nur
 ändern, wenn dein Kuvert abweicht. Positionen hängen außerdem an der
 Einstellung **DIN-5008-Form** (A/B).
 
+Alle Positionen sind **ab Papierkante** gemessen. Gedruckt wird mit festen
+`@page`-Rändern (oben 10 mm, unten 15 mm — Tokens `--bk-print-margin-top`/
+`-bottom`), damit Drucker nichts abschneiden und Seitenumbrüche Ränder haben;
+die Komponenten ziehen den oberen Rand intern wieder ab, sodass die
+Papierpositionen exakt stimmen.
+
 | Token | Default (Form B) | Form A |
 |-------|------------------|--------|
 | `--bk-page-width` / `--bk-page-height` | `210mm` / `297mm` | — |
 | `--bk-margin-left` / `--bk-margin-right` | `25mm` / `20mm` | — |
+| `--bk-print-margin-top` / `--bk-print-margin-bottom` | `10mm` / `15mm` | — |
 | `--bk-print-offset` | `0mm` (Einstellung „Druckversatz oben") | — |
-| `--bk-din-head-top` | `14mm` (+ Versatz) | `10mm` |
+| `--bk-din-head-top` | `14mm` (+ Versatz) | `12mm` |
 | `--bk-din-address-top` | `45mm` (+ Versatz) | `27mm` |
 | `--bk-din-address-left` | `25mm` | — |
 | `--bk-din-address-width` / `--bk-din-address-height` | `85mm` / `40mm` | — |

@@ -29,9 +29,9 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   `-weight`, `-spacing`, `-transform`) sowie `--bk-din-head-top`,
   `--bk-din-info-top`, `--bk-din-info-width`, `--bk-din-dateline-top`.
 - Einstellung **„Druckversatz oben (mm)"** (Token `--bk-print-offset`):
-  schiebt den Briefinhalt nach unten, wenn der Drucker oben abschneidet oder
-  die Anschrift im Kuvertfenster zu hoch sitzt; Falt-/Lochmarken bleiben
-  papierbezogen unverändert.
+  Feinjustierung, falls die Anschrift im Kuvertfenster zu hoch sitzt; schiebt
+  den Briefinhalt nach unten, Falt-/Lochmarken bleiben papierbezogen
+  unverändert.
 
 ### Changed
 - **DIN-Briefkopf neu**: Name (oder Logo) links, Kontaktdaten rechts, Hairline
@@ -52,6 +52,12 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   1.0-Namen bleiben als Aliasse im Markup erhalten.
 
 ### Fixed
+- **Feste Druckränder** (`@page` oben 10 mm / unten 15 mm): Drucker ohne
+  randlosen Druck schneiden den Briefkopf nicht mehr ab, und mehrseitige
+  Briefe brechen mit sauberen Rändern um statt an der Blattkante (zusätzlich
+  `orphans`/`widows`; Gruß/Unterschrift/Anlagen bleiben zusammen). Alle
+  DIN-Positionen bleiben papierbezogen exakt — die Komponenten ziehen den
+  Seitenrand intern ab; die Vorschau simuliert ihn.
 - **Brief-Vorschau**: Die A4-Seite wird jetzt vollständig ins Vorschaufenster
   eingepasst (Zoom-to-fit, nie über 100 %). Vorher wurde die mm-breite Seite
   bei schmalen Fenstern vom Flex-Layout gestaucht — Texte brachen zu früh um

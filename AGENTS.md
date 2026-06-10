@@ -53,6 +53,11 @@ Es gibt bewusst **keinen** build/test/lint/typecheck-Schritt (siehe Abweichungen
   beibehalten (siehe `renderMarkdownToHtml`).
 - DIN-Maße (Kopf 45/27 mm, Falz 105/210 bzw. 87/192 mm, Loch 148,5 mm) sind
   kuvert-kritisch; Änderungen nur mit Render-Check (siehe `tools/render-hero.sh`).
+- Gedruckt wird mit festen `@page`-Rändern (10 mm oben / 15 mm unten — Drucker-
+  Beschnitt + Seitenumbruch-Ränder). Die `--bk-din-*`-Tokens bleiben trotzdem
+  **papierbezogen**: die Komponenten ziehen `--bk-print-margin-top` per `calc()`
+  ab, die Vorschau simuliert die Ränder als weiße `border`. Beim Ändern von
+  Positionen immer dieses Schema beibehalten.
 - `main.js` ist die Quelle — nicht minifizieren/bundeln und committen.
 
 ## Memory
