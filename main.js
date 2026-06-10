@@ -42,6 +42,7 @@ const DEFAULT_SETTINGS = {
   fontSizePt: '',            // empty => style default
   locale: 'de-DE',
   defaultGruss: 'Mit freundlichen Grüßen',
+  printOffsetTopMm: 0,       // shifts the letter content down (fold marks stay paper-true)
   customCss: ''
 };
 
@@ -212,23 +213,25 @@ function buildCss(s, stilKey) {
   const stil = STILE[normStil(stilKey) || 'sachlich'] || STILE.sachlich;
   const t = stil.tokens;
   const form = s.dinForm === 'A'
-    ? { headTop: '8mm', f1: '87mm', f2: '192mm', addrTop: '27mm', infoTop: '32mm' }
+    ? { headTop: '10mm', f1: '87mm', f2: '192mm', addrTop: '27mm', infoTop: '32mm' }
     : { headTop: '14mm', f1: '105mm', f2: '210mm', addrTop: '45mm', infoTop: '50mm' };
   const font = String(s.fontFamily || '').trim() || t.fontFamily;
   const fs = Number(s.fontSizePt) || t.fontSizePt;
+  const offset = Number(s.printOffsetTopMm) || 0;
 
   return `
   :root{
     /* --- Page geometry (DIN-critical: envelope-window alignment) --- */
     --bk-page-width:210mm; --bk-page-height:297mm;
     --bk-margin-left:25mm; --bk-margin-right:20mm;
-    --bk-din-head-top:${form.headTop};
-    --bk-din-address-top:${form.addrTop}; --bk-din-address-left:25mm;
+    --bk-print-offset:${offset}mm;
+    --bk-din-head-top:calc(${form.headTop} + var(--bk-print-offset));
+    --bk-din-address-top:calc(${form.addrTop} + var(--bk-print-offset)); --bk-din-address-left:25mm;
     --bk-din-address-width:85mm; --bk-din-address-height:40mm;
-    --bk-din-info-top:${form.infoTop}; --bk-din-info-width:64mm;
-    --bk-din-dateline-top:84mm;
+    --bk-din-info-top:calc(${form.infoTop} + var(--bk-print-offset)); --bk-din-info-width:64mm;
+    --bk-din-dateline-top:calc(84mm + var(--bk-print-offset));
     --bk-din-fold-1:${form.f1}; --bk-din-fold-2:${form.f2}; --bk-din-hole:148.5mm;
-    --bk-din-content-top:98.46mm;
+    --bk-din-content-top:calc(98.46mm + var(--bk-print-offset));
     /* --- Typography (safe to customize) --- */
     --bk-font-family:${font};
     --bk-font-size:${fs}pt;
@@ -852,6 +855,15 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
     new obsidian.Setting(containerEl).setName('Lochmarke')
       .setDesc('Markierung bei 148,5 mm zum Abheften.')
       .addToggle((t) => t.setValue(s.showHoleMark).onChange(async (v) => { s.showHoleMark = v; await this.plugin.saveSettings(); }));
+
+    new obsidian.Setting(containerEl).setName('Druckversatz oben (mm)')
+      .setDesc('Schiebt den Briefinhalt nach unten — falls der Drucker oben abschneidet oder die Anschrift im Kuvertfenster zu hoch sitzt (3–5 mm probieren). Falt-/Lochmarken bleiben unverändert.')
+      .addText((t) => t.setPlaceholder('0').setValue(s.printOffsetTopMm ? String(s.printOffsetTopMm) : '')
+        .onChange(async (v) => {
+          const n = Number(String(v).replace(',', '.'));
+          s.printOffsetTopMm = isFinite(n) && n > 0 ? Math.min(n, 25) : 0;
+          await this.plugin.saveSettings();
+        }));
 
     new obsidian.Setting(containerEl).setName('Logo anzeigen')
       .setDesc('Ersetzt den Namen im Briefkopf durch ein Bild.')

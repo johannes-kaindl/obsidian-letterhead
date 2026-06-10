@@ -39,6 +39,7 @@ Kontaktdaten rechts.
 |-------------|-----------|
 | **Faltmarken** | Zwei Markierungen zum Falten fürs Fensterkuvert. |
 | **Lochmarke** | Markierung bei 148,5 mm zum Abheften. |
+| **Druckversatz oben (mm)** | Schiebt den gesamten Briefinhalt nach unten (Standard 0) — falls der Drucker oben abschneidet oder die Anschrift im Kuvertfenster zu hoch sitzt; 3–5 mm probieren. Falt-/Lochmarken bleiben papierbezogen unverändert, damit die Faltung stimmt. |
 | **Logo anzeigen** + **Logo-Pfad** | Bild statt Name im Briefkopf; vault-relativer Pfad (z. B. `assets/logo.png`), als data-URL eingebettet. |
 
 ## Typografie & Sonstiges

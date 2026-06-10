@@ -28,6 +28,10 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 - Neue Design-Tokens für den Briefkopf-Namen (`--bk-name-font`, `-size`,
   `-weight`, `-spacing`, `-transform`) sowie `--bk-din-head-top`,
   `--bk-din-info-top`, `--bk-din-info-width`, `--bk-din-dateline-top`.
+- Einstellung **„Druckversatz oben (mm)"** (Token `--bk-print-offset`):
+  schiebt den Briefinhalt nach unten, wenn der Drucker oben abschneidet oder
+  die Anschrift im Kuvertfenster zu hoch sitzt; Falt-/Lochmarken bleiben
+  papierbezogen unverändert.
 
 ### Changed
 - **DIN-Briefkopf neu**: Name (oder Logo) links, Kontaktdaten rechts, Hairline

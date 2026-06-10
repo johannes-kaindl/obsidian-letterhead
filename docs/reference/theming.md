@@ -42,8 +42,9 @@ Einstellung **DIN-5008-Form** (A/B).
 |-------|------------------|--------|
 | `--bk-page-width` / `--bk-page-height` | `210mm` / `297mm` | — |
 | `--bk-margin-left` / `--bk-margin-right` | `25mm` / `20mm` | — |
-| `--bk-din-head-top` | `14mm` | `8mm` |
-| `--bk-din-address-top` | `45mm` | `27mm` |
+| `--bk-print-offset` | `0mm` (Einstellung „Druckversatz oben") | — |
+| `--bk-din-head-top` | `14mm` (+ Versatz) | `10mm` |
+| `--bk-din-address-top` | `45mm` (+ Versatz) | `27mm` |
 | `--bk-din-address-left` | `25mm` | — |
 | `--bk-din-address-width` / `--bk-din-address-height` | `85mm` / `40mm` | — |
 | `--bk-din-info-top` | `50mm` | `32mm` |
