@@ -5,8 +5,9 @@
  * Copyright (C) 2026 Johannes Kaindl — AGPL-3.0-or-later
  *
  * Turns the active note into a formatted business letter:
- *   - metadata (sender / recipient / subject / date / reference line) from frontmatter
- *   - two CSS themes: "DIN 5008" (German standard, window-envelope ready) and "Modern"
+ *   - metadata (sender / recipient / subject / date / info block) from frontmatter
+ *   - two layouts: "DIN 5008" (German standard, window-envelope ready) and "Modern"
+ *   - three built-in styles (sachlich / klassisch / technisch), two info-line modes
  *   - PDF export via the OS print dialog  ->  works on desktop AND iPhone/iPad
  *
  * Dependency-free vanilla JS, so this file is also the source — drop it in and go.
@@ -20,6 +21,8 @@ const obsidian = require('obsidian');
 
 const DEFAULT_SETTINGS = {
   theme: 'din5008',          // 'din5008' | 'modern'
+  stil: 'sachlich',          // 'sachlich' | 'klassisch' | 'technisch'
+  infozeile: 'vollstaendig', // 'vollstaendig' (Infoblock) | 'nurdatum' (Orts-/Datumszeile)
   dinForm: 'B',              // 'A' | 'B'  (letterhead 27mm vs 45mm)
   sender: {
     name: '',
@@ -33,15 +36,96 @@ const DEFAULT_SETTINGS = {
   returnAddressLine: '',     // Rücksendeangabe; empty => auto from sender
   showFoldMarks: true,
   showHoleMark: true,
-  showBezugszeichen: true,
   showLogo: false,
   logoPath: '',              // vault-relative path to an image
-  fontFamily: 'Helvetica, Arial, sans-serif',
-  fontSizePt: 11,
+  fontFamily: '',            // empty => style default
+  fontSizePt: '',            // empty => style default
   locale: 'de-DE',
   defaultGruss: 'Mit freundlichen Grüßen',
   customCss: ''
 };
+
+/* ------------------------------------------------------------------ *
+ *  Built-in styles ("Stile")
+ *
+ *  Token sets matching design/css/briefkopf-{A,B,C}.css. No webfonts:
+ *  the plugin must work offline (no network access), so variant C uses
+ *  the system monospace stack instead of an @import.
+ * ------------------------------------------------------------------ */
+
+const MONO_STACK = 'ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
+
+const STILE = {
+  sachlich: {
+    label: 'Sachlich-modern',
+    tokens: {
+      fontFamily: '"Helvetica Neue", Arial, "Inter", system-ui, sans-serif',
+      fontSizePt: 11,
+      lineHeight: '1.45',
+      colorText: '#1a1a1a', colorMuted: '#5a5a5a',
+      colorRule: '#111111', colorHairline: '#cfcfcf',
+      space: '2.6mm', blockGap: '6mm', signatureGap: '16mm',
+      nameFont: 'var(--bk-font-family)', nameSize: '15.5pt',
+      nameWeight: '600', nameSpacing: '0.005em', nameTransform: 'none'
+    },
+    extraCss: '.bk-betreff{ font-weight:700; letter-spacing:0; }'
+  },
+  klassisch: {
+    label: 'Klassisch-seriös',
+    tokens: {
+      fontFamily: '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif',
+      fontSizePt: 11.5,
+      lineHeight: '1.5',
+      colorText: '#1c1a17', colorMuted: '#5a554e',
+      colorRule: '#1c1a17', colorHairline: '#c9c2b6',
+      space: '2.8mm', blockGap: '6.5mm', signatureGap: '17mm',
+      nameFont: 'var(--bk-font-family)', nameSize: '18pt',
+      nameWeight: '600', nameSpacing: '0.005em', nameTransform: 'none'
+    },
+    extraCss: '.bk-betreff{ font-weight:700; }'
+  },
+  technisch: {
+    label: 'Technisch-präzise',
+    tokens: {
+      fontFamily: '"Helvetica Neue", Arial, "Inter", system-ui, sans-serif',
+      fontSizePt: 11,
+      lineHeight: '1.5',
+      colorText: '#15171a', colorMuted: '#6a7078',
+      colorRule: '#15171a', colorHairline: '#d4d7da',
+      space: '2.6mm', blockGap: '6mm', signatureGap: '16mm',
+      nameFont: MONO_STACK, nameSize: '12.5pt',
+      nameWeight: '600', nameSpacing: '0.12em', nameTransform: 'uppercase'
+    },
+    extraCss: `
+      .bk-betreff{ font-weight:600; text-transform:uppercase; letter-spacing:0.07em; font-size:10.5pt; }
+      .bk-din .bk-head-contact{ font-family:${MONO_STACK}; font-size:7.5pt; letter-spacing:0.02em; }
+      .bk-din .bk-info-label{ font-family:${MONO_STACK}; font-size:7pt; letter-spacing:0.08em; text-transform:uppercase; }
+      .bk-din .bk-return{ font-family:${MONO_STACK}; font-size:6.5pt; letter-spacing:0.04em; }
+      .bk-din .bk-dateline{ font-family:${MONO_STACK}; font-size:9pt; letter-spacing:0.04em; }
+      .bk-din .bk-encl-label{ font-family:${MONO_STACK}; font-size:7.5pt; letter-spacing:0.1em; text-transform:uppercase; }
+    `
+  }
+};
+
+/* Accepts setting values and frontmatter spellings: a/b/c, German names,
+   English-ish aliases. Returns a STILE key or null. */
+function normStil(v) {
+  if (v == null) return null;
+  const k = norm(v);
+  if (k === 'a' || k === 'sachlich' || k === 'sachlichmodern' || k === 'modern' || k === 'sans') return 'sachlich';
+  if (k === 'b' || k === 'klassisch' || k === 'klassischserioes' || k === 'klassischseriös' || k === 'classic' || k === 'serif') return 'klassisch';
+  if (k === 'c' || k === 'technisch' || k === 'technischpraezise' || k === 'technischpräzise' || k === 'tech' || k === 'mono') return 'technisch';
+  return null;
+}
+
+/* 'vollstaendig' (full info block) | 'nurdatum' (place + date line). */
+function normInfozeile(v) {
+  if (v == null) return null;
+  const k = norm(v);
+  if (k === 'vollstaendig' || k === 'vollständig' || k === 'voll' || k === 'full' || k === 'infoblock' || k === 'bezugszeichen') return 'vollstaendig';
+  if (k === 'nurdatum' || k === 'datum' || k === 'minimal' || k === 'dateonly' || k === 'date') return 'nurdatum';
+  return null;
+}
 
 /* ------------------------------------------------------------------ *
  *  Frontmatter field resolution (German-first, with aliases)
@@ -55,6 +139,11 @@ const ALIASES = {
   unterschrift:['unterschrift', 'signatur', 'signature', 'gezeichnet'],
   ort:         ['ort', 'place', 'city', 'stadt'],
   datum:       ['datum', 'date'],
+  anlagen:     ['anlagen', 'anlage', 'attachments', 'enclosures'],
+  stil:        ['stil', 'style', 'design', 'variante'],
+  infozeile:   ['infozeile', 'layout'],
+  info:        ['info', 'bezugszeichen', 'infoblock'],
+  steuernummer:['steuernummer', 'steuernr', 'st_nr', 'tax_number'],
   ihrZeichen:  ['ihr_zeichen', 'ihrzeichen', 'your_ref', 'yourref'],
   ihrSchreiben:['ihr_schreiben', 'ihrschreiben', 'ihrschreibenvom', 'your_letter'],
   unserZeichen:['unser_zeichen', 'unserzeichen', 'our_ref', 'ourref'],
@@ -110,45 +199,55 @@ function arrayBufferToBase64(buf) {
 }
 
 /* ------------------------------------------------------------------ *
- *  CSS generation (themes)
+ *  CSS generation (layout + style)
  *
  *  All visual values are exposed as CSS custom properties ("design
- *  tokens") in :root, so the whole look can be re-themed by overriding
- *  tokens in the "Eigenes CSS" setting (see PRESET_CSS / presets/).
+ *  tokens") in :root. The selected Stil provides the token defaults;
+ *  the optional "Eigenes CSS" setting is appended last and wins.
  *  Geometry tokens marked DIN-critical keep the address block aligned
  *  with a DIN-long window envelope — change them only deliberately.
  * ------------------------------------------------------------------ */
 
-function buildCss(s) {
+function buildCss(s, stilKey) {
+  const stil = STILE[normStil(stilKey) || 'sachlich'] || STILE.sachlich;
+  const t = stil.tokens;
   const form = s.dinForm === 'A'
-    ? { head: '27mm', f1: '87mm', f2: '192mm', addrTop: '27mm' }
-    : { head: '45mm', f1: '105mm', f2: '210mm', addrTop: '45mm' };
-  const font = s.fontFamily || 'Helvetica, Arial, sans-serif';
-  const fs = Number(s.fontSizePt) || 11;
+    ? { headTop: '8mm', f1: '87mm', f2: '192mm', addrTop: '27mm', infoTop: '32mm' }
+    : { headTop: '14mm', f1: '105mm', f2: '210mm', addrTop: '45mm', infoTop: '50mm' };
+  const font = String(s.fontFamily || '').trim() || t.fontFamily;
+  const fs = Number(s.fontSizePt) || t.fontSizePt;
 
   return `
   :root{
     /* --- Page geometry (DIN-critical: envelope-window alignment) --- */
     --bk-page-width:210mm; --bk-page-height:297mm;
     --bk-margin-left:25mm; --bk-margin-right:20mm;
-    --bk-din-head-height:${form.head};
+    --bk-din-head-top:${form.headTop};
     --bk-din-address-top:${form.addrTop}; --bk-din-address-left:25mm;
     --bk-din-address-width:85mm; --bk-din-address-height:40mm;
+    --bk-din-info-top:${form.infoTop}; --bk-din-info-width:64mm;
+    --bk-din-dateline-top:84mm;
     --bk-din-fold-1:${form.f1}; --bk-din-fold-2:${form.f2}; --bk-din-hole:148.5mm;
     --bk-din-content-top:98.46mm;
     /* --- Typography (safe to customize) --- */
     --bk-font-family:${font};
     --bk-font-size:${fs}pt;
-    --bk-line-height:1.4;
+    --bk-line-height:${t.lineHeight};
+    /* --- Letterhead name (safe to customize) --- */
+    --bk-name-font:${t.nameFont};
+    --bk-name-size:${t.nameSize};
+    --bk-name-weight:${t.nameWeight};
+    --bk-name-spacing:${t.nameSpacing};
+    --bk-name-transform:${t.nameTransform};
     /* --- Colors (safe to customize) --- */
-    --bk-color-text:#111111;
-    --bk-color-muted:#555555;       /* reference-line labels */
-    --bk-color-rule:#000000;        /* fold/hole marks + return-address underline */
-    --bk-color-hairline:#bbbbbb;    /* reference-line separator */
+    --bk-color-text:${t.colorText};
+    --bk-color-muted:${t.colorMuted};      /* info-block labels, head contact */
+    --bk-color-rule:${t.colorRule};        /* fold/hole marks + return-address underline */
+    --bk-color-hairline:${t.colorHairline};/* letterhead separator */
     /* --- Spacing (safe to customize) --- */
-    --bk-space:2.6mm;               /* base paragraph rhythm */
-    --bk-block-gap:6mm;             /* gap between letter blocks */
-    --bk-signature-gap:16mm;        /* room for a handwritten signature */
+    --bk-space:${t.space};                 /* base paragraph rhythm */
+    --bk-block-gap:${t.blockGap};          /* gap between letter blocks */
+    --bk-signature-gap:${t.signatureGap};  /* room for a handwritten signature */
   }
   .bk-letter{ position:relative; box-sizing:border-box; width:var(--bk-page-width); min-height:var(--bk-page-height);
     margin:0 auto; background:#fff; color:var(--bk-color-text);
@@ -160,48 +259,62 @@ function buildCss(s) {
   .bk-mark.bk-lo{ width:8mm; }
   .bk-f1{ top:var(--bk-din-fold-1); } .bk-f2{ top:var(--bk-din-fold-2); } .bk-lo{ top:var(--bk-din-hole); }
 
-  /* ---- DIN 5008 theme ---- */
-  .bk-din .bk-head{ position:absolute; top:0; left:var(--bk-margin-left); right:var(--bk-margin-right); height:var(--bk-din-head-height);
-    display:flex; align-items:flex-end; justify-content:flex-end; }
-  .bk-din .bk-head img{ max-height:calc(var(--bk-din-head-height) - 4mm); max-width:90mm; }
-  .bk-din .bk-head .bk-head-name{ font-weight:bold; font-size:14pt; }
+  /* ---- DIN 5008 layout ---- */
+  .bk-din .bk-head{ position:absolute; top:var(--bk-din-head-top);
+    left:var(--bk-margin-left); right:var(--bk-margin-right);
+    display:flex; justify-content:space-between; align-items:flex-end; gap:12mm;
+    padding-bottom:3mm; border-bottom:0.3mm solid var(--bk-color-hairline); }
+  .bk-din .bk-head img{ max-height:calc(var(--bk-din-address-top) - var(--bk-din-head-top) - 8mm); max-width:90mm; }
+  .bk-din .bk-head-name{ font-family:var(--bk-name-font); font-size:var(--bk-name-size);
+    font-weight:var(--bk-name-weight); letter-spacing:var(--bk-name-spacing);
+    text-transform:var(--bk-name-transform); line-height:1.1; white-space:nowrap; }
+  .bk-din .bk-head-zusatz{ font-size:9pt; color:var(--bk-color-muted); margin-top:1mm; }
+  .bk-din .bk-head-contact{ text-align:right; font-size:8.5pt; line-height:1.5; color:var(--bk-color-muted); }
 
-  .bk-din .bk-anschrift{ position:absolute; top:var(--bk-din-address-top); left:var(--bk-din-address-left);
+  .bk-din .bk-address{ position:absolute; top:var(--bk-din-address-top); left:var(--bk-din-address-left);
     width:var(--bk-din-address-width); height:var(--bk-din-address-height); overflow:hidden; }
-  .bk-din .bk-ruecksende{ font-size:7pt; line-height:1.1; border-bottom:0.2mm solid var(--bk-color-rule);
-    padding-bottom:0.5mm; margin-bottom:3mm; display:inline-block; }
-  .bk-din .bk-empf{ white-space:pre-line; line-height:1.3; }
+  .bk-din .bk-return{ font-size:7pt; line-height:1.3; color:var(--bk-color-muted);
+    padding-bottom:1.2mm; border-bottom:0.25mm solid var(--bk-color-rule);
+    margin-bottom:4.5mm; white-space:nowrap; overflow:hidden; }
+  .bk-din .bk-recipient{ white-space:pre-line; line-height:1.45; }
 
-  .bk-din .bk-info{ position:absolute; top:var(--bk-din-address-top); right:var(--bk-margin-right); width:72mm;
-    font-size:9pt; line-height:1.3; }
-  .bk-din .bk-info-name{ font-weight:bold; }
-  .bk-din .bk-info-sp{ height:3mm; }
+  .bk-din .bk-infoblock{ position:absolute; top:var(--bk-din-info-top); right:var(--bk-margin-right);
+    width:var(--bk-din-info-width); font-size:9pt; line-height:1.35; }
+  .bk-din .bk-info-item{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:0.7mm 0; }
+  .bk-din .bk-info-label{ color:var(--bk-color-muted); white-space:nowrap; }
+  .bk-din .bk-info-value{ text-align:right; }
 
-  .bk-din .bk-content{ margin-left:var(--bk-margin-left); margin-right:var(--bk-margin-right); padding-top:var(--bk-din-content-top); }
-  .bk-din .bk-date{ text-align:right; margin-bottom:var(--bk-block-gap); }
-  .bk-din .bk-bezug{ display:flex; gap:7mm; font-size:8pt; border-bottom:0.2mm solid var(--bk-color-hairline);
-    padding-bottom:1mm; margin-bottom:7mm; }
-  .bk-din .bk-bezug .bk-col .lbl{ display:block; font-size:7pt; color:var(--bk-color-muted); }
+  .bk-din .bk-dateline{ position:absolute; top:var(--bk-din-dateline-top); right:var(--bk-margin-right);
+    text-align:right; font-size:var(--bk-font-size); line-height:1.4; white-space:nowrap; }
 
-  /* ---- Modern theme ---- */
+  .bk-din .bk-content{ margin-left:var(--bk-margin-left); margin-right:var(--bk-margin-right);
+    padding-top:var(--bk-din-content-top); }
+
+  /* ---- Modern layout ---- */
   .bk-modern{ padding:var(--bk-margin-left) var(--bk-margin-right); }
   .bk-modern .bk-m-head{ display:flex; justify-content:space-between; align-items:flex-start;
     gap:10mm; margin-bottom:16mm; }
   .bk-modern .bk-m-logo{ max-height:22mm; max-width:80mm; }
   .bk-modern .bk-m-sender{ text-align:right; font-size:9pt; line-height:1.35; margin-left:auto; }
-  .bk-modern .bk-m-name{ font-weight:bold; font-size:12pt; }
+  .bk-modern .bk-m-name{ font-family:var(--bk-name-font); font-weight:var(--bk-name-weight);
+    letter-spacing:var(--bk-name-spacing); text-transform:var(--bk-name-transform); font-size:12pt; }
   .bk-modern .bk-m-recipient{ white-space:pre-line; line-height:1.35; margin-bottom:12mm; }
   .bk-modern .bk-m-date{ text-align:right; margin-bottom:10mm; }
 
   /* ---- shared body blocks ---- */
-  .bk-betreff{ font-weight:bold; margin:0 0 5mm; }
-  .bk-anrede{ margin:0 0 3mm; }
+  .bk-betreff{ font-weight:bold; margin:0 0 var(--bk-block-gap); }
+  .bk-greeting{ margin:0 0 3mm; }
   .bk-body p{ margin:0 0 var(--bk-space); }
   .bk-body ul, .bk-body ol{ margin:0 0 var(--bk-space); padding-left:6mm; }
   .bk-body h1, .bk-body h2, .bk-body h3{ font-size:1em; font-weight:bold; margin:4mm 0 2mm; }
   .bk-body{ text-align:left; }
-  .bk-gruss{ margin-top:var(--bk-block-gap); }
-  .bk-signatur{ margin-top:var(--bk-signature-gap); white-space:pre-line; }
+  .bk-closing{ margin-top:var(--bk-block-gap); }
+  .bk-signature{ margin-top:var(--bk-signature-gap); white-space:pre-line; }
+  .bk-enclosures{ margin-top:14mm; font-size:9.5pt; line-height:1.45; color:var(--bk-color-muted); }
+  .bk-encl-label{ color:var(--bk-color-text); margin-bottom:1.6mm; }
+  .bk-encl-list{ list-style:none; margin:0; padding:0; }
+  .bk-encl-list li{ padding:0.3mm 0; }
+  ${stil.extraCss || ''}
   ${s.customCss || ''}
   `;
 }
@@ -225,10 +338,11 @@ const SCREEN_PREVIEW_CSS = `
 /* Commented starter the user can load into the "Eigenes CSS" field via the
    settings button. Kept identical to presets/briefkopf-theme.css. */
 const PRESET_CSS = `/* =====================================================================
-   Briefkopf – CSS-Preset (Best-Practice-Startpunkt zum Selbstanpassen)
+   Briefkopf – CSS-Preset (optionaler Feinschliff zum Selbstanpassen)
    ---------------------------------------------------------------------
-   - Dieses CSS wird NACH dem Theme geladen und überschreibt es.
-   - Du änderst v. a. die Design-Tokens unten (CSS Custom Properties).
+   - Stil (Sachlich/Klassisch/Technisch) und Infozeile wählst du direkt
+     in den Einstellungen — dieses CSS brauchst du nur für Feinheiten.
+   - Es wird NACH Stil + Layout geladen und überschreibt beide.
    - "SICHER" = frei anpassbar. "DIN-KRITISCH" = Fensterkuvert-Position.
    - Workflow: Token ändern -> Befehl "Brief-Vorschau" -> prüfen.
    ===================================================================== */
@@ -238,11 +352,17 @@ const PRESET_CSS = `/* =========================================================
   --bk-font-size: 11pt;          /* 10-12pt üblich */
   --bk-line-height: 1.45;        /* 1.3-1.6 */
 
+  /* ---------- SICHER: Name im Briefkopf ---------- */
+  --bk-name-size: 15.5pt;
+  --bk-name-weight: 600;
+  --bk-name-spacing: 0.005em;
+  --bk-name-transform: none;     /* z. B. uppercase */
+
   /* ---------- SICHER: Farben ---------- */
   --bk-color-text: #1a1a1a;      /* Fließtext */
-  --bk-color-muted: #555;        /* Labels der Bezugszeichenzeile */
+  --bk-color-muted: #555;        /* Labels im Infoblock, Kopf-Kontakt */
   --bk-color-rule: #000;         /* Faltmarken + Rücksende-Unterstrich */
-  --bk-color-hairline: #c8c8c8;  /* Trennlinie der Bezugszeile */
+  --bk-color-hairline: #c8c8c8;  /* Trennlinie unterm Briefkopf */
 
   /* ---------- SICHER: Abstände ---------- */
   --bk-space: 2.6mm;             /* Absatz-Rhythmus */
@@ -260,15 +380,7 @@ const PRESET_CSS = `/* =========================================================
 
 /* ---------- Beispiel: einzelne Komponenten überschreiben ----------
 .bk-betreff { color: #0a7d3c; }
-.bk-din .bk-head .bk-head-name { letter-spacing: .3px; }
-*/
-
-/* ---------- Beispiel: klassischer Serifen-Brief ----------
-:root {
-  --bk-font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
-  --bk-font-size: 11.5pt;
-  --bk-line-height: 1.5;
-}
+.bk-din .bk-head-name { letter-spacing: .3px; }
 */
 `;
 
@@ -299,6 +411,32 @@ class BriefkopfPlugin extends obsidian.Plugin {
     const data = (await this.loadData()) || {};
     this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
     this.settings.sender = Object.assign({}, DEFAULT_SETTINGS.sender, data.sender || {});
+    /* Migration <= 1.0.0: the "Bezugszeichenzeile" toggle became the
+       Infozeile dropdown; font settings were always-on and now mean
+       "override the style default" (old defaults => unset). */
+    let migrated = false;
+    if (data.infozeile === undefined && data.showBezugszeichen === false) {
+      this.settings.infozeile = 'nurdatum';
+      migrated = true;
+    }
+    if (data.fontFamily === 'Helvetica, Arial, sans-serif') { this.settings.fontFamily = ''; migrated = true; }
+    if (data.fontSizePt === 11) { this.settings.fontSizePt = ''; migrated = true; }
+    /* If a design-variant file (design/css/briefkopf-*.css) was pasted into
+       "Eigenes CSS", adopt it as the built-in Stil/Infozeile and clear the
+       field — the variants ship built in since 1.1.0. */
+    const cc = typeof this.settings.customCss === 'string' ? this.settings.customCss : '';
+    if (/Briefkopf · (VARIANTE [ABC]|LAYOUT-ADD-ON)/.test(cc)) {
+      const v = cc.match(/VARIANTE ([ABC])/);
+      if (v && data.stil === undefined) {
+        this.settings.stil = { A: 'sachlich', B: 'klassisch', C: 'technisch' }[v[1]];
+      }
+      if (/LAYOUT-ADD-ON/.test(cc) && data.infozeile === undefined) {
+        this.settings.infozeile = 'nurdatum';
+      }
+      this.settings.customCss = '';
+      migrated = true;
+    }
+    if (migrated) await this.saveData(this.settings);
   }
 
   async saveSettings() { await this.saveData(this.settings); }
@@ -386,6 +524,19 @@ class BriefkopfPlugin extends obsidian.Plugin {
       ruecksende = [senderName, senderStrasse, senderPlzOrt].filter(Boolean).join(' · ');
     }
 
+    /* free-form info-block rows: `info:` map of label -> value */
+    const infoRaw = getField(idx, ALIASES.info);
+    const infoExtra = [];
+    if (infoRaw && typeof infoRaw === 'object' && !Array.isArray(infoRaw)) {
+      for (const k of Object.keys(infoRaw)) {
+        const v = infoRaw[k];
+        if (v === undefined || v === null || v === '') continue;
+        infoExtra.push([String(k), v instanceof Date ? this.formatDate(v) : String(v)]);
+      }
+    }
+
+    const ihrSchreibenRaw = getField(idx, ALIASES.ihrSchreiben);
+
     const model = {
       recipient: toLines(getField(idx, ALIASES.recipient)),
       betreff: getField(idx, ALIASES.betreff) || '',
@@ -394,10 +545,15 @@ class BriefkopfPlugin extends obsidian.Plugin {
       unterschrift: getField(idx, ALIASES.unterschrift) || senderName || '',
       ort: getField(idx, ALIASES.ort) || '',
       datum: this.formatDate(getField(idx, ALIASES.datum)),
+      anlagen: toLines(getField(idx, ALIASES.anlagen)),
+      stil: normStil(getField(idx, ALIASES.stil)) || normStil(s.stil) || 'sachlich',
+      infozeile: normInfozeile(getField(idx, ALIASES.infozeile)) || normInfozeile(s.infozeile) || 'vollstaendig',
+      steuernummer: getField(idx, ALIASES.steuernummer) || '',
       ihrZeichen: getField(idx, ALIASES.ihrZeichen) || '',
-      ihrSchreiben: getField(idx, ALIASES.ihrSchreiben) || '',
+      ihrSchreiben: ihrSchreibenRaw ? this.formatDate(ihrSchreibenRaw) : '',
       unserZeichen: getField(idx, ALIASES.unserZeichen) || '',
-      telefonBezug: getField(idx, ALIASES.telefonBezug) || senderTelefon || '',
+      telefonBezug: getField(idx, ALIASES.telefonBezug) || '',
+      infoExtra,
       senderName, senderZusatz, senderStrasse, senderPlzOrt,
       senderTelefon, senderEmail, senderWeb,
       ruecksende,
@@ -411,11 +567,22 @@ class BriefkopfPlugin extends obsidian.Plugin {
     return model;
   }
 
+  buildEnclosuresHtml(m) {
+    if (!m.anlagen || m.anlagen.length === 0) return '';
+    const label = m.anlagen.length === 1 ? 'Anlage' : 'Anlagen';
+    const items = m.anlagen.map((a) => `<li>${esc(a)}</li>`).join('');
+    return `<div class="bk-enclosures">
+      <div class="bk-encl-label">${label}</div>
+      <ul class="bk-encl-list">${items}</ul>
+    </div>`;
+  }
+
   buildLetterHtml(m) {
     const s = this.settings;
     const marks =
       (s.showFoldMarks ? '<div class="bk-mark bk-f1"></div><div class="bk-mark bk-f2"></div>' : '') +
       (s.showHoleMark ? '<div class="bk-mark bk-lo"></div>' : '');
+    const enclosures = this.buildEnclosuresHtml(m);
 
     if (s.theme === 'modern') {
       const senderLines = [m.senderZusatz, m.senderStrasse, m.senderPlzOrt, m.senderTelefon, m.senderEmail, m.senderWeb]
@@ -432,59 +599,65 @@ class BriefkopfPlugin extends obsidian.Plugin {
         <section class="bk-m-recipient">${escLines(m.recipient)}</section>
         <div class="bk-m-date">${m.ort ? esc(m.ort) + ', ' : ''}${esc(m.datum)}</div>
         ${m.betreff ? `<div class="bk-betreff">${esc(m.betreff)}</div>` : ''}
-        ${m.anrede ? `<div class="bk-anrede">${esc(m.anrede)}</div>` : ''}
+        ${m.anrede ? `<div class="bk-anrede bk-greeting">${esc(m.anrede)}</div>` : ''}
         <div class="bk-body">${m.bodyHtml}</div>
-        ${m.gruss ? `<div class="bk-gruss">${esc(m.gruss)}</div>` : ''}
-        ${m.unterschrift ? `<div class="bk-signatur">${escLines(toLines(m.unterschrift))}</div>` : ''}
+        ${m.gruss ? `<div class="bk-gruss bk-closing">${esc(m.gruss)}</div>` : ''}
+        ${m.unterschrift ? `<div class="bk-signatur bk-signature">${escLines(toLines(m.unterschrift))}</div>` : ''}
+        ${enclosures}
       </div>`;
     }
 
-    // DIN 5008
-    const head = m.logo
-      ? `<header class="bk-head"><img src="${m.logo}" alt=""></header>`
-      : (m.senderName ? `<header class="bk-head"><div class="bk-head-name">${esc(m.senderName)}</div></header>` : '');
+    // DIN 5008 — letterhead: name (or logo) left, contact right, hairline below
+    const contactLines = [
+      [m.senderStrasse, m.senderPlzOrt].filter(Boolean).join(' · '),
+      [m.senderTelefon ? 'Tel. ' + m.senderTelefon : '', m.senderEmail].filter(Boolean).join(' · '),
+      m.senderWeb || ''
+    ].filter(Boolean).map((x) => `<div>${esc(x)}</div>`).join('');
 
-    const col = (label, val, always) => {
-      if (!val && !always) return '';
-      return `<div class="bk-col"><span class="lbl">${esc(label)}</span>${esc(val || '')}</div>`;
-    };
+    const headLeft = m.logo
+      ? `<img src="${m.logo}" alt="">`
+      : (m.senderName
+        ? `<div><div class="bk-head-name">${esc(m.senderName)}</div>${m.senderZusatz ? `<div class="bk-head-zusatz">${esc(m.senderZusatz)}</div>` : ''}</div>`
+        : '<div></div>');
 
-    const reference = s.showBezugszeichen
-      ? `<div class="bk-bezug">
-            ${col('Ihr Zeichen', m.ihrZeichen)}
-            ${col('Ihr Schreiben vom', m.ihrSchreiben)}
-            ${col('Unser Zeichen', m.unserZeichen)}
-            ${col('Telefon', m.telefonBezug)}
-            ${col('Datum', m.datum, true)}
-         </div>`
-      : `<div class="bk-date">${m.ort ? esc(m.ort) + ', den ' : ''}${esc(m.datum)}</div>`;
+    const head = (m.logo || m.senderName || contactLines)
+      ? `<header class="bk-head">${headLeft}${contactLines ? `<div class="bk-head-contact">${contactLines}</div>` : ''}</header>`
+      : '';
 
-    const info = `<section class="bk-info">
-        ${m.senderName ? `<div class="bk-info-name">${esc(m.senderName)}</div>` : ''}
-        ${m.senderZusatz ? `<div>${esc(m.senderZusatz)}</div>` : ''}
-        ${m.senderStrasse ? `<div>${esc(m.senderStrasse)}</div>` : ''}
-        ${m.senderPlzOrt ? `<div>${esc(m.senderPlzOrt)}</div>` : ''}
-        ${(m.senderTelefon || m.senderEmail || m.senderWeb) ? '<div class="bk-info-sp"></div>' : ''}
-        ${m.senderTelefon ? `<div>Tel.: ${esc(m.senderTelefon)}</div>` : ''}
-        ${m.senderEmail ? `<div>${esc(m.senderEmail)}</div>` : ''}
-        ${m.senderWeb ? `<div>${esc(m.senderWeb)}</div>` : ''}
-      </section>`;
+    // info zone: full info block (DIN Informationsblock) or a plain date line
+    let infozone;
+    if (m.infozeile === 'nurdatum') {
+      infozone = `<div class="bk-dateline">${m.ort ? esc(m.ort) + ', ' : ''}${esc(m.datum)}</div>`;
+    } else {
+      const rows = [];
+      const addRow = (label, val) => { if (val) rows.push([label, val]); };
+      addRow('Steuernummer', m.steuernummer);
+      addRow('Ihr Zeichen', m.ihrZeichen);
+      addRow('Ihr Schreiben', m.ihrSchreiben);
+      addRow('Unser Zeichen', m.unserZeichen);
+      addRow('Telefon', m.telefonBezug);
+      for (const [k, v] of m.infoExtra) addRow(k, v);
+      rows.push(['Datum', m.datum]);
+      infozone = `<div class="bk-infoblock">` + rows.map(([l, v]) =>
+        `<div class="bk-info-item"><span class="bk-info-label">${esc(l)}</span><span class="bk-info-value">${esc(v)}</span></div>`
+      ).join('') + `</div>`;
+    }
 
     return `<div class="bk-letter bk-din">
       ${marks}
       ${head}
-      <section class="bk-anschrift">
-        ${m.ruecksende ? `<div class="bk-ruecksende">${esc(m.ruecksende)}</div>` : ''}
-        <div class="bk-empf">${escLines(m.recipient)}</div>
+      <section class="bk-anschrift bk-address">
+        ${m.ruecksende ? `<div class="bk-ruecksende bk-return">${esc(m.ruecksende)}</div>` : ''}
+        <div class="bk-empf bk-recipient">${escLines(m.recipient)}</div>
       </section>
-      ${info}
+      ${infozone}
       <div class="bk-content">
-        ${reference}
         ${m.betreff ? `<div class="bk-betreff">${esc(m.betreff)}</div>` : ''}
-        ${m.anrede ? `<div class="bk-anrede">${esc(m.anrede)}</div>` : ''}
+        ${m.anrede ? `<div class="bk-anrede bk-greeting">${esc(m.anrede)}</div>` : ''}
         <div class="bk-body">${m.bodyHtml}</div>
-        ${m.gruss ? `<div class="bk-gruss">${esc(m.gruss)}</div>` : ''}
-        ${m.unterschrift ? `<div class="bk-signatur">${escLines(toLines(m.unterschrift))}</div>` : ''}
+        ${m.gruss ? `<div class="bk-gruss bk-closing">${esc(m.gruss)}</div>` : ''}
+        ${m.unterschrift ? `<div class="bk-signatur bk-signature">${escLines(toLines(m.unterschrift))}</div>` : ''}
+        ${enclosures}
       </div>
     </div>`;
   }
@@ -495,7 +668,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
     const m = await this.resolveLetter();
     if (!m) return;
     const html = this.buildLetterHtml(m);
-    const css = buildCss(this.settings);
+    const css = buildCss(this.settings, m.stil);
     this.doPrint(html, css);
   }
 
@@ -536,7 +709,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
     const m = await this.resolveLetter();
     if (!m) return;
     const html = this.buildLetterHtml(m);
-    const css = buildCss(this.settings);
+    const css = buildCss(this.settings, m.stil);
     new BriefkopfPreviewModal(this.app, this, html, css).open();
   }
 }
@@ -589,8 +762,8 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
     containerEl.createEl('h2', { text: 'Briefkopf – Letter Generator' });
 
     new obsidian.Setting(containerEl)
-      .setName('Theme')
-      .setDesc('Layout-Vorlage für den Brief.')
+      .setName('Layout')
+      .setDesc('Grundlayout des Briefs.')
       .addDropdown((d) => d
         .addOption('din5008', 'DIN 5008 (deutscher Standard)')
         .addOption('modern', 'Modern / International')
@@ -598,8 +771,27 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
         .onChange(async (v) => { s.theme = v; await this.plugin.saveSettings(); }));
 
     new obsidian.Setting(containerEl)
+      .setName('Stil')
+      .setDesc('Sachlich: serifenlos, neutral (Behörden/Arbeitgeber). Klassisch: Serifenschrift, gediegen. Technisch: monospaced Akzente. Pro Brief per Frontmatter „stil" überschreibbar.')
+      .addDropdown((d) => d
+        .addOption('sachlich', 'A · Sachlich-modern')
+        .addOption('klassisch', 'B · Klassisch-seriös')
+        .addOption('technisch', 'C · Technisch-präzise')
+        .setValue(s.stil)
+        .onChange(async (v) => { s.stil = v; await this.plugin.saveSettings(); }));
+
+    new obsidian.Setting(containerEl)
+      .setName('Infozeile')
+      .setDesc('Vollständig: Infoblock rechts (Steuernummer, Ihr Zeichen, … Datum). Nur Datum: schlichte Orts-/Datumszeile, z. B. für Privatkorrespondenz. Pro Brief per Frontmatter „infozeile" überschreibbar.')
+      .addDropdown((d) => d
+        .addOption('vollstaendig', 'Vollständig (Infoblock)')
+        .addOption('nurdatum', 'Nur Datum')
+        .setValue(s.infozeile)
+        .onChange(async (v) => { s.infozeile = v; await this.plugin.saveSettings(); }));
+
+    new obsidian.Setting(containerEl)
       .setName('DIN-5008-Form')
-      .setDesc('Form A: Briefkopf 27 mm · Form B: Briefkopf 45 mm (mehr Platz fürs Logo).')
+      .setDesc('Form A: Anschrift bei 27 mm · Form B: Anschrift bei 45 mm (Standard, mehr Platz für den Briefkopf).')
       .addDropdown((d) => d
         .addOption('A', 'Form A (27 mm)')
         .addOption('B', 'Form B (45 mm)')
@@ -638,11 +830,8 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
       .setDesc('Markierung bei 148,5 mm zum Abheften.')
       .addToggle((t) => t.setValue(s.showHoleMark).onChange(async (v) => { s.showHoleMark = v; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Bezugszeichenzeile')
-      .setDesc('Zeile mit Ihr Zeichen / Ihr Schreiben / Unser Zeichen / Telefon / Datum.')
-      .addToggle((t) => t.setValue(s.showBezugszeichen).onChange(async (v) => { s.showBezugszeichen = v; await this.plugin.saveSettings(); }));
-
     new obsidian.Setting(containerEl).setName('Logo anzeigen')
+      .setDesc('Ersetzt den Namen im Briefkopf durch ein Bild.')
       .addToggle((t) => t.setValue(s.showLogo).onChange(async (v) => { s.showLogo = v; await this.plugin.saveSettings(); }));
 
     new obsidian.Setting(containerEl).setName('Logo-Pfad')
@@ -653,12 +842,18 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
     containerEl.createEl('div', { text: 'Typografie & Sonstiges', cls: 'briefkopf-settings-section' });
 
     new obsidian.Setting(containerEl).setName('Schriftart (CSS font-family)')
-      .addText((t) => t.setValue(s.fontFamily)
-        .onChange(async (v) => { s.fontFamily = v || DEFAULT_SETTINGS.fontFamily; await this.plugin.saveSettings(); }));
+      .setDesc('Leer = Standard des gewählten Stils.')
+      .addText((t) => t.setPlaceholder('Stil-Standard').setValue(s.fontFamily || '')
+        .onChange(async (v) => { s.fontFamily = v.trim(); await this.plugin.saveSettings(); }));
 
     new obsidian.Setting(containerEl).setName('Schriftgröße (pt)')
-      .addText((t) => t.setValue(String(s.fontSizePt))
-        .onChange(async (v) => { s.fontSizePt = Number(v) || 11; await this.plugin.saveSettings(); }));
+      .setDesc('Leer = Standard des gewählten Stils.')
+      .addText((t) => t.setPlaceholder('Stil-Standard').setValue(s.fontSizePt === '' || s.fontSizePt == null ? '' : String(s.fontSizePt))
+        .onChange(async (v) => {
+          const n = Number(v);
+          s.fontSizePt = v.trim() === '' || !isFinite(n) || n <= 0 ? '' : n;
+          await this.plugin.saveSettings();
+        }));
 
     new obsidian.Setting(containerEl).setName('Datums-Locale')
       .setDesc('z. B. de-DE, en-GB, en-US')
@@ -669,8 +864,10 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
       .addText((t) => t.setValue(s.defaultGruss)
         .onChange(async (v) => { s.defaultGruss = v; await this.plugin.saveSettings(); }));
 
-    new obsidian.Setting(containerEl).setName('Eigenes CSS')
-      .setDesc('Wird ans Theme angehängt – volle Kontrolle übers Styling. „Preset einfügen" lädt einen kommentierten Startpunkt (überschreibt das Feld).')
+    containerEl.createEl('div', { text: 'Erweitert', cls: 'briefkopf-settings-section' });
+
+    new obsidian.Setting(containerEl).setName('Eigenes CSS (optional)')
+      .setDesc('Für Feinheiten, die über Stil + Infozeile hinausgehen. Wird zuletzt geladen und gewinnt. „Preset einfügen" lädt einen kommentierten Startpunkt (überschreibt das Feld).')
       .addButton((b) => b.setButtonText('Preset einfügen').onClick(async () => {
         s.customCss = PRESET_CSS;
         await this.plugin.saveSettings();

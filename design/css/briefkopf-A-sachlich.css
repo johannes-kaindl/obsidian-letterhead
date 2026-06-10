@@ -1,0 +1,69 @@
+/* =====================================================================
+   Briefkopf · VARIANTE A — „Sachlich-modern"
+   ---------------------------------------------------------------------
+   Serifenlose Schrift (Helvetica / Arial). Der neutrale, sichere
+   Standard für Behörden und Arbeitgeber. Reines Schwarz/Grau.
+   Wird NACH dem Theme geladen und überschreibt es.
+   DIN 5008 Form B bleibt unangetastet (Fensterkuvert-Position).
+   ===================================================================== */
+:root {
+  /* ---------- SICHER: Typografie ---------- */
+  --bk-font-family: "Helvetica Neue", Arial, "Inter", system-ui, sans-serif;
+  --bk-font-size: 11pt;
+  --bk-line-height: 1.45;
+
+  /* ---------- SICHER: Farben (reines Schwarz/Grau) ---------- */
+  --bk-color-text: #1a1a1a;
+  --bk-color-muted: #5a5a5a;
+  --bk-color-rule: #111111;
+  --bk-color-hairline: #cfcfcf;
+
+  /* ---------- SICHER: Abstände ---------- */
+  --bk-space: 2.6mm;
+  --bk-block-gap: 6mm;
+  --bk-signature-gap: 16mm;
+
+  /* ---------- DIN-KRITISCH: nicht ändern (Form B = Default) ----------
+     --bk-margin-left: 25mm;
+     --bk-margin-right: 20mm;
+     --bk-din-address-top: 45mm;
+     --bk-din-content-top: 98.46mm; */
+}
+
+/* ---------- Name im Briefkopf: klar, sachlich ---------- */
+.bk-din .bk-head .bk-head-name {
+  font-weight: 600;
+  font-size: 15.5pt;
+  letter-spacing: 0.005em;
+}
+
+/* ---------- Betreff: fett, ohne Doppelung „Betreff:" ---------- */
+.bk-betreff {
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* ---------- Anlagen: gestapelte Liste (DIN-Form bei mehreren Anlagen) ----------
+   Erwartete Struktur im Plugin-Export:
+     <div class="bk-enclosures">
+       <div class="bk-encl-label">Anlagen</div>
+       <ul class="bk-encl-list"><li>…</li><li>…</li></ul>
+     </div>
+   Hohe Spezifität (.bk-din …) ist nötig, sonst setzt die generische
+   Absatzregel margin-top wieder auf 0. Klassennamen ggf. anpassen. */
+.bk-din .bk-enclosures {
+  margin-top: 14mm;
+  line-height: 1.45;
+}
+.bk-din .bk-encl-label {
+  color: var(--bk-color-text);
+  margin-bottom: 1.6mm;
+}
+.bk-din .bk-encl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.bk-din .bk-encl-list li {
+  padding: 0.3mm 0;
+}

@@ -13,6 +13,15 @@ datum: 2026-06-09
 ihr_zeichen: EB-2026
 ihr_schreiben: 2026-05-30
 unser_zeichen: MM
+# Optional: Stil + Infozeile pro Brief (sachlich | klassisch | technisch / vollstaendig | nurdatum)
+# stil: klassisch
+# infozeile: nurdatum
+# Freie Infoblock-Zeilen
+info:
+  Kundennummer: K-2026-114
+anlagen:
+  - Leistungsverzeichnis
+  - AGB
 # Absender direkt in der Notiz (sonst aus den Plugin-Einstellungen)
 absender_name: Max Mustermann
 absender_zusatz: Muster GmbH

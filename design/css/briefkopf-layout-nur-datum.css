@@ -1,0 +1,32 @@
+/* =====================================================================
+   Briefkopf · LAYOUT-ADD-ON — „Nur Datum"
+   ---------------------------------------------------------------------
+   Zweite, unabhängige Achse zum Stil (A/B/C): ersetzt den vollständigen
+   Bezugszeichen-Block (Steuernummer, Ihr Schreiben, Datum) durch eine
+   schlichte, rechtsbündige Orts-/Datumszeile über dem Betreff.
+   Gedacht für Arbeitgeber- und Privatkorrespondenz, wo Steuernummer &
+   Aktenzeichen nicht passen. Der Betreff bleibt erhalten.
+
+   NACH der gewählten Stil-Datei (A/B/C) laden, kombinierbar mit allen.
+   ===================================================================== */
+
+/* ---------- Schlichte Orts-/Datumszeile ----------
+   Rechtsbündig, ohne Labels — der klassische Privatbrief-Stand.
+   white-space:nowrap verhindert den Umbruch „Berlin, 10. Juni" / „2026". */
+.bk-din .bk-dateline {
+  text-align: right;
+  font-size: var(--bk-font-size);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* ---------- Vollständigen Bezugszeichen-Block ausblenden ----------
+   EMPFEHLUNG: Lass im Plugin/Frontmatter die Felder Steuernummer und
+   „Ihr Schreiben" einfach leer — dann erzeugt das Plugin sie gar nicht
+   erst, und dieses Add-on brauchst du nur für die Datumszeile.
+
+   Falls dein Plugin den Block dennoch rendert, blendet die folgende
+   Regel ihn aus. Den Klassennamen ggf. an dein Plugin anpassen. */
+.bk-din .bk-infoblock {
+  display: none;
+}

@@ -1,7 +1,7 @@
 # Referenz — Frontmatter-Felder
 
 Alle Felder sind optional. Fehlt ein Wert, greift der Standard aus den
-Plugin-Einstellungen (Absender, Grußformel, Datum = heute). Schlüssel sind
+Plugin-Einstellungen (Absender, Stil, Grußformel, Datum = heute). Schlüssel sind
 case-insensitive; `_`, `-`, `.` und Leerzeichen werden ignoriert
 (`Ihr Zeichen` = `ihr_zeichen` = `ihrzeichen`).
 
@@ -10,29 +10,53 @@ case-insensitive; `_`, `-`, `.` und Leerzeichen werden ignoriert
 | Feld | Aliasse | Beschreibung |
 |------|---------|--------------|
 | `empfaenger` | `empfänger`, `recipient`, `an`, `to`, `adresse`, `anschrift` | Empfängeranschrift, mehrzeilig (YAML-Blockskalar `|`) oder Liste. |
-| `betreff` | `subject`, `thema`, `re` | Betreffzeile (fett). |
+| `betreff` | `subject`, `thema`, `re` | Betreffzeile. |
 | `anrede` | `salutation`, `greeting` | z. B. „Sehr geehrte Frau Beispiel,". |
 | `gruss` | `grußformel`, `grussformel`, `closing`, `signoff` | Grußformel; Default aus Einstellungen. |
 | `unterschrift` | `signatur`, `signature`, `gezeichnet` | Name unter dem Gruß; Default = Absendername. |
-| `ort` | `place`, `stadt`, `city` | Ort für die Datumszeile. |
+| `ort` | `place`, `stadt`, `city` | Ort für die Orts-/Datumszeile. |
 | `datum` | `date` | ISO `2026-06-09` empfohlen; fehlt = heute. Formatierung über `Datums-Locale`. |
+| `anlagen` | `anlage`, `attachments`, `enclosures` | Anlagenvermerk unter der Unterschrift — Liste oder Blockskalar. Bei genau einem Eintrag lautet das Label „Anlage", sonst „Anlagen". |
 
-## Bezugszeichenzeile (DIN-Theme, optional)
+## Design pro Brief
 
-| Feld | Aliasse | Beschreibung |
-|------|---------|--------------|
+Überschreibt die Einstellungen **Stil** und **Infozeile** für diesen einen Brief.
+
+| Feld | Aliasse | Werte |
+|------|---------|-------|
+| `stil` | `style`, `design`, `variante` | `sachlich` (`a`), `klassisch` (`b`), `technisch` (`c`) |
+| `infozeile` | `layout` | `vollstaendig` (auch `full`, `infoblock`) · `nurdatum` (auch `minimal`, `datum`) |
+
+## Infoblock (DIN-Layout, Infozeile „Vollständig")
+
+Rechts neben der Anschrift, als Label-Wert-Zeilen. Zeilen ohne Wert werden
+weggelassen; „Datum" erscheint immer als letzte Zeile.
+
+| Feld | Aliasse | Label im Brief |
+|------|---------|----------------|
+| `steuernummer` | `steuernr`, `st_nr`, `tax_number` | „Steuernummer". |
 | `ihr_zeichen` | `your_ref` | „Ihr Zeichen". |
-| `ihr_schreiben` | `ihrschreibenvom`, `your_letter` | „Ihr Schreiben vom". |
+| `ihr_schreiben` | `ihrschreibenvom`, `your_letter` | „Ihr Schreiben"; Datumswerte werden gemäß Locale formatiert. |
 | `unser_zeichen` | `our_ref` | „Unser Zeichen". |
-| `telefon_bezug` | `durchwahl`, `phone` | Telefon/Durchwahl; Default = Absender-Telefon. |
+| `telefon_bezug` | `durchwahl`, `phone` | „Telefon" — nur wenn gesetzt (das Absender-Telefon steht bereits im Briefkopf). |
 
-Spalten ohne Wert werden weggelassen; „Datum" erscheint immer. Sichtbarkeit der
-ganzen Zeile über die Einstellung **Bezugszeichenzeile**.
+### Freie Zeilen: `info`
+
+Beliebige zusätzliche Label-Wert-Zeilen als YAML-Map (Aliasse: `bezugszeichen`,
+`infoblock`). Reihenfolge bleibt erhalten; sie erscheinen nach den festen
+Feldern, vor „Datum":
+
+```yaml
+info:
+  Kundennummer: 12345
+  Vertragsnummer: V-2026-007
+```
 
 ## Absender pro Brief überschreiben
 
 Überschreibt das Absender-Profil aus den Einstellungen — praktisch für mehrere
-Absender oder ein self-contained Beispiel.
+Absender oder ein self-contained Beispiel. Name (oder Logo) steht links im
+Briefkopf, Straße/Ort/Telefon/E-Mail/Web rechts als Kontaktblock.
 
 | Feld | Aliasse |
 |------|---------|
@@ -46,7 +70,7 @@ Absender oder ein self-contained Beispiel.
 
 ## Mehrzeilige Werte
 
-`empfaenger` (und Absenderfelder) akzeptieren einen YAML-Blockskalar …
+`empfaenger`, `anlagen` (und Absenderfelder) akzeptieren einen YAML-Blockskalar …
 
 ```yaml
 empfaenger: |
@@ -59,11 +83,9 @@ empfaenger: |
 … oder eine YAML-Liste:
 
 ```yaml
-empfaenger:
-  - Muster GmbH
-  - Frau Erika Beispiel
-  - Musterstraße 12
-  - 12345 Musterstadt
+anlagen:
+  - Lebenslauf
+  - Zeugnisse
 ```
 
 ## Brieftext

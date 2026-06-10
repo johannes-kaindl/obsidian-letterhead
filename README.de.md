@@ -12,12 +12,13 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 
 ## Funktionen
 
-- **Zwei Themes:** `DIN 5008` (deutscher Standard, fensterkuvert-tauglich) und `Modern` (international).
-- **Metadaten aus dem Frontmatter:** Empfänger, Betreff, Anrede, Grußformel, Datum, Bezugszeichen, Absender-Overrides — deutsche und englische Feld-Aliasse.
+- **Zwei Layouts:** `DIN 5008` (deutscher Standard, fensterkuvert-tauglich) und `Modern` (international).
+- **Drei Stile per Dropdown:** Sachlich-modern, Klassisch-seriös, Technisch-präzise — plus Infozeile „Vollständig" (Infoblock) oder „Nur Datum"; beides pro Brief im Frontmatter überschreibbar.
+- **Metadaten aus dem Frontmatter:** Empfänger, Betreff, Anrede, Grußformel, Datum, Infoblock (inkl. Steuernummer + freie Zeilen), Anlagenvermerk, Absender-Overrides — deutsche und englische Feld-Aliasse.
 - **Absender-Profil** in den Einstellungen, pro Brief überschreibbar.
 - **PDF-Export per Druckdialog** → „Als PDF sichern". Plattformübergreifend (Desktop + iOS), weil das OS das CSS rendert — kein Electron, kein Node.
 - **DIN-Extras:** Faltmarken (105/210 mm bzw. 87/192 mm) und Lochmarke (148,5 mm).
-- **Voll thembar** über dokumentierte CSS-Design-Tokens + kommentiertes Preset auf Knopfdruck.
+- **Kein CSS nötig** — Stil und Infozeile direkt in den Einstellungen; für Feinschliff bleiben dokumentierte CSS-Design-Tokens + kommentiertes Preset auf Knopfdruck.
 - Abhängigkeitsfrei, mobil-tauglich (`isDesktopOnly: false`), AGPL-3.0.
 
 ## Schnellstart
@@ -49,7 +50,7 @@ Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gere
 
 ## Theming
 
-Das Aussehen läuft komplett über CSS Custom Properties (Design-Tokens). In **Einstellungen → Eigenes CSS → „Preset einfügen"** gibt es einen kommentierten Startpunkt, alternativ [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.md](docs/reference/theming.md).
+Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Für Feinschliff darüber hinaus läuft das Aussehen komplett über CSS Custom Properties (Design-Tokens): In **Einstellungen → Erweitert → „Preset einfügen"** gibt es einen kommentierten Startpunkt, alternativ [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.md](docs/reference/theming.md).
 
 ## Lizenz
 

@@ -12,8 +12,9 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 
 ## Features
 
-- **Two themes:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international).
-- **Metadata from frontmatter:** recipient, subject, salutation, closing, date, reference line, sender overrides — German and English field aliases.
+- **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international).
+- **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
+- **Metadata from frontmatter:** recipient, subject, salutation, closing, date, info block (incl. tax number + free-form rows), enclosures, sender overrides — German and English field aliases.
 - **Sender profile** in the settings, overridable per letter.
 - **PDF export via the print dialog** → “Save as PDF”. Cross-platform (desktop + iOS) because the OS renders the CSS — no Electron, no Node.
 - **DIN extras:** fold marks (105/210 mm or 87/192 mm) and hole mark (148.5 mm).
@@ -49,7 +50,7 @@ The note body below the frontmatter is the letter text and is rendered as Markdo
 
 ## Theming
 
-The look is driven entirely by CSS custom properties (design tokens). Open **Settings → Eigenes CSS → “Preset einfügen”** for a commented starter, or copy [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
+Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): open **Settings → Erweitert → “Preset einfügen”** for a commented starter, or copy [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
 
 ## Development
 

@@ -1,41 +1,54 @@
 # Referenz — Theming & CSS-Tokens
 
-Das gesamte Aussehen läuft über **CSS Custom Properties** („Design-Tokens"). Das
-Plugin erzeugt sie pro Brief; dein Feld **Eigenes CSS** wird *danach* geladen und
-gewinnt. Du überschreibst also einfach die Tokens, die du ändern willst.
+Das gesamte Aussehen läuft über **CSS Custom Properties** („Design-Tokens").
+Der in den Einstellungen gewählte **Stil** (Sachlich / Klassisch / Technisch)
+setzt die Token-Defaults; dein optionales Feld **Eigenes CSS** wird *danach*
+geladen und gewinnt. Du überschreibst also einfach die Tokens, die du ändern
+willst — für die meisten Anpassungen reicht aber schon die Stil-Auswahl.
 
-Schnellstart: **Einstellungen → Eigenes CSS → „Preset einfügen"** lädt einen
-kommentierten Startpunkt (identisch mit [`presets/briefkopf-theme.css`](../../presets/briefkopf-theme.css)).
+Schnellstart: **Einstellungen → Erweitert → „Preset einfügen"** lädt einen
+kommentierten Startpunkt (Token-Body identisch mit
+[`presets/briefkopf-theme.css`](../../presets/briefkopf-theme.css)).
 
 ## Tokens — sicher anpassbar
 
+Defaults je Stil in Klammern: Sachlich / Klassisch / Technisch.
+
 | Token | Default | Wirkung |
 |-------|---------|---------|
-| `--bk-font-family` | `Helvetica, Arial, sans-serif` | Schriftfamilie (auch über die Einstellung „Schriftart"). |
-| `--bk-font-size` | `11pt` | Grundschriftgröße. |
-| `--bk-line-height` | `1.4` | Zeilenabstand. |
-| `--bk-color-text` | `#111111` | Fließtextfarbe. |
-| `--bk-color-muted` | `#555555` | Labels der Bezugszeichenzeile. |
-| `--bk-color-rule` | `#000000` | Faltmarken + Unterstrich der Rücksendeangabe. |
-| `--bk-color-hairline` | `#bbbbbb` | Trennlinie der Bezugszeile. |
-| `--bk-space` | `2.6mm` | Absatz-Rhythmus. |
-| `--bk-block-gap` | `6mm` | Abstand zwischen Brief-Blöcken. |
-| `--bk-signature-gap` | `16mm` | Platz für die Unterschrift. |
+| `--bk-font-family` | Helvetica-Stack / Palatino-Stack / Helvetica-Stack | Schriftfamilie (auch über die Einstellung „Schriftart"). |
+| `--bk-font-size` | `11pt` / `11.5pt` / `11pt` | Grundschriftgröße. |
+| `--bk-line-height` | `1.45` / `1.5` / `1.5` | Zeilenabstand. |
+| `--bk-name-font` | Textschrift / Textschrift / Monospace-Stack | Schrift des Namens im Briefkopf. |
+| `--bk-name-size` | `15.5pt` / `18pt` / `12.5pt` | Größe des Namens. |
+| `--bk-name-weight` | `600` | Gewicht des Namens. |
+| `--bk-name-spacing` | `0.005em` / `0.005em` / `0.12em` | Sperrung des Namens. |
+| `--bk-name-transform` | `none` / `none` / `uppercase` | Versalien-Schaltung. |
+| `--bk-color-text` | `#1a1a1a` / `#1c1a17` / `#15171a` | Fließtextfarbe. |
+| `--bk-color-muted` | `#5a5a5a` / `#5a554e` / `#6a7078` | Infoblock-Labels, Kopf-Kontakt, Rücksendezeile. |
+| `--bk-color-rule` | `#111` / `#1c1a17` / `#15171a` | Faltmarken + Unterstrich der Rücksendeangabe. |
+| `--bk-color-hairline` | `#cfcfcf` / `#c9c2b6` / `#d4d7da` | Trennlinie unter dem Briefkopf. |
+| `--bk-space` | `2.6mm` / `2.8mm` / `2.6mm` | Absatz-Rhythmus. |
+| `--bk-block-gap` | `6mm` / `6.5mm` / `6mm` | Abstand zwischen Brief-Blöcken. |
+| `--bk-signature-gap` | `16mm` / `17mm` / `16mm` | Platz für die Unterschrift. |
 
 ## Tokens — DIN-kritisch (Fensterkuvert)
 
 Diese Werte halten die Anschrift im Sichtfenster eines DIN-lang-Kuverts. Nur
-ändern, wenn dein Kuvert abweicht. Kopfhöhe und Falzmarken hängen außerdem an der
+ändern, wenn dein Kuvert abweicht. Positionen hängen außerdem an der
 Einstellung **DIN-5008-Form** (A/B).
 
 | Token | Default (Form B) | Form A |
 |-------|------------------|--------|
 | `--bk-page-width` / `--bk-page-height` | `210mm` / `297mm` | — |
 | `--bk-margin-left` / `--bk-margin-right` | `25mm` / `20mm` | — |
-| `--bk-din-head-height` | `45mm` | `27mm` |
+| `--bk-din-head-top` | `14mm` | `8mm` |
 | `--bk-din-address-top` | `45mm` | `27mm` |
 | `--bk-din-address-left` | `25mm` | — |
 | `--bk-din-address-width` / `--bk-din-address-height` | `85mm` / `40mm` | — |
+| `--bk-din-info-top` | `50mm` | `32mm` |
+| `--bk-din-info-width` | `64mm` | — |
+| `--bk-din-dateline-top` | `84mm` | — |
 | `--bk-din-fold-1` | `105mm` | `87mm` |
 | `--bk-din-fold-2` | `210mm` | `192mm` |
 | `--bk-din-hole` | `148.5mm` | `148.5mm` |
@@ -62,11 +75,17 @@ Reicht ein Token nicht, kannst du Klassen direkt überschreiben:
 | Klasse | Element |
 |--------|---------|
 | `.bk-letter` | Briefcontainer (A4). |
-| `.bk-betreff` · `.bk-anrede` · `.bk-gruss` · `.bk-signatur` | Textblöcke. |
+| `.bk-din .bk-head` | Briefkopf (Name/Logo links, Kontakt rechts, Hairline darunter). |
+| `.bk-din .bk-head-name` · `.bk-din .bk-head-zusatz` · `.bk-din .bk-head-contact` | Name, Firmenzusatz, Kontaktblock im Kopf. |
+| `.bk-din .bk-address`¹ · `.bk-din .bk-return`² · `.bk-din .bk-recipient`³ | Anschriftfeld, Rücksendezeile, Empfänger. |
+| `.bk-din .bk-infoblock` (`.bk-info-item` / `.bk-info-label` / `.bk-info-value`) | Infoblock rechts (Infozeile „Vollständig"). |
+| `.bk-din .bk-dateline` | Orts-/Datumszeile (Infozeile „Nur Datum"). |
+| `.bk-betreff` · `.bk-greeting`⁴ · `.bk-closing`⁵ · `.bk-signature`⁶ | Textblöcke. |
 | `.bk-body` | Brieftext (gerendertes Markdown). |
-| `.bk-din .bk-head .bk-head-name` | Textbriefkopf (ohne Logo). |
-| `.bk-din .bk-anschrift` · `.bk-din .bk-ruecksende` · `.bk-din .bk-empf` | Anschriftfeld. |
-| `.bk-din .bk-info` | Absender-Infoblock (rechts). |
-| `.bk-din .bk-bezug` | Bezugszeichenzeile. |
-| `.bk-modern .bk-m-head` · `.bk-modern .bk-m-sender` | Kopf/Absender im Modern-Theme. |
+| `.bk-enclosures` (`.bk-encl-label` / `.bk-encl-list`) | Anlagenvermerk. |
+| `.bk-modern .bk-m-head` · `.bk-modern .bk-m-sender` | Kopf/Absender im Modern-Layout. |
 | `.bk-mark` (`.bk-f1`/`.bk-f2`/`.bk-lo`) | Falt-/Lochmarken. |
+
+¹–⁶ Die Elemente tragen zusätzlich ihre alten 1.0-Klassennamen als Aliasse
+(`.bk-anschrift`, `.bk-ruecksende`, `.bk-empf`, `.bk-anrede`, `.bk-gruss`,
+`.bk-signatur`) — bestehendes eigenes CSS funktioniert weiter.

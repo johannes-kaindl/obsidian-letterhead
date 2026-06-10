@@ -1,17 +1,22 @@
 /* =====================================================================
-   Briefkopf – CSS-Preset (Best-Practice-Startpunkt zum Selbstanpassen)
+   Briefkopf – CSS-Preset (optionaler Feinschliff zum Selbstanpassen)
    =====================================================================
 
    WAS IST DAS?
-   Eine kommentierte Kopiervorlage zum Umgestalten deiner Briefe. Identisch
-   mit dem, was der Button „Preset einfügen" in den Plugin-Einstellungen ins
-   Feld „Eigenes CSS" lädt. Du kannst diese Datei also entweder
+   Eine kommentierte Kopiervorlage zum Umgestalten deiner Briefe — Token-Body
+   identisch mit dem, was der Button „Preset einfügen" in den Plugin-
+   Einstellungen ins Feld „Eigenes CSS" lädt. Du kannst diese Datei entweder
 
      a) per Button in die Einstellungen laden und dort anpassen, oder
      b) ihren Inhalt manuell ins Feld „Eigenes CSS" kopieren.
 
+   BRAUCHE ICH DAS?
+   Meist nicht: Stil (Sachlich/Klassisch/Technisch) und Infozeile wählst du
+   direkt in den Einstellungen. Dieses CSS ist nur für Feinheiten darüber
+   hinaus gedacht.
+
    WIE FUNKTIONIERT ES?
-   - Dieses CSS wird NACH dem gewählten Theme geladen und überschreibt es.
+   - Dieses CSS wird NACH Stil + Layout geladen und überschreibt beide.
    - Du änderst in der Regel nur die Design-Tokens (CSS Custom Properties).
    - "SICHER"        = frei anpassbar (Schrift, Farbe, Abstände).
    - "DIN-KRITISCH"  = Geometrie fürs Fensterkuvert; nur bewusst ändern.
@@ -26,11 +31,17 @@
   --bk-font-size: 11pt;          /* 10-12pt üblich */
   --bk-line-height: 1.45;        /* 1.3-1.6 */
 
+  /* ---------- SICHER: Name im Briefkopf ---------- */
+  --bk-name-size: 15.5pt;
+  --bk-name-weight: 600;
+  --bk-name-spacing: 0.005em;
+  --bk-name-transform: none;     /* z. B. uppercase */
+
   /* ---------- SICHER: Farben ---------- */
   --bk-color-text: #1a1a1a;      /* Fließtext */
-  --bk-color-muted: #555;        /* Labels der Bezugszeichenzeile */
+  --bk-color-muted: #555;        /* Labels im Infoblock, Kopf-Kontakt */
   --bk-color-rule: #000;         /* Faltmarken + Rücksende-Unterstrich */
-  --bk-color-hairline: #c8c8c8;  /* Trennlinie der Bezugszeile */
+  --bk-color-hairline: #c8c8c8;  /* Trennlinie unterm Briefkopf */
 
   /* ---------- SICHER: Abstände ---------- */
   --bk-space: 2.6mm;             /* Absatz-Rhythmus */
@@ -48,13 +59,5 @@
 
 /* ---------- Beispiel: einzelne Komponenten überschreiben ----------
 .bk-betreff { color: #0a7d3c; }
-.bk-din .bk-head .bk-head-name { letter-spacing: .3px; }
-*/
-
-/* ---------- Beispiel: klassischer Serifen-Brief ----------
-:root {
-  --bk-font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
-  --bk-font-size: 11.5pt;
-  --bk-line-height: 1.5;
-}
+.bk-din .bk-head-name { letter-spacing: .3px; }
 */
