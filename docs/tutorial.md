@@ -9,35 +9,50 @@ Ziel: in fünf Minuten von einer leeren Notiz zu einem fertigen PDF-Geschäftsbr
 dann in Obsidian → Einstellungen → Community-Plugins neu laden und **Briefkopf**
 aktivieren.
 
-## 2. Absender einmalig hinterlegen
+## 2. Absender & Stil einmalig einstellen
 
-Einstellungen → **Briefkopf** → Absender-Profil ausfüllen (Name, Firma, Straße,
-PLZ + Ort, Telefon, E-Mail, Website). Diese Werte gelten für alle Briefe und sind
-pro Brief überschreibbar.
+Einstellungen → **Briefkopf**:
+
+- **Absender-Profil** ausfüllen (Name, Firma, Straße, PLZ + Ort, Telefon,
+  E-Mail, Website). Gilt für alle Briefe, pro Brief überschreibbar.
+- **Stil** wählen: Sachlich-modern, Klassisch-seriös oder Technisch-präzise.
+- **Infozeile**: „Vollständig" (Infoblock mit Zeichen/Datum) oder „Nur Datum"
+  (schlichte Orts-/Datumszeile, z. B. für Bewerbungen und Privatpost).
 
 ## 3. Eine Brief-Notiz anlegen
 
-Neue Notiz, oben das Frontmatter, darunter der Brieftext. Minimalbeispiel:
+Neue Notiz öffnen, dann Befehlspalette → **„Brief-Frontmatter in Notiz
+einfügen"** — das legt die wichtigsten Felder an (auch als Button in den
+Einstellungen unter „Frontmatter"). Ausfüllen, darunter den Brieftext schreiben:
 
 ```markdown
 ---
-empfaenger: |
-  Muster GmbH
-  Frau Erika Beispiel
-  Musterstraße 12
-  12345 Musterstadt
+empfaenger:
+  - Muster GmbH
+  - Frau Erika Beispiel
+  - Musterstraße 12
+  - 12345 Musterstadt
 betreff: Angebot Nr. 2026-0042
 anrede: Sehr geehrte Frau Beispiel,
+datum: 2026-06-10
+anlagen:
+  - Leistungsverzeichnis
+  - AGB
 ---
 
 vielen Dank für Ihre Anfrage. Anbei unser Angebot …
 ```
 
-Ein vollständiges Beispiel liegt unter [`examples/Beispielbrief.md`](../examples/Beispielbrief.md).
+Listen wie `empfaenger` und `anlagen` haben einen Listenpunkt pro Zeile und
+lassen sich auch bequem in Obsidians Eigenschaften-Ansicht pflegen. Alle Felder
+(inkl. `absender` als Liste, `stil`, `infozeile`, Infoblock-Zeilen):
+[Frontmatter-Referenz](reference/frontmatter.md). Ein vollständiges Beispiel
+liegt unter [`examples/Beispielbrief.md`](../examples/Beispielbrief.md).
 
 ## 4. Vorschau prüfen
 
-Befehlspalette → **„Brief-Vorschau öffnen"**. So siehst du das Layout, ohne zu drucken.
+Befehlspalette → **„Brief-Vorschau öffnen"**. Die Vorschau zeigt die fertigen
+A4-Seiten inklusive Seitenumbrüchen — so siehst du das Layout, ohne zu drucken.
 
 ## 5. Als PDF exportieren
 
@@ -47,8 +62,20 @@ im Druckdialog **„Als PDF sichern"**.
 - **macOS:** PDF-Dropdown unten links → „Als PDF sichern".
 - **iPhone/iPad:** Teilen-Symbol → „In Dateien sichern".
 
+Druckränder setzt das Plugin automatisch (Seite 1 oben 10 mm, Folgeseiten
+25 mm, unten 20 mm) — im Druckdialog also Skalierung **100 %** lassen, nichts
+anpassen.
+
+## 6. Falten & Kuvertieren
+
+An den Falzmarken (links, bei 105/210 mm) falten und so ins
+DIN-lang-Fensterkuvert stecken, dass die Anschrift im Fenster liegt. Sitzt sie
+bei deinem Kuvert ein paar Millimeter zu hoch, hilft die Einstellung
+**Druckversatz oben** (2–4 mm).
+
 ## Weiter
 
-- Layout anpassen: [Theming / CSS-Tokens](reference/theming.md)
 - Alle Felder: [Frontmatter-Referenz](reference/frontmatter.md)
+- Alle Einstellungen: [Einstellungs-Referenz](reference/settings.md)
+- Feinschliff per CSS: [Theming / CSS-Tokens](reference/theming.md)
 - Warum diese Maße: [DIN 5008](explanation/din5008.md)

@@ -1,9 +1,9 @@
 ---
-empfaenger: |
-  Muster GmbH
-  Frau Erika Beispiel
-  Musterstraße 12
-  12345 Musterstadt
+empfaenger:
+  - Muster GmbH
+  - Frau Erika Beispiel
+  - Musterstraße 12
+  - 12345 Musterstadt
 betreff: Angebot Nr. 2026-0042
 anrede: Sehr geehrte Frau Beispiel,
 gruss: Mit freundlichen Grüßen
@@ -22,13 +22,15 @@ info:
 anlagen:
   - Leistungsverzeichnis
   - AGB
-# Absender direkt in der Notiz (sonst aus den Plugin-Einstellungen)
-absender_name: Max Mustermann
-absender_zusatz: Muster GmbH
-absender_strasse: Musterstraße 1
-absender_plz_ort: 12345 Musterstadt
-absender_telefon: +49 30 1234567
-absender_email: kontakt@example.com
+# Absender direkt in der Notiz (sonst aus den Plugin-Einstellungen).
+# Eine Kuvertzeile pro Listenpunkt; Telefon/E-Mail/Web werden erkannt.
+absender:
+  - Max Mustermann
+  - Muster GmbH
+  - Musterstraße 1
+  - 12345 Musterstadt
+  - +49 30 1234567
+  - kontakt@example.com
 ---
 
 vielen Dank für Ihre Anfrage und das freundliche Gespräch. Wie besprochen

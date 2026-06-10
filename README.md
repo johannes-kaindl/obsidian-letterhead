@@ -14,11 +14,12 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 
 - **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international).
 - **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
-- **Metadata from frontmatter:** recipient, subject, salutation, closing, date, info block (incl. tax number + free-form rows), enclosures, sender overrides — German and English field aliases.
-- **Sender profile** in the settings, overridable per letter.
-- **PDF export via the print dialog** → “Save as PDF”. Cross-platform (desktop + iOS) because the OS renders the CSS — no Electron, no Node.
-- **DIN extras:** fold marks (105/210 mm or 87/192 mm) and hole mark (148.5 mm).
-- **Fully themeable** via documented CSS design tokens + a one-click commented preset.
+- **Metadata from frontmatter:** recipient and sender as YAML lists, subject, salutation, closing, date, info block (incl. tax number + free-form rows), enclosures — German and English field aliases. The command **“Brief-Frontmatter in Notiz einfügen”** scaffolds the fields; the settings tab shows a field reference.
+- **Sender profile** in the settings, overridable per letter (list `absender` or individual fields).
+- **PDF export via the print dialog** → “Save as PDF”. Cross-platform (desktop + iOS) because the OS renders the CSS — no Electron, no Node. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact.
+- **Paginated preview:** shows the final A4 sheets including page breaks.
+- **DIN extras:** fold marks (105/210 mm or 87/192 mm), hole mark (148.5 mm), print-offset fine-tuning for the envelope window.
+- **No CSS required** — style and info line are plain settings; for fine-tuning there are documented CSS design tokens + a one-click commented preset.
 - Dependency-free, mobile-ready (`isDesktopOnly: false`), AGPL-3.0.
 
 ## Quick Start
@@ -36,9 +37,9 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Briefk
 
 ## Usage
 
-1. Open a note with letter frontmatter (see the [example](examples/Beispielbrief.md)).
-2. Run **“Brief als PDF exportieren / drucken”** (command palette or the envelope ribbon icon). Use **“Brief-Vorschau öffnen”** to preview first.
-3. In the print dialog choose **Save as PDF** (macOS: PDF dropdown; iOS: Share → Save to Files).
+1. Open a note and scaffold the fields with **“Brief-Frontmatter in Notiz einfügen”** (or see the [example](examples/Beispielbrief.md)), then fill them in.
+2. Run **“Brief als PDF exportieren / drucken”** (command palette or the envelope ribbon icon). Use **“Brief-Vorschau öffnen”** for a paginated preview first.
+3. In the print dialog choose **Save as PDF** (macOS: PDF dropdown; iOS: Share → Save to Files); keep scaling at 100%.
 
 The note body below the frontmatter is the letter text and is rendered as Markdown.
 

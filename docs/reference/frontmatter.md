@@ -14,14 +14,14 @@ zeigen zusätzlich eine kompakte Feldübersicht.
 
 | Feld | Aliasse | Beschreibung |
 |------|---------|--------------|
-| `empfaenger` | `empfänger`, `recipient`, `an`, `to`, `adresse`, `anschrift` | Empfängeranschrift, mehrzeilig (YAML-Blockskalar `|`) oder Liste. |
+| `empfaenger` | `empfänger`, `recipient`, `an`, `to`, `adresse`, `anschrift` | Empfängeranschrift als Liste — ein Listenpunkt pro Kuvertzeile (alternativ Blockskalar). |
 | `betreff` | `subject`, `thema`, `re` | Betreffzeile. |
 | `anrede` | `salutation`, `greeting` | z. B. „Sehr geehrte Frau Beispiel,". |
 | `gruss` | `grußformel`, `grussformel`, `closing`, `signoff` | Grußformel; Default aus Einstellungen. |
 | `unterschrift` | `signatur`, `signature`, `gezeichnet` | Name unter dem Gruß; Default = Absendername. |
 | `ort` | `place`, `stadt`, `city` | Ort für die Orts-/Datumszeile. |
 | `datum` | `date` | ISO `2026-06-09` empfohlen; fehlt = heute. Formatierung über `Datums-Locale`. |
-| `anlagen` | `anlage`, `attachments`, `enclosures` | Anlagenvermerk unter der Unterschrift — Liste oder Blockskalar. Bei genau einem Eintrag lautet das Label „Anlage", sonst „Anlagen". |
+| `anlagen` | `anlage`, `attachments`, `enclosures` | Anlagenvermerk unter der Unterschrift — Liste, ein Punkt pro Anlage. Bei genau einem Eintrag lautet das Label „Anlage", sonst „Anlagen". |
 
 ## Design pro Brief
 
@@ -97,23 +97,22 @@ Gewinnen gegenüber der `absender`-Liste, Feld für Feld:
 
 ## Mehrzeilige Werte
 
-`empfaenger`, `anlagen` (und Absenderfelder) akzeptieren einen YAML-Blockskalar …
+`empfaenger`, `absender` und `anlagen` sind YAML-Listen — ein Listenpunkt pro
+Zeile, bequem auch in Obsidians Eigenschaften-Ansicht pflegbar:
 
 ```yaml
-empfaenger: |
-  Muster GmbH
-  Frau Erika Beispiel
-  Musterstraße 12
-  12345 Musterstadt
-```
-
-… oder eine YAML-Liste:
-
-```yaml
+empfaenger:
+  - Muster GmbH
+  - Frau Erika Beispiel
+  - Musterstraße 12
+  - 12345 Musterstadt
 anlagen:
   - Lebenslauf
   - Zeugnisse
 ```
+
+Alternativ wird auch ein YAML-Blockskalar akzeptiert (`empfaenger: |` mit einer
+Adresszeile pro Textzeile).
 
 ## Brieftext
 
