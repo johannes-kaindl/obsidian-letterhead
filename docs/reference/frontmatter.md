@@ -5,6 +5,11 @@ Plugin-Einstellungen (Absender, Stil, Grußformel, Datum = heute). Schlüssel si
 case-insensitive; `_`, `-`, `.` und Leerzeichen werden ignoriert
 (`Ihr Zeichen` = `ihr_zeichen` = `ihrzeichen`).
 
+Schnellstart: Der Befehl **„Brief-Frontmatter in Notiz einfügen"** (auch als
+Button in den Einstellungen unter „Frontmatter") ergänzt die wichtigsten Felder
+in der aktiven Notiz, ohne vorhandene Werte zu überschreiben. Die Einstellungen
+zeigen zusätzlich eine kompakte Feldübersicht.
+
 ## Brief-Inhalt
 
 | Feld | Aliasse | Beschreibung |
@@ -57,6 +62,28 @@ info:
 Überschreibt das Absender-Profil aus den Einstellungen — praktisch für mehrere
 Absender oder ein self-contained Beispiel. Name (oder Logo) steht links im
 Briefkopf, Straße/Ort/Telefon/E-Mail/Web rechts als Kontaktblock.
+
+### Einfach: `absender` als Liste
+
+Eine Zeile pro Listenpunkt, wie auf dem Kuvert (Aliasse: `sender`, `von`):
+
+```yaml
+absender:
+  - Max Mustermann
+  - Muster GmbH
+  - Musterstraße 1
+  - 12345 Musterstadt
+  - +49 30 1234567
+  - kontakt@example.com
+```
+
+Die erste Zeile ist der Name; die übrigen Zeilen werden automatisch erkannt:
+Telefon (beginnt mit `+`/`0` oder `Tel.`), E-Mail (`@`), Web (`www.`/`https:`),
+PLZ + Ort (`12345 …`), Straße (enthält Hausnummer), Rest = Zusatz/Firma.
+
+### Präzise: Einzelfelder
+
+Gewinnen gegenüber der `absender`-Liste, Feld für Feld:
 
 | Feld | Aliasse |
 |------|---------|

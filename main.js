@@ -61,7 +61,7 @@ const STILE = {
     label: 'Sachlich-modern',
     tokens: {
       fontFamily: '"Helvetica Neue", Arial, "Inter", system-ui, sans-serif',
-      fontSizePt: 11,
+      fontSizePt: 10,
       lineHeight: '1.45',
       colorText: '#1a1a1a', colorMuted: '#5a5a5a',
       colorRule: '#111111', colorHairline: '#cfcfcf',
@@ -75,7 +75,7 @@ const STILE = {
     label: 'Klassisch-seriös',
     tokens: {
       fontFamily: '"Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif',
-      fontSizePt: 11.5,
+      fontSizePt: 10,
       lineHeight: '1.5',
       colorText: '#1c1a17', colorMuted: '#5a554e',
       colorRule: '#1c1a17', colorHairline: '#c9c2b6',
@@ -89,7 +89,7 @@ const STILE = {
     label: 'Technisch-präzise',
     tokens: {
       fontFamily: '"Helvetica Neue", Arial, "Inter", system-ui, sans-serif',
-      fontSizePt: 11,
+      fontSizePt: 10,
       lineHeight: '1.5',
       colorText: '#15171a', colorMuted: '#6a7078',
       colorRule: '#15171a', colorHairline: '#d4d7da',
@@ -141,6 +141,7 @@ const ALIASES = {
   ort:         ['ort', 'place', 'city', 'stadt'],
   datum:       ['datum', 'date'],
   anlagen:     ['anlagen', 'anlage', 'attachments', 'enclosures'],
+  absender:    ['absender', 'sender', 'von', 'from'],
   stil:        ['stil', 'style', 'design', 'variante'],
   infozeile:   ['infozeile', 'layout'],
   info:        ['info', 'bezugszeichen', 'infoblock'],
@@ -182,6 +183,26 @@ function toLines(v) {
   return String(v).split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
 }
 
+/* Frontmatter `absender:` as a plain list (one envelope line per item):
+   first line = name, the rest is classified — phone/e-mail/web are detected,
+   "12345 Ort" => PLZ+Ort, a line containing a digit => street, else Zusatz. */
+function parseAbsenderLines(lines) {
+  const r = { name: '', zusatz: '', strasse: '', plzOrt: '', telefon: '', email: '', web: '' };
+  if (!lines || lines.length === 0) return r;
+  r.name = lines[0];
+  for (const line of lines.slice(1)) {
+    if (!r.email && /@/.test(line)) r.email = line.replace(/^e-?mail\s*:?\s*/i, '');
+    else if (!r.web && /^(www\.|https?:\/\/)/i.test(line)) r.web = line;
+    else if (!r.telefon && (/^(tel\.?|telefon|fon|mobil)\b/i.test(line) || /^[+0][\d\s\-\/().]{5,}$/.test(line)))
+      r.telefon = line.replace(/^(tel\.?|telefon|fon|mobil)\s*:?\s*/i, '');
+    else if (!r.plzOrt && /^\d{4,5}\s+\S/.test(line)) r.plzOrt = line;
+    else if (!r.strasse && /\d/.test(line)) r.strasse = line;
+    else if (!r.zusatz) r.zusatz = line;
+    else if (!r.strasse) r.strasse = line;
+  }
+  return r;
+}
+
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -211,9 +232,12 @@ function arrayBufferToBase64(buf) {
 
 /* Fixed @page margins: printers cannot print borderless, and without page
    margins multi-page letters break right at the paper edge. All DIN tokens
-   stay paper-relative; the components subtract the top margin internally. */
-const PRINT_MARGIN_TOP_MM = 10;
-const PRINT_MARGIN_BOTTOM_MM = 15;
+   stay paper-relative; the components subtract the first-page top margin
+   internally. Page 1 keeps a small top margin (the DIN letterhead sits high
+   by design); continuation pages get document-standard 25/20 mm. */
+const PRINT_MARGIN_TOP_MM = 10;         // page 1
+const PRINT_MARGIN_TOP_FOLLOW_MM = 25;  // page 2+
+const PRINT_MARGIN_BOTTOM_MM = 20;      // all pages
 
 function buildCss(s, stilKey) {
   const stil = STILE[normStil(stilKey) || 'sachlich'] || STILE.sachlich;
@@ -342,7 +366,8 @@ function buildCss(s, stilKey) {
 const PRINT_WRAPPER_CSS = `
   #briefkopf-print-root{ display:none; }
   @media print{
-    @page{ size:A4; margin:${PRINT_MARGIN_TOP_MM}mm 0 ${PRINT_MARGIN_BOTTOM_MM}mm 0; }
+    @page{ size:A4; margin:${PRINT_MARGIN_TOP_FOLLOW_MM}mm 0 ${PRINT_MARGIN_BOTTOM_MM}mm 0; }
+    @page:first{ margin-top:${PRINT_MARGIN_TOP_MM}mm; }
     html, body{ margin:0 !important; padding:0 !important; background:#fff !important; height:auto !important; }
     body > *:not(#briefkopf-print-root){ display:none !important; }
     #briefkopf-print-root{ display:block !important; position:static !important; }
@@ -354,17 +379,14 @@ const PRINT_WRAPPER_CSS = `
 const SCREEN_PREVIEW_CSS = `
   html,body{ margin:0; padding:0; }
   body{ background:#d9d9d9; padding:14px 0; }
-  /* flex-shrink would squeeze the mm-sized page on narrow windows —
-     scaling happens via body zoom (see fitPreview) */
-  .bk-letter{ flex-shrink:0; margin:0 auto; box-shadow:0 2px 14px rgba(0,0,0,.35); }
-  /* simulate the @page print margins so the preview shows the full sheet
-     (white borders shift the absolutely positioned children like the
-     printed page margins do) */
-  .bk-letter{
-    border-top:var(--bk-print-margin-top) solid #fff;
-    border-bottom:var(--bk-print-margin-bottom) solid #fff;
-    min-height:var(--bk-page-height);
-  }
+  .bk-letter{ margin:0; }
+  /* paginated preview: one .bk-sheet per printed page; .bk-page-clip is the
+     page content area (@page margins), the letter copy inside is shifted up
+     by the height of all previous pages — same slicing as the print engine */
+  .bk-sheet{ position:relative; width:var(--bk-page-width); height:var(--bk-page-height);
+    margin:0 auto 6mm; background:#fff; overflow:hidden;
+    box-shadow:0 2px 14px rgba(0,0,0,.35); }
+  .bk-sheet .bk-page-clip{ position:absolute; left:0; right:0; overflow:hidden; }
 `;
 
 /* Commented starter the user can load into the "Eigenes CSS" field via the
@@ -381,7 +403,7 @@ const PRESET_CSS = `/* =========================================================
 :root {
   /* ---------- SICHER: Typografie ---------- */
   --bk-font-family: "Helvetica Neue", Arial, system-ui, sans-serif;
-  --bk-font-size: 11pt;          /* 10-12pt üblich */
+  --bk-font-size: 10pt;          /* 10-12pt üblich */
   --bk-line-height: 1.45;        /* 1.3-1.6 */
 
   /* ---------- SICHER: Name im Briefkopf ---------- */
@@ -437,6 +459,42 @@ class BriefkopfPlugin extends obsidian.Plugin {
       name: 'Brief-Vorschau öffnen',
       callback: () => this.previewLetter()
     });
+    this.addCommand({
+      id: 'briefkopf-insert-frontmatter',
+      name: 'Brief-Frontmatter in Notiz einfügen',
+      callback: () => this.insertFrontmatterTemplate()
+    });
+  }
+
+  /* Adds the most important letter fields to the active note's frontmatter
+     without touching existing values (uses Obsidian's processFrontMatter). */
+  async insertFrontmatterTemplate() {
+    const file = this.app.workspace.getActiveFile();
+    if (!file || file.extension !== 'md') {
+      new obsidian.Notice('Briefkopf: Bitte zuerst eine Markdown-Notiz öffnen.');
+      return;
+    }
+    const now = new Date();
+    const iso = now.getFullYear() + '-' +
+      String(now.getMonth() + 1).padStart(2, '0') + '-' +
+      String(now.getDate()).padStart(2, '0');
+    try {
+      await this.app.fileManager.processFrontMatter(file, (fm) => {
+        const has = (...keys) => keys.some((k) => fm[k] !== undefined);
+        if (!has('empfaenger', 'empfänger', 'recipient', 'an', 'to', 'adresse', 'anschrift')) {
+          fm.empfaenger = ['', '', '', ''];
+        }
+        if (!has('betreff', 'subject', 'thema')) fm.betreff = '';
+        if (!has('anrede', 'salutation')) fm.anrede = 'Sehr geehrte Damen und Herren,';
+        if (!has('ort', 'place', 'stadt', 'city')) fm.ort = '';
+        if (!has('datum', 'date')) fm.datum = iso;
+        if (!has('anlagen', 'anlage', 'attachments', 'enclosures')) fm.anlagen = [];
+      });
+      new obsidian.Notice('Briefkopf: Frontmatter-Felder ergänzt.');
+    } catch (e) {
+      console.error('Briefkopf: frontmatter insert failed', e);
+      new obsidian.Notice('Briefkopf: Frontmatter konnte nicht ergänzt werden.');
+    }
   }
 
   async loadSettings() {
@@ -543,13 +601,15 @@ class BriefkopfPlugin extends obsidian.Plugin {
     const body = this.stripFrontmatter(content);
     const bodyHtml = await this.renderMarkdownToHtml(body, file.path);
 
-    const senderName    = getField(idx, ALIASES.sName)    || s.sender.name;
-    const senderZusatz  = getField(idx, ALIASES.sZusatz)  || s.sender.zusatz;
-    const senderStrasse = getField(idx, ALIASES.sStrasse) || s.sender.strasse;
-    const senderPlzOrt  = getField(idx, ALIASES.sPlzOrt)  || s.sender.plzOrt;
-    const senderTelefon = getField(idx, ALIASES.sTelefon) || s.sender.telefon;
-    const senderEmail   = getField(idx, ALIASES.sEmail)   || s.sender.email;
-    const senderWeb     = getField(idx, ALIASES.sWeb)     || s.sender.web;
+    /* sender precedence: specific field > `absender:` list > settings profile */
+    const abs = parseAbsenderLines(toLines(getField(idx, ALIASES.absender)));
+    const senderName    = getField(idx, ALIASES.sName)    || abs.name    || s.sender.name;
+    const senderZusatz  = getField(idx, ALIASES.sZusatz)  || abs.zusatz  || s.sender.zusatz;
+    const senderStrasse = getField(idx, ALIASES.sStrasse) || abs.strasse || s.sender.strasse;
+    const senderPlzOrt  = getField(idx, ALIASES.sPlzOrt)  || abs.plzOrt  || s.sender.plzOrt;
+    const senderTelefon = getField(idx, ALIASES.sTelefon) || abs.telefon || s.sender.telefon;
+    const senderEmail   = getField(idx, ALIASES.sEmail)   || abs.email   || s.sender.email;
+    const senderWeb     = getField(idx, ALIASES.sWeb)     || abs.web     || s.sender.web;
 
     let ruecksende = (s.returnAddressLine || '').trim();
     if (!ruecksende) {
@@ -767,23 +827,61 @@ class BriefkopfPreviewModal extends obsidian.Modal {
     const frame = contentEl.createEl('iframe', { cls: 'briefkopf-preview-frame' });
     frame.setAttribute('sandbox', 'allow-same-origin');
     frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8">
-      <style>${this.css}${SCREEN_PREVIEW_CSS}</style></head><body>${this.html}</body></html>`;
+      <style>${this.css}${SCREEN_PREVIEW_CSS}</style></head>
+      <body><div id="bk-preview-stage">${this.html}</div></body></html>`;
 
-    /* Fit the whole A4 page into the frame (zoom keeps layout + scrollbars
+    /* Slice the flowing letter into A4 sheets — same cut positions as the
+       print engine (@page margins: page 1 vs. continuation pages). */
+    const paginate = () => {
+      try {
+        const doc = frame.contentDocument;
+        const stage = doc && doc.getElementById('bk-preview-stage');
+        const letter = stage && stage.querySelector('.bk-letter');
+        if (!letter || stage.dataset.paginated) return;
+        const probe = doc.createElement('div');
+        probe.style.cssText = 'position:absolute;visibility:hidden;height:100mm;width:10mm;';
+        doc.body.appendChild(probe);
+        const mm = probe.offsetHeight / 100;
+        probe.remove();
+        const h1 = Math.round((297 - PRINT_MARGIN_TOP_MM - PRINT_MARGIN_BOTTOM_MM) * mm);
+        const hN = Math.round((297 - PRINT_MARGIN_TOP_FOLLOW_MM - PRINT_MARGIN_BOTTOM_MM) * mm);
+        const total = letter.offsetHeight;
+        const pages = total <= h1 ? 1 : 1 + Math.ceil((total - h1) / hN);
+        const frag = doc.createDocumentFragment();
+        for (let i = 0; i < pages; i++) {
+          const sheet = doc.createElement('div');
+          sheet.className = 'bk-sheet';
+          const clip = doc.createElement('div');
+          clip.className = 'bk-page-clip';
+          clip.style.top = (i === 0 ? PRINT_MARGIN_TOP_MM : PRINT_MARGIN_TOP_FOLLOW_MM) + 'mm';
+          clip.style.height = (i === 0 ? h1 : hN) + 'px';
+          const copy = letter.cloneNode(true);
+          copy.style.marginTop = (i === 0 ? 0 : -(h1 + (i - 1) * hN)) + 'px';
+          clip.appendChild(copy);
+          sheet.appendChild(clip);
+          frag.appendChild(sheet);
+        }
+        stage.textContent = '';
+        stage.appendChild(frag);
+        stage.dataset.paginated = '1';
+      } catch (e) { /* leave the un-paginated letter visible */ }
+    };
+
+    /* Fit a whole A4 sheet into the frame (zoom keeps layout + scrollbars
        consistent, unlike transform). Never upscale beyond 100%. */
     const fitPreview = () => {
       try {
         const doc = frame.contentDocument;
-        const letter = doc && doc.querySelector('.bk-letter');
-        if (!letter) return;
+        const sheet = doc && (doc.querySelector('.bk-sheet') || doc.querySelector('.bk-letter'));
+        if (!sheet) return;
         doc.body.style.zoom = '1';
-        const pageW = letter.offsetWidth || 794;
-        const pageH = letter.offsetHeight || 1123;
+        const pageW = sheet.offsetWidth || 794;
+        const pageH = sheet.offsetHeight || 1123;
         const z = Math.min(1, (frame.clientWidth - 30) / pageW, (frame.clientHeight - 30) / pageH);
         if (z > 0) doc.body.style.zoom = String(z);
       } catch (e) { /* cross-origin or detached frame — leave unscaled */ }
     };
-    frame.addEventListener('load', fitPreview);
+    frame.addEventListener('load', () => { paginate(); fitPreview(); });
     this.resizeObserver = new ResizeObserver(fitPreview);
     this.resizeObserver.observe(frame);
 
@@ -831,7 +929,7 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
         .addOption('klassisch', 'B · Klassisch-seriös')
         .addOption('technisch', 'C · Technisch-präzise')
         .setValue(s.stil)
-        .onChange(async (v) => { s.stil = v; await this.plugin.saveSettings(); }));
+        .onChange(async (v) => { s.stil = v; await this.plugin.saveSettings(); this.display(); }));
 
     new obsidian.Setting(containerEl)
       .setName('Infozeile')
@@ -867,10 +965,11 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
     senderField('E-Mail', 'email', 'kontakt@example.com');
     senderField('Website', 'web', 'www.example.com');
 
+    const autoRuecksende = [s.sender.name, s.sender.strasse, s.sender.plzOrt].filter(Boolean).join(' · ');
     new obsidian.Setting(containerEl)
       .setName('Rücksendeangabe')
       .setDesc('Kleine Zeile über der Empfängeranschrift. Leer = automatisch (Name · Straße · PLZ Ort).')
-      .addText((t) => t.setPlaceholder('automatisch').setValue(s.returnAddressLine)
+      .addText((t) => t.setPlaceholder(autoRuecksende || 'automatisch').setValue(s.returnAddressLine)
         .onChange(async (v) => { s.returnAddressLine = v; await this.plugin.saveSettings(); }));
 
     containerEl.createEl('div', { text: 'Elemente', cls: 'briefkopf-settings-section' });
@@ -903,14 +1002,16 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
 
     containerEl.createEl('div', { text: 'Typografie & Sonstiges', cls: 'briefkopf-settings-section' });
 
+    const stilTokens = (STILE[normStil(s.stil) || 'sachlich'] || STILE.sachlich).tokens;
+
     new obsidian.Setting(containerEl).setName('Schriftart (CSS font-family)')
-      .setDesc('Leer = Standard des gewählten Stils.')
-      .addText((t) => t.setPlaceholder('Stil-Standard').setValue(s.fontFamily || '')
+      .setDesc('Leer = Standard des gewählten Stils (Platzhalter zeigt den aktuellen Wert).')
+      .addText((t) => t.setPlaceholder(stilTokens.fontFamily).setValue(s.fontFamily || '')
         .onChange(async (v) => { s.fontFamily = v.trim(); await this.plugin.saveSettings(); }));
 
     new obsidian.Setting(containerEl).setName('Schriftgröße (pt)')
-      .setDesc('Leer = Standard des gewählten Stils.')
-      .addText((t) => t.setPlaceholder('Stil-Standard').setValue(s.fontSizePt === '' || s.fontSizePt == null ? '' : String(s.fontSizePt))
+      .setDesc('Leer = Standard des gewählten Stils (Platzhalter zeigt den aktuellen Wert).')
+      .addText((t) => t.setPlaceholder(String(stilTokens.fontSizePt)).setValue(s.fontSizePt === '' || s.fontSizePt == null ? '' : String(s.fontSizePt))
         .onChange(async (v) => {
           const n = Number(v);
           s.fontSizePt = v.trim() === '' || !isFinite(n) || n <= 0 ? '' : n;
@@ -925,6 +1026,38 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
     new obsidian.Setting(containerEl).setName('Standard-Grußformel')
       .addText((t) => t.setValue(s.defaultGruss)
         .onChange(async (v) => { s.defaultGruss = v; await this.plugin.saveSettings(); }));
+
+    containerEl.createEl('div', { text: 'Frontmatter (pro Brief)', cls: 'briefkopf-settings-section' });
+    containerEl.createEl('p', {
+      text: 'Diese Felder steuern den Brief pro Notiz und überschreiben die Einstellungen oben. Schlüssel sind case-insensitive; englische Aliasse siehe Doku (docs/reference/frontmatter.md).',
+      cls: 'setting-item-description'
+    });
+
+    new obsidian.Setting(containerEl)
+      .setName('Frontmatter-Vorlage einfügen')
+      .setDesc('Ergänzt die wichtigsten Felder (Empfänger, Betreff, Anrede, Ort, Datum, Anlagen) im Frontmatter der aktiven Notiz — vorhandene Werte bleiben unangetastet.')
+      .addButton((b) => b.setButtonText('In aktive Notiz einfügen').setCta()
+        .onClick(() => this.plugin.insertFrontmatterTemplate()));
+
+    const fmTable = containerEl.createDiv({ cls: 'briefkopf-fm-table' });
+    const fmRow = (key, desc) => {
+      const r = fmTable.createDiv({ cls: 'briefkopf-fm-row' });
+      r.createEl('code', { text: key });
+      r.createSpan({ text: desc });
+    };
+    fmRow('empfaenger', 'Empfängeranschrift als Liste — ein Listenpunkt pro Kuvertzeile.');
+    fmRow('absender', 'Absender als Liste (Name zuerst; Telefon, E-Mail und Web werden automatisch erkannt). Alternativ Einzelfelder absender_name, absender_strasse, absender_plz_ort, …');
+    fmRow('betreff', 'Betreffzeile.');
+    fmRow('anrede', 'z. B. „Sehr geehrte Frau Beispiel,".');
+    fmRow('ort', 'Ort für die Orts-/Datumszeile.');
+    fmRow('datum', 'ISO-Datum (2026-06-10); leer = heute.');
+    fmRow('anlagen', 'Anlagenvermerk als Liste — ein Listenpunkt pro Anlage.');
+    fmRow('gruss', 'Grußformel; Standard aus den Einstellungen.');
+    fmRow('unterschrift', 'Name unter dem Gruß; Standard = Absendername.');
+    fmRow('stil', 'sachlich · klassisch · technisch (überschreibt die Stil-Einstellung).');
+    fmRow('infozeile', 'vollstaendig · nurdatum (überschreibt die Infozeilen-Einstellung).');
+    fmRow('steuernummer, ihr_zeichen, ihr_schreiben, unser_zeichen, telefon_bezug', 'Feste Zeilen im Infoblock; leere Felder werden weggelassen.');
+    fmRow('info', 'Eigene Infoblock-Zeilen als Map, z. B. Kundennummer: 12345.');
 
     containerEl.createEl('div', { text: 'Erweitert', cls: 'briefkopf-settings-section' });
 

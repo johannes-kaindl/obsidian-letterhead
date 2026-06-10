@@ -6,11 +6,12 @@
 <!--
   Reproducible source for docs/images/hero.png.
   Generated from the plugin itself (buildCss + buildLetterHtml, Stil A,
-  Infozeile vollständig, @page-Druckränder 10/15 mm wie im Export).
-  Render with tools/render-hero.sh. Content is sample/placeholder data only.
+  Infozeile vollständig, @page-Druckränder wie im Export: Seite 1 oben 10 mm,
+  unten 20 mm). Render with tools/render-hero.sh.
+  Content is sample/placeholder data only.
 -->
 <style>
-@page { size: A4; margin: 10mm 0 15mm 0; }
+@page { size: A4; margin: 10mm 0 20mm 0; }
 html, body { margin: 0; padding: 0; }
 body { background: #ececec; }
 
@@ -21,7 +22,7 @@ body { background: #ececec; }
     --bk-page-width:210mm; --bk-page-height:297mm;
     --bk-margin-left:25mm; --bk-margin-right:20mm;
     --bk-print-margin-top:10mm;
-    --bk-print-margin-bottom:15mm;
+    --bk-print-margin-bottom:20mm;
     --bk-print-offset:0mm;
     --bk-din-head-top:calc(14mm + var(--bk-print-offset));
     --bk-din-address-top:calc(45mm + var(--bk-print-offset)); --bk-din-address-left:25mm;
@@ -32,7 +33,7 @@ body { background: #ececec; }
     --bk-din-content-top:calc(98.46mm + var(--bk-print-offset));
     /* --- Typography (safe to customize) --- */
     --bk-font-family:"Helvetica Neue", Arial, "Inter", system-ui, sans-serif;
-    --bk-font-size:11pt;
+    --bk-font-size:10pt;
     --bk-line-height:1.45;
     /* --- Letterhead name (safe to customize) --- */
     --bk-name-font:var(--bk-font-family);

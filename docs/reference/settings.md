@@ -39,7 +39,7 @@ Kontaktdaten rechts.
 |-------------|-----------|
 | **Faltmarken** | Zwei Markierungen zum Falten fürs Fensterkuvert. |
 | **Lochmarke** | Markierung bei 148,5 mm zum Abheften. |
-| **Druckversatz oben (mm)** | Feinjustierung (Standard 0): schiebt den gesamten Briefinhalt nach unten, falls die Anschrift im Kuvertfenster zu hoch sitzt; 2–4 mm probieren. Falt-/Lochmarken bleiben papierbezogen unverändert, damit die Faltung stimmt. Druckränder (oben 10 mm, unten 15 mm) setzt das Plugin immer automatisch. |
+| **Druckversatz oben (mm)** | Feinjustierung (Standard 0): schiebt den gesamten Briefinhalt nach unten, falls die Anschrift im Kuvertfenster zu hoch sitzt; 2–4 mm probieren. Falt-/Lochmarken bleiben papierbezogen unverändert, damit die Faltung stimmt. Druckränder setzt das Plugin immer automatisch: Seite 1 oben 10 mm (der DIN-Briefkopf sitzt konstruktionsbedingt hoch), Folgeseiten oben 25 mm, unten überall 20 mm. |
 | **Logo anzeigen** + **Logo-Pfad** | Bild statt Name im Briefkopf; vault-relativer Pfad (z. B. `assets/logo.png`), als data-URL eingebettet. |
 
 ## Typografie & Sonstiges
@@ -50,6 +50,14 @@ Kontaktdaten rechts.
 | **Schriftgröße (pt)** | Optionaler Override. Leer = Standard des gewählten Stils. |
 | **Datums-Locale** | z. B. `de-DE`, `en-GB`, `en-US` — Format der Datumsausgabe. |
 | **Standard-Grußformel** | Default, wenn `gruss` im Frontmatter fehlt. |
+
+## Frontmatter (pro Brief)
+
+Eine kompakte Übersicht aller Frontmatter-Felder direkt in den Einstellungen,
+plus Button **„Frontmatter-Vorlage einfügen"** (auch als Befehl
+„Brief-Frontmatter in Notiz einfügen"): ergänzt Empfänger, Betreff, Anrede,
+Ort, Datum und Anlagen im Frontmatter der aktiven Notiz, ohne vorhandene Werte
+zu überschreiben. Vollständige Referenz: [Frontmatter-Felder](frontmatter.md).
 
 ## Erweitert
 

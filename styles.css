@@ -26,5 +26,28 @@
   color: var(--text-accent);
 }
 
+/* compact frontmatter field reference in the settings tab */
+.briefkopf-fm-table {
+  margin: 0.4em 0 0.8em;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  font-size: var(--font-ui-small);
+}
+.briefkopf-fm-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 32%) 1fr;
+  gap: 10px;
+  padding: 5px 10px;
+}
+.briefkopf-fm-row + .briefkopf-fm-row {
+  border-top: 1px solid var(--background-modifier-border);
+}
+.briefkopf-fm-row code {
+  word-break: break-word;
+}
+.briefkopf-fm-row span {
+  color: var(--text-muted);
+}
+
 /* Keep the print root out of the normal app view; it only matters for printing. */
 #briefkopf-print-root { display: none; }

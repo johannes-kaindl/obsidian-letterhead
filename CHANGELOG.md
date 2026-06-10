@@ -32,6 +32,15 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   Feinjustierung, falls die Anschrift im Kuvertfenster zu hoch sitzt; schiebt
   den Briefinhalt nach unten, Falt-/Lochmarken bleiben papierbezogen
   unverändert.
+- **Frontmatter-Sektion in den Einstellungen**: kompakte Übersicht aller
+  Felder + Button/Befehl **„Brief-Frontmatter in Notiz einfügen"** (ergänzt
+  Empfänger, Betreff, Anrede, Ort, Datum, Anlagen, ohne vorhandene Werte zu
+  überschreiben).
+- **`absender` als einfache YAML-Liste** (eine Kuvertzeile pro Listenpunkt;
+  Telefon/E-Mail/Web/PLZ+Ort werden automatisch erkannt) — zusätzlich zu den
+  Einzelfeldern `absender_name` & Co., die weiterhin Feld für Feld gewinnen.
+- **Paginierte Brief-Vorschau**: zeigt echte A4-Blätter mit denselben
+  Seitenumbruch-Positionen wie der Druck statt einer Endlos-Seite.
 
 ### Changed
 - **DIN-Briefkopf neu**: Name (oder Logo) links, Kontaktdaten rechts, Hairline
@@ -41,6 +50,13 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 - Settings-Migration: War eine der Design-Varianten-Dateien ins Feld
   „Eigenes CSS" eingefügt, wird sie automatisch als Stil/Infozeile übernommen
   und das Feld geleert; alte Schrift-Defaults werden zu „Stil-Standard".
+- **Grundschriftgröße aller Stile auf 10 pt** (vorher 11/11,5 pt); per
+  Einstellung oder Token weiterhin frei änderbar.
+- Druckränder nach Dokumenten-Standard: Folgeseiten oben 25 mm, unten überall
+  20 mm; Seite 1 behält oben 10 mm (DIN-Briefkopf sitzt konstruktionsbedingt
+  hoch).
+- Einstellungen zeigen jetzt die wirksamen Standardwerte als Platzhalter
+  (Schriftart/-größe je Stil, automatische Rücksendeangabe).
 - `ihr_schreiben` wird jetzt als Datum gemäß Locale formatiert; `telefon_bezug`
   hat keinen Absender-Default mehr (Telefon steht bereits im Briefkopf).
 - **Einstellungen ohne CSS-Pflicht**: Stil + Infozeile als Dropdowns;
