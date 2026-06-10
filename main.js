@@ -331,8 +331,10 @@ const PRINT_WRAPPER_CSS = `
 
 const SCREEN_PREVIEW_CSS = `
   html,body{ margin:0; padding:0; }
-  body{ background:#d9d9d9; display:flex; justify-content:center; padding:14px 0; }
-  .bk-letter{ box-shadow:0 2px 14px rgba(0,0,0,.35); }
+  body{ background:#d9d9d9; padding:14px 0; }
+  /* flex-shrink would squeeze the mm-sized page on narrow windows —
+     scaling happens via body zoom (see fitPreview) */
+  .bk-letter{ flex-shrink:0; margin:0 auto; box-shadow:0 2px 14px rgba(0,0,0,.35); }
 `;
 
 /* Commented starter the user can load into the "Eigenes CSS" field via the
@@ -737,6 +739,24 @@ class BriefkopfPreviewModal extends obsidian.Modal {
     frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8">
       <style>${this.css}${SCREEN_PREVIEW_CSS}</style></head><body>${this.html}</body></html>`;
 
+    /* Fit the whole A4 page into the frame (zoom keeps layout + scrollbars
+       consistent, unlike transform). Never upscale beyond 100%. */
+    const fitPreview = () => {
+      try {
+        const doc = frame.contentDocument;
+        const letter = doc && doc.querySelector('.bk-letter');
+        if (!letter) return;
+        doc.body.style.zoom = '1';
+        const pageW = letter.offsetWidth || 794;
+        const pageH = letter.offsetHeight || 1123;
+        const z = Math.min(1, (frame.clientWidth - 30) / pageW, (frame.clientHeight - 30) / pageH);
+        if (z > 0) doc.body.style.zoom = String(z);
+      } catch (e) { /* cross-origin or detached frame — leave unscaled */ }
+    };
+    frame.addEventListener('load', fitPreview);
+    this.resizeObserver = new ResizeObserver(fitPreview);
+    this.resizeObserver.observe(frame);
+
     const actions = contentEl.createDiv({ cls: 'briefkopf-preview-actions' });
     const exportBtn = actions.createEl('button', { text: 'Als PDF exportieren', cls: 'mod-cta' });
     exportBtn.onclick = () => { this.close(); this.plugin.exportLetter(); };
@@ -744,7 +764,10 @@ class BriefkopfPreviewModal extends obsidian.Modal {
     closeBtn.onclick = () => this.close();
   }
 
-  onClose() { this.contentEl.empty(); }
+  onClose() {
+    if (this.resizeObserver) { this.resizeObserver.disconnect(); this.resizeObserver = null; }
+    this.contentEl.empty();
+  }
 }
 
 /* ------------------------------------------------------------------ *

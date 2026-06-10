@@ -47,6 +47,12 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   `.bk-greeting`, `.bk-closing`, `.bk-signature`, `.bk-enclosures`); die
   1.0-Namen bleiben als Aliasse im Markup erhalten.
 
+### Fixed
+- **Brief-Vorschau**: Die A4-Seite wird jetzt vollständig ins Vorschaufenster
+  eingepasst (Zoom-to-fit, nie über 100 %). Vorher wurde die mm-breite Seite
+  bei schmalen Fenstern vom Flex-Layout gestaucht — Texte brachen zu früh um
+  und die Schrift wirkte zu groß.
+
 ## [1.0.0] — 2026-06-09
 
 ### Added
