@@ -67,4 +67,4 @@ zu überschreiben. Vollständige Referenz: [Frontmatter-Felder](frontmatter.md).
 
 | Einstellung | Bedeutung |
 |-------------|-----------|
-| **Custom CSS (optional)** | Eigenes CSS für Feinheiten jenseits von Stil + Infozeile. Wird zuletzt geladen und gewinnt. **Insert preset** lädt einen kommentierten Startpunkt. Siehe [Theming](theming.md). |
+| **Custom CSS (optional)** | Eigenes CSS für Feinheiten jenseits von Stil + Infozeile; wird zuletzt geladen und gewinnt. Das Feld ist mit einem **komplett auskommentierten** (wirkungslosen) Preset vorbefüllt, das alle Tokens dokumentiert — Zeile einkommentieren = aktivieren. **Reset preset** stellt den Ausgangszustand wieder her. Siehe [Theming](theming.md). |

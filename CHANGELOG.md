@@ -11,6 +11,30 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 ### Changed
 ### Fixed
 
+## [1.1.1] — 2026-06-12
+
+### Fixed
+- **Plugin-UI war englisch trotz deutscher Obsidian-App**: Die Spracherkennung
+  nutzt jetzt die offizielle `getLanguage()`-API (Fallback: `moment.locale()`,
+  dann Legacy-`localStorage`). Gefunden im Pre-Submission-Test.
+
+### Added
+- **Flache Infoblock-Felder `info_1` … `info_4`** im Format „Label: Wert" —
+  in Obsidians Eigenschaften-Ansicht direkt editierbar (die `info:`-Map bleibt
+  für YAML-Nutzer erhalten; ohne Doppelpunkt wird das Label „Info" verwendet).
+- Die **Frontmatter-Vorlage folgt der Briefsprache**: englische Feldnamen
+  (`recipient`, `subject`, `salutation`, …) bei Briefsprache Englisch, und sie
+  fügt jetzt alle Felder ein (`gruss`, `unterschrift`, `stil`, `infozeile`,
+  `sprache`, `info_1`) — leer = Einstellungs-/Sprach-Standard, alles in den
+  Eigenschaften editierbar.
+
+### Changed
+- **Custom-CSS-Feld kommt vorbefüllt** mit einem komplett auskommentierten,
+  wirkungslosen Preset (dokumentiert alle Tokens an Ort und Stelle); der
+  Button heißt jetzt **„Reset preset"**. Migration: leere Felder und das alte
+  *aktive* Preset (das die Stil-Auswahl übersteuerte) werden ersetzt.
+- Kürzere Settings-Beschreibungen — näher am Obsidian-Standard-Layout.
+
 ## [1.1.0] — 2026-06-10
 
 ### Added

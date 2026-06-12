@@ -6,9 +6,11 @@ case-insensitive; `_`, `-`, `.` und Leerzeichen werden ignoriert
 (`Ihr Zeichen` = `ihr_zeichen` = `ihrzeichen`).
 
 Schnellstart: Der Befehl **Insert letter frontmatter into note** (auch als
-Button in den Einstellungen unter „Frontmatter") ergänzt die wichtigsten Felder
-in der aktiven Notiz, ohne vorhandene Werte zu überschreiben. Die Einstellungen
-zeigen zusätzlich eine kompakte Feldübersicht.
+Button in den Einstellungen unter „Frontmatter") ergänzt alle Brief-Felder in
+der aktiven Notiz, ohne vorhandene Werte zu überschreiben — mit deutschen
+Feldnamen bei Briefsprache Deutsch, englischen (`recipient`, `subject`, …) bei
+Englisch. Leere Felder sind harmlos (es greift der Einstellungs-Standard). Die
+Einstellungen zeigen zusätzlich eine kompakte Feldübersicht.
 
 ## Brief-Inhalt
 
@@ -46,17 +48,27 @@ weggelassen; „Datum" erscheint immer als letzte Zeile.
 | `unser_zeichen` | `our_ref` | „Unser Zeichen". |
 | `telefon_bezug` | `durchwahl`, `phone` | „Telefon" — nur wenn gesetzt (das Absender-Telefon steht bereits im Briefkopf). |
 
-### Freie Zeilen: `info`
+### Freie Zeilen: `info_1` … `info_4` und `info`
 
-Beliebige zusätzliche Label-Wert-Zeilen als YAML-Map (Aliasse: `bezugszeichen`,
-`infoblock`). Reihenfolge bleibt erhalten; sie erscheinen nach den festen
-Feldern, vor „Datum":
+Flache Textfelder im Format „Label: Wert" — direkt in Obsidians
+Eigenschaften-Ansicht editierbar (ohne Doppelpunkt wird das Label „Info"
+verwendet):
+
+```yaml
+info_1: "Kundennummer: 12345"
+info_2: "Vertragsnummer: V-2026-007"
+```
+
+Alternativ (für YAML-Nutzer) eine Map mit beliebig vielen Zeilen (Aliasse:
+`bezugszeichen`, `infoblock`):
 
 ```yaml
 info:
   Kundennummer: 12345
   Vertragsnummer: V-2026-007
 ```
+
+Reihenfolge: feste Felder → `info_1`–`info_4` → `info`-Map → „Datum".
 
 ## Absender pro Brief überschreiben
 

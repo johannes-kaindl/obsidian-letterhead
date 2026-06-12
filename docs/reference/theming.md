@@ -6,9 +6,10 @@ setzt die Token-Defaults; dein optionales Feld **Custom CSS** wird *danach*
 geladen und gewinnt. Du überschreibst also einfach die Tokens, die du ändern
 willst — für die meisten Anpassungen reicht aber schon die Stil-Auswahl.
 
-Schnellstart: **Einstellungen → Advanced → Insert preset** lädt einen
-kommentierten Startpunkt (Token-Body identisch mit
-[`presets/briefkopf-theme.css`](../../presets/briefkopf-theme.css)).
+Schnellstart: Das Feld **Custom CSS** (Einstellungen → Advanced) ist mit einem
+komplett auskommentierten Preset vorbefüllt — Zeile einkommentieren, Wert
+anpassen, fertig. **Reset preset** stellt den Ausgangszustand wieder her
+(identisch mit [`presets/briefkopf-theme.css`](../../presets/briefkopf-theme.css)).
 
 ## Tokens — sicher anpassbar
 

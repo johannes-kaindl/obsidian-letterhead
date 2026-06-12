@@ -1,63 +1,41 @@
 /* =====================================================================
-   Briefkopf – CSS-Preset (optionaler Feinschliff zum Selbstanpassen)
-   =====================================================================
-
-   WAS IST DAS?
-   Eine kommentierte Kopiervorlage zum Umgestalten deiner Briefe — Token-Body
-   identisch mit dem, was der Button „Insert preset" in den Plugin-
-   Einstellungen ins Feld „Custom CSS" lädt. Du kannst diese Datei entweder
-
-     a) per Button in die Einstellungen laden und dort anpassen, oder
-     b) ihren Inhalt manuell ins Feld „Custom CSS" kopieren.
-
-   BRAUCHE ICH DAS?
-   Meist nicht: Stil (Style) und Infozeile (Info line) wählst du
-   direkt in den Einstellungen. Dieses CSS ist nur für Feinheiten darüber
-   hinaus gedacht.
-
-   WIE FUNKTIONIERT ES?
-   - Dieses CSS wird NACH Stil + Layout geladen und überschreibt beide.
-   - Du änderst in der Regel nur die Design-Tokens (CSS Custom Properties).
-   - "SICHER"        = frei anpassbar (Schrift, Farbe, Abstände).
-   - "DIN-KRITISCH"  = Geometrie fürs Fensterkuvert; nur bewusst ändern.
-   - Workflow: Token ändern -> Befehl „Brief-Vorschau" -> Ergebnis prüfen.
-
-   Alle verfügbaren Tokens findest du in docs/reference/theming.md.
+   Briefkopf – Custom CSS (optionaler Feinschliff)
+   ---------------------------------------------------------------------
+   Alles unten ist auskommentiert und damit wirkungslos. Zum Aktivieren
+   eine Zeile aus ihrem Kommentar holen und den Wert anpassen.
+   Stil (Style) und Infozeile (Info line) wählst du direkt in den
+   Einstellungen — dieses Feld ist nur für Feinheiten darüber hinaus.
+   "Reset preset" stellt diesen Ausgangszustand wieder her.
+   Workflow: Zeile aktivieren -> "Open letter preview" -> prüfen.
+   Alle Tokens und Klassen: docs/reference/theming.md
    ===================================================================== */
 
-:root {
-  /* ---------- SICHER: Typografie ---------- */
-  --bk-font-family: "Helvetica Neue", Arial, system-ui, sans-serif;
-  --bk-font-size: 10pt;          /* 10-12pt üblich */
-  --bk-line-height: 1.45;        /* 1.3-1.6 */
+/* ---------- Typografie (SICHER) ---------- */
+/* :root { --bk-font-family: "Helvetica Neue", Arial, sans-serif; } */
+/* :root { --bk-font-size: 10pt; } */
+/* :root { --bk-line-height: 1.45; } */
 
-  /* ---------- SICHER: Name im Briefkopf ---------- */
-  --bk-name-size: 15.5pt;
-  --bk-name-weight: 600;
-  --bk-name-spacing: 0.005em;
-  --bk-name-transform: none;     /* z. B. uppercase */
+/* ---------- Name im Briefkopf (SICHER) ---------- */
+/* :root { --bk-name-size: 15.5pt; } */
+/* :root { --bk-name-weight: 600; } */
+/* :root { --bk-name-spacing: 0.005em; } */
+/* :root { --bk-name-transform: uppercase; } */
 
-  /* ---------- SICHER: Farben ---------- */
-  --bk-color-text: #1a1a1a;      /* Fließtext */
-  --bk-color-muted: #555;        /* Labels im Infoblock, Kopf-Kontakt */
-  --bk-color-rule: #000;         /* Faltmarken + Rücksende-Unterstrich */
-  --bk-color-hairline: #c8c8c8;  /* Trennlinie unterm Briefkopf */
+/* ---------- Farben (SICHER) ---------- */
+/* :root { --bk-color-text: #1a1a1a; } */
+/* :root { --bk-color-muted: #555555; } */
+/* :root { --bk-color-rule: #000000; } */
+/* :root { --bk-color-hairline: #c8c8c8; } */
 
-  /* ---------- SICHER: Abstände ---------- */
-  --bk-space: 2.6mm;             /* Absatz-Rhythmus */
-  --bk-block-gap: 6mm;           /* Abstand zwischen Blöcken */
-  --bk-signature-gap: 16mm;      /* Platz für die Unterschrift */
+/* ---------- Abstände (SICHER) ---------- */
+/* :root { --bk-space: 2.6mm; } */
+/* :root { --bk-block-gap: 6mm; } */
+/* :root { --bk-signature-gap: 16mm; } */
 
-  /* ---------- DIN-KRITISCH: Seitengeometrie ----------
-     Standard = DIN 5008 Form B; hält die Anschrift im Fensterkuvert.
-     Nur ändern, wenn dein Kuvert abweicht. Auskommentiert lassen = Default. */
-  /* --bk-margin-left: 25mm;
-     --bk-margin-right: 20mm;
-     --bk-din-address-top: 45mm;
-     --bk-din-content-top: 98.46mm; */
-}
+/* ---------- Seitengeometrie (DIN-KRITISCH: Fensterkuvert!) ---------- */
+/* :root { --bk-din-address-top: 45mm; } */
+/* :root { --bk-margin-left: 25mm; } */
 
-/* ---------- Beispiel: einzelne Komponenten überschreiben ----------
-.bk-betreff { color: #0a7d3c; }
-.bk-din .bk-head-name { letter-spacing: .3px; }
-*/
+/* ---------- Beispiele: einzelne Komponenten ---------- */
+/* .bk-betreff { color: #0a7d3c; } */
+/* .bk-din .bk-head-name { letter-spacing: 0.3px; } */

@@ -168,42 +168,42 @@ const UI_STRINGS = {
     set_layout: 'Layout', set_layout_desc: 'Base layout of the letter.',
     opt_layout_din: 'DIN 5008 (German standard)', opt_layout_modern: 'Modern / international',
     set_style: 'Style',
-    set_style_desc: 'Complete look (font, colors, spacing, letterhead). Sachlich: neutral sans-serif. Klassisch: serif, formal. Technisch: monospaced accents. Override per letter via the "stil" frontmatter field.',
+    set_style_desc: 'Complete look: font, colors, spacing, letterhead. Override per letter via "stil".',
     opt_style_a: 'A · Sachlich (neutral sans)', opt_style_b: 'B · Klassisch (serif)', opt_style_c: 'C · Technisch (monospaced accents)',
     set_infoline: 'Info line',
-    set_infoline_desc: 'Full: info block on the right (tax number, references, date). Date only: a plain place/date line, e.g. for private correspondence. Override per letter via the "infozeile" frontmatter field.',
+    set_infoline_desc: 'Full: info block on the right. Date only: a plain place/date line. Override per letter via "infozeile".',
     opt_info_full: 'Full (info block)', opt_info_date: 'Date only',
     set_dinform: 'DIN 5008 form',
-    set_dinform_desc: 'Form A: address field at 27 mm. Form B: address field at 45 mm (standard, more room for the letterhead).',
+    set_dinform_desc: 'Address field position: Form A 27 mm, Form B 45 mm (standard).',
     head_sender: 'Sender profile',
-    sender_intro: 'Default sender. Override per letter in the frontmatter (e.g. absender_name or the "absender" list).',
+    sender_intro: 'Default sender; override per letter via the "absender" frontmatter list.',
     f_name: 'Name', f_company: 'Company / addition', f_street: 'Street', f_city: 'Postal code and city',
     f_phone: 'Phone', f_email: 'Email', f_web: 'Website',
     set_return: 'Return address line',
-    set_return_desc: 'Small line above the recipient address (for the envelope window). Empty = automatic (name · street · city).',
+    set_return_desc: 'Line above the recipient address. Empty = automatic.',
     ph_automatic: 'automatic',
     head_elements: 'Elements',
     set_fold: 'Fold marks', set_fold_desc: 'Two marks for folding to fit a window envelope (DIN 5008).',
     set_hole: 'Hole mark', set_hole_desc: 'Mark at 148.5 mm for filing.',
     set_offset: 'Print offset top (mm)',
-    set_offset_desc: 'Fine-tuning: shifts the letter content down if the address sits too high in the envelope window (try 2–4 mm). Fold and hole marks stay in place.',
+    set_offset_desc: 'Shifts the content down if the address sits too high in the envelope window (try 2–4 mm).',
     set_logo: 'Show logo', set_logo_desc: 'Replaces the name in the letterhead with an image.',
     set_logopath: 'Logo path', set_logopath_desc: 'Vault-relative path to an image, e.g. assets/logo.png',
     head_typo: 'Typography & language',
     set_font: 'Font (CSS font-family)',
-    set_font_desc: 'Empty = default of the selected style (the placeholder shows the current value).',
+    set_font_desc: 'Empty = style default (shown as placeholder).',
     set_fontsize: 'Font size (pt)',
-    set_fontsize_desc: 'Empty = default of the selected style (the placeholder shows the current value).',
+    set_fontsize_desc: 'Empty = style default (shown as placeholder).',
     set_locale: 'Date locale', set_locale_desc: 'For example de-DE, en-GB, en-US — controls the date format.',
     set_letterlang: 'Letter language',
-    set_letterlang_desc: 'Language of the printed labels (enclosures, info block, default closing). Override per letter via the "sprache" frontmatter field.',
+    set_letterlang_desc: 'Language of the printed labels. Override per letter via "sprache".',
     opt_lang_de: 'Deutsch', opt_lang_en: 'English',
     set_closing: 'Default closing',
-    set_closing_desc: 'Used when the "gruss" frontmatter field is missing. Empty = language default.',
+    set_closing_desc: 'Empty = language default.',
     head_fm: 'Frontmatter (per letter)',
-    fm_intro: 'These fields control a letter per note and override the settings above. Keys are case-insensitive; see the documentation for English aliases (docs/reference/frontmatter.md).',
+    fm_intro: 'Per-note fields, overriding the settings above. Keys are case-insensitive; English aliases work too.',
     set_insertfm: 'Insert frontmatter template',
-    set_insertfm_desc: 'Adds the most important fields (recipient, subject, salutation, place, date, enclosures) to the active note without touching existing values.',
+    set_insertfm_desc: 'Adds the letter fields to the active note without touching existing values.',
     btn_insertfm: 'Insert into active note',
     fm_empfaenger: 'Recipient address as a list — one item per envelope line.',
     fm_absender: 'Sender as a list (name first; phone, email and web are detected automatically). Alternative: the individual fields absender_name, absender_strasse, absender_plz_ort, …',
@@ -218,11 +218,11 @@ const UI_STRINGS = {
     fm_infozeile: 'vollstaendig · nurdatum (overrides the info line setting).',
     fm_sprache: 'de · en (overrides the letter language setting).',
     fm_refs: 'Fixed rows in the info block; empty fields are omitted.',
-    fm_info: 'Custom info block rows as a map, e.g. Kundennummer: 12345.',
+    fm_info: 'Custom info block rows: flat fields info_1 … info_4 ("Label: value") or an info map.',
     head_advanced: 'Advanced',
     set_css: 'Custom CSS (optional)',
-    set_css_desc: 'For fine-tuning beyond style and info line. Loaded last and wins. "Insert preset" loads a commented starting point (overwrites the field).',
-    btn_preset: 'Insert preset'
+    set_css_desc: 'Loaded last and wins. The default content is fully commented out and has no effect.',
+    btn_preset: 'Reset preset'
   },
   de: {
     cmd_export: 'Brief als PDF exportieren / drucken',
@@ -240,42 +240,42 @@ const UI_STRINGS = {
     set_layout: 'Layout', set_layout_desc: 'Grundlayout des Briefs.',
     opt_layout_din: 'DIN 5008 (deutscher Standard)', opt_layout_modern: 'Modern / international',
     set_style: 'Stil',
-    set_style_desc: 'Komplettes Erscheinungsbild (Schrift, Farben, Abstände, Briefkopf). Sachlich: neutral serifenlos. Klassisch: Serife, gediegen. Technisch: monospaced Akzente. Pro Brief per Frontmatter-Feld „stil" überschreibbar.',
+    set_style_desc: 'Komplettes Erscheinungsbild: Schrift, Farben, Abstände, Briefkopf. Pro Brief per „stil" überschreibbar.',
     opt_style_a: 'A · Sachlich (neutral serifenlos)', opt_style_b: 'B · Klassisch (Serife)', opt_style_c: 'C · Technisch (monospaced Akzente)',
     set_infoline: 'Infozeile',
-    set_infoline_desc: 'Vollständig: Infoblock rechts (Steuernummer, Zeichen, Datum). Nur Datum: schlichte Orts-/Datumszeile, z. B. für Privatkorrespondenz. Pro Brief per Frontmatter-Feld „infozeile" überschreibbar.',
+    set_infoline_desc: 'Vollständig: Infoblock rechts. Nur Datum: schlichte Orts-/Datumszeile. Pro Brief per „infozeile" überschreibbar.',
     opt_info_full: 'Vollständig (Infoblock)', opt_info_date: 'Nur Datum',
     set_dinform: 'DIN-5008-Form',
-    set_dinform_desc: 'Form A: Anschrift bei 27 mm. Form B: Anschrift bei 45 mm (Standard, mehr Platz für den Briefkopf).',
+    set_dinform_desc: 'Anschrift-Position: Form A 27 mm, Form B 45 mm (Standard).',
     head_sender: 'Absender-Profil',
-    sender_intro: 'Standard-Absender. Pro Brief im Frontmatter überschreibbar (z. B. absender_name oder die Liste „absender").',
+    sender_intro: 'Standard-Absender; pro Brief per Frontmatter-Liste „absender" überschreibbar.',
     f_name: 'Name', f_company: 'Zusatz / Firma', f_street: 'Straße', f_city: 'PLZ und Ort',
     f_phone: 'Telefon', f_email: 'E-Mail', f_web: 'Website',
     set_return: 'Rücksendeangabe',
-    set_return_desc: 'Kleine Zeile über der Empfängeranschrift (fürs Fensterkuvert). Leer = automatisch (Name · Straße · PLZ Ort).',
+    set_return_desc: 'Zeile über der Empfängeranschrift. Leer = automatisch.',
     ph_automatic: 'automatisch',
     head_elements: 'Elemente',
     set_fold: 'Faltmarken', set_fold_desc: 'Zwei Markierungen zum Falten fürs Fensterkuvert (DIN 5008).',
     set_hole: 'Lochmarke', set_hole_desc: 'Markierung bei 148,5 mm zum Abheften.',
     set_offset: 'Druckversatz oben (mm)',
-    set_offset_desc: 'Feinjustierung: schiebt den Briefinhalt nach unten, falls die Anschrift im Kuvertfenster zu hoch sitzt (2–4 mm probieren). Falt-/Lochmarken bleiben unverändert.',
+    set_offset_desc: 'Schiebt den Inhalt nach unten, falls die Anschrift im Kuvertfenster zu hoch sitzt (2–4 mm probieren).',
     set_logo: 'Logo anzeigen', set_logo_desc: 'Ersetzt den Namen im Briefkopf durch ein Bild.',
     set_logopath: 'Logo-Pfad', set_logopath_desc: 'Vault-relativer Pfad zu einer Bilddatei, z. B. assets/logo.png',
     head_typo: 'Typografie & Sprache',
     set_font: 'Schriftart (CSS font-family)',
-    set_font_desc: 'Leer = Standard des gewählten Stils (Platzhalter zeigt den aktuellen Wert).',
+    set_font_desc: 'Leer = Stil-Standard (als Platzhalter angezeigt).',
     set_fontsize: 'Schriftgröße (pt)',
-    set_fontsize_desc: 'Leer = Standard des gewählten Stils (Platzhalter zeigt den aktuellen Wert).',
+    set_fontsize_desc: 'Leer = Stil-Standard (als Platzhalter angezeigt).',
     set_locale: 'Datums-Locale', set_locale_desc: 'z. B. de-DE, en-GB, en-US — bestimmt das Datumsformat.',
     set_letterlang: 'Briefsprache',
-    set_letterlang_desc: 'Sprache der gedruckten Labels (Anlagen, Infoblock, Standard-Grußformel). Pro Brief per Frontmatter-Feld „sprache" überschreibbar.',
+    set_letterlang_desc: 'Sprache der gedruckten Labels. Pro Brief per „sprache" überschreibbar.',
     opt_lang_de: 'Deutsch', opt_lang_en: 'Englisch',
     set_closing: 'Standard-Grußformel',
-    set_closing_desc: 'Greift, wenn das Frontmatter-Feld „gruss" fehlt. Leer = Sprach-Standard.',
+    set_closing_desc: 'Leer = Sprach-Standard.',
     head_fm: 'Frontmatter (pro Brief)',
-    fm_intro: 'Diese Felder steuern den Brief pro Notiz und überschreiben die Einstellungen oben. Schlüssel sind case-insensitive; englische Aliasse siehe Doku (docs/reference/frontmatter.md).',
+    fm_intro: 'Felder pro Notiz, überschreiben die Einstellungen oben. Schlüssel case-insensitive; englische Aliasse funktionieren ebenso.',
     set_insertfm: 'Frontmatter-Vorlage einfügen',
-    set_insertfm_desc: 'Ergänzt die wichtigsten Felder (Empfänger, Betreff, Anrede, Ort, Datum, Anlagen) im Frontmatter der aktiven Notiz — vorhandene Werte bleiben unangetastet.',
+    set_insertfm_desc: 'Ergänzt die Brief-Felder in der aktiven Notiz — vorhandene Werte bleiben unangetastet.',
     btn_insertfm: 'In aktive Notiz einfügen',
     fm_empfaenger: 'Empfängeranschrift als Liste — ein Listenpunkt pro Kuvertzeile.',
     fm_absender: 'Absender als Liste (Name zuerst; Telefon, E-Mail und Web werden automatisch erkannt). Alternativ Einzelfelder absender_name, absender_strasse, absender_plz_ort, …',
@@ -290,21 +290,34 @@ const UI_STRINGS = {
     fm_infozeile: 'vollstaendig · nurdatum (überschreibt die Infozeilen-Einstellung).',
     fm_sprache: 'de · en (überschreibt die Briefsprache-Einstellung).',
     fm_refs: 'Feste Zeilen im Infoblock; leere Felder werden weggelassen.',
-    fm_info: 'Eigene Infoblock-Zeilen als Map, z. B. Kundennummer: 12345.',
+    fm_info: 'Eigene Infoblock-Zeilen: flache Felder info_1 … info_4 („Label: Wert") oder eine info-Map.',
     head_advanced: 'Erweitert',
     set_css: 'Eigenes CSS (optional)',
-    set_css_desc: 'Für Feinheiten jenseits von Stil + Infozeile. Wird zuletzt geladen und gewinnt. „Insert preset" lädt einen kommentierten Startpunkt (überschreibt das Feld).',
-    btn_preset: 'Preset einfügen'
+    set_css_desc: 'Wird zuletzt geladen und gewinnt. Der Standard-Inhalt ist komplett auskommentiert und wirkungslos.',
+    btn_preset: 'Preset zurücksetzen'
   }
 };
 
-/* Obsidian stores the app language in localStorage ('de', 'en' = null/absent).
+/* App language detection, most reliable source first:
+   1. obsidian.getLanguage() — official API (Obsidian >= 1.8)
+   2. moment.locale() — Obsidian keeps it on the app language
+   3. localStorage 'language' — legacy storage location
    English is the default and the fallback for every missing key. */
 function detectUiLang() {
   try {
+    if (typeof obsidian.getLanguage === 'function') {
+      const l = obsidian.getLanguage();
+      if (l) return String(l).toLowerCase().startsWith('de') ? 'de' : 'en';
+    }
+  } catch (e) { /* fall through */ }
+  try {
+    const m = window.moment && window.moment.locale && window.moment.locale();
+    if (m && String(m).toLowerCase().startsWith('de')) return 'de';
+  } catch (e) { /* fall through */ }
+  try {
     const l = window.localStorage.getItem('language');
     if (l && String(l).toLowerCase().startsWith('de')) return 'de';
-  } catch (e) { /* no localStorage (tests) — default to English */ }
+  } catch (e) { /* no window (tests) — default to English */ }
   return 'en';
 }
 
@@ -596,53 +609,49 @@ const SCREEN_PREVIEW_CSS = `
   .bk-sheet .bk-page-clip{ position:absolute; left:0; right:0; overflow:hidden; }
 `;
 
-/* Commented starter the user can load into the "Eigenes CSS" field via the
-   settings button. Kept identical to presets/briefkopf-theme.css. */
+/* Inert (fully commented) starter that pre-fills the Custom CSS field.
+   "Reset preset" restores it. Kept identical to presets/briefkopf-theme.css. */
 const PRESET_CSS = `/* =====================================================================
-   Briefkopf – CSS-Preset (optionaler Feinschliff zum Selbstanpassen)
+   Briefkopf – Custom CSS (optionaler Feinschliff)
    ---------------------------------------------------------------------
-   - Stil (Style) und Infozeile (Info line) wählst du direkt in den
-     Einstellungen — dieses CSS brauchst du nur für Feinheiten.
-   - Es wird NACH Stil + Layout geladen und überschreibt beide.
-   - "SICHER" = frei anpassbar. "DIN-KRITISCH" = Fensterkuvert-Position.
-   - Workflow: Token ändern -> Befehl "Brief-Vorschau" -> prüfen.
+   Alles unten ist auskommentiert und damit wirkungslos. Zum Aktivieren
+   eine Zeile aus ihrem Kommentar holen und den Wert anpassen.
+   Stil (Style) und Infozeile (Info line) wählst du direkt in den
+   Einstellungen — dieses Feld ist nur für Feinheiten darüber hinaus.
+   "Reset preset" stellt diesen Ausgangszustand wieder her.
+   Workflow: Zeile aktivieren -> "Open letter preview" -> prüfen.
+   Alle Tokens und Klassen: docs/reference/theming.md
    ===================================================================== */
-:root {
-  /* ---------- SICHER: Typografie ---------- */
-  --bk-font-family: "Helvetica Neue", Arial, system-ui, sans-serif;
-  --bk-font-size: 10pt;          /* 10-12pt üblich */
-  --bk-line-height: 1.45;        /* 1.3-1.6 */
 
-  /* ---------- SICHER: Name im Briefkopf ---------- */
-  --bk-name-size: 15.5pt;
-  --bk-name-weight: 600;
-  --bk-name-spacing: 0.005em;
-  --bk-name-transform: none;     /* z. B. uppercase */
+/* ---------- Typografie (SICHER) ---------- */
+/* :root { --bk-font-family: "Helvetica Neue", Arial, sans-serif; } */
+/* :root { --bk-font-size: 10pt; } */
+/* :root { --bk-line-height: 1.45; } */
 
-  /* ---------- SICHER: Farben ---------- */
-  --bk-color-text: #1a1a1a;      /* Fließtext */
-  --bk-color-muted: #555;        /* Labels im Infoblock, Kopf-Kontakt */
-  --bk-color-rule: #000;         /* Faltmarken + Rücksende-Unterstrich */
-  --bk-color-hairline: #c8c8c8;  /* Trennlinie unterm Briefkopf */
+/* ---------- Name im Briefkopf (SICHER) ---------- */
+/* :root { --bk-name-size: 15.5pt; } */
+/* :root { --bk-name-weight: 600; } */
+/* :root { --bk-name-spacing: 0.005em; } */
+/* :root { --bk-name-transform: uppercase; } */
 
-  /* ---------- SICHER: Abstände ---------- */
-  --bk-space: 2.6mm;             /* Absatz-Rhythmus */
-  --bk-block-gap: 6mm;           /* Abstand zwischen Blöcken */
-  --bk-signature-gap: 16mm;      /* Platz für die Unterschrift */
+/* ---------- Farben (SICHER) ---------- */
+/* :root { --bk-color-text: #1a1a1a; } */
+/* :root { --bk-color-muted: #555555; } */
+/* :root { --bk-color-rule: #000000; } */
+/* :root { --bk-color-hairline: #c8c8c8; } */
 
-  /* ---------- DIN-KRITISCH: Seitengeometrie ----------
-     Standard = DIN 5008 Form B; hält die Anschrift im Fensterkuvert.
-     Nur ändern, wenn dein Kuvert abweicht. Auskommentiert lassen = Default. */
-  /* --bk-margin-left: 25mm;
-     --bk-margin-right: 20mm;
-     --bk-din-address-top: 45mm;
-     --bk-din-content-top: 98.46mm; */
-}
+/* ---------- Abstände (SICHER) ---------- */
+/* :root { --bk-space: 2.6mm; } */
+/* :root { --bk-block-gap: 6mm; } */
+/* :root { --bk-signature-gap: 16mm; } */
 
-/* ---------- Beispiel: einzelne Komponenten überschreiben ----------
-.bk-betreff { color: #0a7d3c; }
-.bk-din .bk-head-name { letter-spacing: .3px; }
-*/
+/* ---------- Seitengeometrie (DIN-KRITISCH: Fensterkuvert!) ---------- */
+/* :root { --bk-din-address-top: 45mm; } */
+/* :root { --bk-margin-left: 25mm; } */
+
+/* ---------- Beispiele: einzelne Komponenten ---------- */
+/* .bk-betreff { color: #0a7d3c; } */
+/* .bk-din .bk-head-name { letter-spacing: 0.3px; } */
 `;
 
 /* ------------------------------------------------------------------ *
@@ -685,17 +694,35 @@ class BriefkopfPlugin extends obsidian.Plugin {
     const iso = now.getFullYear() + '-' +
       String(now.getMonth() + 1).padStart(2, '0') + '-' +
       String(now.getDate()).padStart(2, '0');
+    /* Template keys follow the letter language: German keys for German
+       letters, the English aliases for English letters. All fields the
+       plugin understands are inserted (empty = setting/language default),
+       so everything stays editable right in the properties view. */
+    const lang = normSprache(this.settings.briefSprache) || 'de';
+    const K = lang === 'en'
+      ? { recipient: 'recipient', betreff: 'subject', anrede: 'salutation', ort: 'place',
+          datum: 'date', anlagen: 'enclosures', gruss: 'closing', unterschrift: 'signature',
+          stil: 'style', infozeile: 'layout', sprache: 'language', info1: 'info_1' }
+      : { recipient: 'empfaenger', betreff: 'betreff', anrede: 'anrede', ort: 'ort',
+          datum: 'datum', anlagen: 'anlagen', gruss: 'gruss', unterschrift: 'unterschrift',
+          stil: 'stil', infozeile: 'infozeile', sprache: 'sprache', info1: 'info_1' };
     try {
       await this.app.fileManager.processFrontMatter(file, (fm) => {
         const has = (...keys) => keys.some((k) => fm[k] !== undefined);
         if (!has('empfaenger', 'empfänger', 'recipient', 'an', 'to', 'adresse', 'anschrift')) {
-          fm.empfaenger = ['', '', '', ''];
+          fm[K.recipient] = ['', '', '', ''];
         }
-        if (!has('betreff', 'subject', 'thema')) fm.betreff = '';
-        if (!has('anrede', 'salutation')) fm.anrede = (LETTER_LABELS[normSprache(this.settings.briefSprache) || 'de'] || LETTER_LABELS.de).salutation;
-        if (!has('ort', 'place', 'stadt', 'city')) fm.ort = '';
-        if (!has('datum', 'date')) fm.datum = iso;
-        if (!has('anlagen', 'anlage', 'attachments', 'enclosures')) fm.anlagen = [];
+        if (!has('betreff', 'subject', 'thema')) fm[K.betreff] = '';
+        if (!has('anrede', 'salutation')) fm[K.anrede] = (LETTER_LABELS[lang] || LETTER_LABELS.de).salutation;
+        if (!has('ort', 'place', 'stadt', 'city')) fm[K.ort] = '';
+        if (!has('datum', 'date')) fm[K.datum] = iso;
+        if (!has('anlagen', 'anlage', 'attachments', 'enclosures')) fm[K.anlagen] = [];
+        if (!has('gruss', 'gruß', 'grussformel', 'closing', 'signoff')) fm[K.gruss] = '';
+        if (!has('unterschrift', 'signatur', 'signature', 'gezeichnet')) fm[K.unterschrift] = '';
+        if (!has('stil', 'style', 'design', 'variante')) fm[K.stil] = '';
+        if (!has('infozeile', 'layout')) fm[K.infozeile] = '';
+        if (!has('sprache', 'language', 'lang', 'briefsprache')) fm[K.sprache] = lang;
+        if (!has('info_1', 'info1', 'infoblock_1', 'info_block_1')) fm[K.info1] = '';
       });
       new obsidian.Notice(t('notice_fm_added'));
     } catch (e) {
@@ -733,6 +760,17 @@ class BriefkopfPlugin extends obsidian.Plugin {
       }
       this.settings.customCss = '';
       migrated = true;
+    }
+    /* Custom CSS field: pre-fill with the inert commented preset; also
+       replaces the old ACTIVE preset (it pinned tokens and fought the
+       Style setting) and the cleared field after a variant migration. */
+    if (this.settings.customCss === undefined || this.settings.customCss === '' ||
+        (typeof this.settings.customCss === 'string' &&
+         this.settings.customCss.includes('Briefkopf – CSS-Preset'))) {
+      if (this.settings.customCss !== PRESET_CSS) {
+        this.settings.customCss = PRESET_CSS;
+        migrated = true;
+      }
     }
     if (migrated) await this.saveData(this.settings);
   }
@@ -824,9 +862,20 @@ class BriefkopfPlugin extends obsidian.Plugin {
       ruecksende = [senderName, senderStrasse, senderPlzOrt].filter(Boolean).join(' · ');
     }
 
-    /* free-form info-block rows: `info:` map of label -> value */
-    const infoRaw = getField(idx, ALIASES.info);
+    /* free-form info-block rows. Two properties-friendly forms:
+       flat `info_1`..`info_4` text fields ("Label: Wert"), then the
+       `info:` map of label -> value (YAML, not editable in the
+       properties view — kept for power users). */
     const infoExtra = [];
+    for (let i = 1; i <= 4; i++) {
+      const raw = getField(idx, ['info_' + i]);
+      if (raw === undefined || raw === null || raw === '') continue;
+      const sv = raw instanceof Date ? this.formatDate(raw) : String(raw);
+      const ci = sv.indexOf(':');
+      if (ci > 0) infoExtra.push([sv.slice(0, ci).trim(), sv.slice(ci + 1).trim()]);
+      else infoExtra.push(['Info', sv.trim()]);
+    }
+    const infoRaw = getField(idx, ALIASES.info);
     if (infoRaw && typeof infoRaw === 'object' && !Array.isArray(infoRaw)) {
       for (const k of Object.keys(infoRaw)) {
         const v = infoRaw[k];
