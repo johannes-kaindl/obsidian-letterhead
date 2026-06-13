@@ -1208,7 +1208,7 @@ class BriefkopfPreviewModal extends obsidian.Modal {
         const pageW = sheet.offsetWidth || 794;
         const z = Math.min(1, (frame.clientWidth - 20) / pageW);
         stage.style.transform = `scale(${z})`;
-        doc.body.style.height = Math.ceil(stage.getBoundingClientRect().height * z + 28) + 'px';
+        doc.body.style.height = Math.ceil(stage.getBoundingClientRect().height + 28) + 'px';
       } catch (e) { /* cross-origin or detached frame — leave unscaled */ }
     };
     frame.addEventListener('load', () => { paginate(); fitPreview(); });
