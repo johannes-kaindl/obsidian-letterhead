@@ -1,4 +1,4 @@
-# Briefkopf – Letter Generator
+# Letterhead – DIN 5008 & modern letters
 
 > 🇩🇪 Deutsch · [🇬🇧 English](README.md)
 
@@ -8,7 +8,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
-![Briefkopf — DIN-5008-Brief](docs/images/hero.png)
+![Letterhead — DIN-5008-Brief](docs/images/hero.png)
 
 ## Funktionen
 
@@ -28,13 +28,13 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 ```bash
 # Manuelle Installation: Plugin in den Vault kopieren
 cp manifest.json main.js styles.css versions.json \
-   "<dein-vault>/.obsidian/plugins/briefkopf/"
+   "<dein-vault>/.obsidian/plugins/letterhead/"
 
 # …oder mit gesetztem OBSIDIAN_PLUGIN_DIR:
 npm run deploy
 ```
 
-Dann: Obsidian → Einstellungen → Community-Plugins → neu laden → **Briefkopf** aktivieren → Absender-Profil ausfüllen.
+Dann: Obsidian → Einstellungen → Community-Plugins → neu laden → **Letterhead** aktivieren → Absender-Profil ausfüllen.
 
 ## Nutzung
 

@@ -1,6 +1,6 @@
 # Referenz — Einstellungen
 
-Einstellungen → Community-Plugins → **Briefkopf**. Die Plugin-UI folgt der
+Einstellungen → Community-Plugins → **Letterhead**. Die Plugin-UI folgt der
 Obsidian-App-Sprache (Englisch als Standard, Deutsch lokalisiert); diese
 Referenz nennt die englischen Bezeichnungen und erklärt auf Deutsch. Die
 Sprache des **Briefs** ist davon unabhängig (Einstellung **Letter language**).

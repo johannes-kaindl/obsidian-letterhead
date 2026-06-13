@@ -1,4 +1,4 @@
-# AGENTS.md — obsidian-briefkopf
+# AGENTS.md — obsidian-letterhead
 
 > **Workspace-Standards:** Die verbindliche Leitkonvention steht in
 > `../_docs/CONVENTIONS.md` (Modell comply-or-explain). Begründete Abweichungen
@@ -8,13 +8,13 @@ Conventions for AI agents (Claude Code, Codex, …) working on this repository.
 
 ## Project character
 
-Obsidian-Plugin „Briefkopf": macht aus der aktiven Notiz einen formatierten
+Obsidian-Plugin „Letterhead": macht aus der aktiven Notiz einen formatierten
 Geschäftsbrief (DIN 5008 Form A/B + „Modern"-Theme) und exportiert ihn über den
 OS-Druckdialog als PDF — Desktop **und iOS**. Bewusst **abhängigkeitsfreies
 Vanilla-JS ohne Build**, damit `main.js` zugleich Quelle und Auslieferung ist und
 auf Mobile ohne Toolchain läuft.
 
-- **Plugin-ID:** `briefkopf` (deployed unter `.obsidian/plugins/briefkopf/`).
+- **Plugin-ID:** `letterhead` (deployed unter `.obsidian/plugins/letterhead/`).
 - **Test-Vault:** `/Users/Shared/10_ObsidianVaults/10_Pallas/`.
 
 ## Architecture principles
@@ -35,7 +35,7 @@ npm run check     # node --check main.js (Syntax-Gate)
 npm run deploy    # cp manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
 ```
 
-Manuelles Deploy-Ziel: `<vault>/.obsidian/plugins/briefkopf/`.
+Manuelles Deploy-Ziel: `<vault>/.obsidian/plugins/letterhead/`.
 Es gibt bewusst **keinen** build/test/lint/typecheck-Schritt (siehe Abweichungen).
 
 ## Conventions

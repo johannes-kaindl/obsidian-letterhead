@@ -5,13 +5,13 @@ Ziel: in fünf Minuten von einer leeren Notiz zu einem fertigen PDF-Geschäftsbr
 ## 1. Plugin installieren & aktivieren
 
 `manifest.json`, `main.js`, `styles.css`, `versions.json` nach
-`<dein-vault>/.obsidian/plugins/briefkopf/` kopieren (oder `npm run deploy`),
-dann in Obsidian → Einstellungen → Community-Plugins neu laden und **Briefkopf**
+`<dein-vault>/.obsidian/plugins/letterhead/` kopieren (oder `npm run deploy`),
+dann in Obsidian → Einstellungen → Community-Plugins neu laden und **Letterhead**
 aktivieren.
 
 ## 2. Absender & Stil einmalig einstellen
 
-Einstellungen → **Briefkopf**:
+Einstellungen → **Letterhead**:
 
 - **Sender profile** ausfüllen (Name, Firma, Straße, PLZ + Ort, Telefon,
   E-Mail, Website). Gilt für alle Briefe, pro Brief überschreibbar.

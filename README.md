@@ -1,4 +1,4 @@
-# Briefkopf – Letter Generator
+# Letterhead – DIN 5008 & modern letters
 
 > 🇬🇧 English · [🇩🇪 Deutsch](README.de.md)
 
@@ -8,7 +8,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
-![Briefkopf — DIN 5008 letter](docs/images/hero.png)
+![Letterhead — DIN 5008 letter](docs/images/hero.png)
 
 ## Features
 
@@ -28,13 +28,13 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 ```bash
 # Manual install: copy the plugin into your vault
 cp manifest.json main.js styles.css versions.json \
-   "<your-vault>/.obsidian/plugins/briefkopf/"
+   "<your-vault>/.obsidian/plugins/letterhead/"
 
 # …or, with OBSIDIAN_PLUGIN_DIR exported:
 npm run deploy
 ```
 
-Then: Obsidian → Settings → Community plugins → reload → enable **Briefkopf** → fill in your sender profile.
+Then: Obsidian → Settings → Community plugins → reload → enable **Letterhead** → fill in your sender profile.
 
 ## Usage
 
