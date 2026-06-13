@@ -1066,7 +1066,26 @@ class BriefkopfPlugin extends obsidian.Plugin {
     if (!m) return;
     const html = this.buildLetterHtml(m);
     const css = buildCss(this.settings, m.stil);
-    this.doPrint(html, css);
+    if (obsidian.Platform.isDesktopApp) {
+      this.doPrint(html, css);
+    } else {
+      await this.exportViaShare(html, css);
+    }
+  }
+
+  /* iOS/iPad path: window.print() is a no-op in the Obsidian mobile WebView,
+     so write the letter as a standalone file into the vault and hand it to the
+     system via openWithDefaultApp — the user prints it to PDF from Safari. */
+  async exportViaShare(letterHtml, css) {
+    const path = '.briefkopf-export.html';
+    try {
+      const docHtml = buildStandaloneDoc(letterHtml, css);
+      await this.app.vault.adapter.write(path, docHtml);
+      new BriefkopfShareModal(this.app, path).open();
+    } catch (e) {
+      console.error('Briefkopf: share export failed', e);
+      new obsidian.Notice(t('notice_share_failed'));
+    }
   }
 
   doPrint(letterHtml, css) {
