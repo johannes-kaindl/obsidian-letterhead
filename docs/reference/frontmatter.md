@@ -1,87 +1,91 @@
-# Referenz — Frontmatter-Felder
+# Reference — frontmatter fields
 
-Alle Felder sind optional. Fehlt ein Wert, greift der Standard aus den
-Plugin-Einstellungen (Absender, Stil, Grußformel, Datum = heute). Schlüssel sind
-case-insensitive; `_`, `-`, `.` und Leerzeichen werden ignoriert
-(`Ihr Zeichen` = `ihr_zeichen` = `ihrzeichen`).
+All fields are optional. If a value is missing, the default from the plugin
+settings applies (sender, style, closing, date = today). Keys are
+case-insensitive; `_`, `-`, `.` and spaces are ignored
+(`Your ref` = `your_ref` = `yourref`).
 
-Schnellstart: Der Befehl **Insert letter frontmatter into note** (auch als
-Button in den Einstellungen unter „Frontmatter") ergänzt alle Brief-Felder in
-der aktiven Notiz, ohne vorhandene Werte zu überschreiben — mit deutschen
-Feldnamen bei Briefsprache Deutsch, englischen (`recipient`, `subject`, …) bei
-Englisch. Leere Felder sind harmlos (es greift der Einstellungs-Standard). Die
-Einstellungen zeigen zusätzlich eine kompakte Feldübersicht.
+This plugin is German-first with English aliases: the field list below leads with
+the **English aliases** for an international audience, and notes the German names
+that also work. Use whichever you prefer — they are interchangeable.
 
-## Brief-Inhalt
+Quick start: The command **Insert letter frontmatter into note** (also a button
+in the settings under "Frontmatter") adds all letter fields to the active note
+without overwriting existing values — with English field names when the letter
+language is English, German names (`empfaenger`, `betreff`, …) when it is German.
+Empty fields are harmless (the settings default applies). The settings also show
+a compact field overview.
 
-| Feld | Aliasse | Beschreibung |
-|------|---------|--------------|
-| `empfaenger` | `empfänger`, `recipient`, `an`, `to`, `adresse`, `anschrift` | Empfängeranschrift als Liste — ein Listenpunkt pro Kuvertzeile (alternativ Blockskalar). |
-| `betreff` | `subject`, `thema`, `re` | Betreffzeile. |
-| `anrede` | `salutation`, `greeting` | z. B. „Sehr geehrte Frau Beispiel,". |
-| `gruss` | `grußformel`, `grussformel`, `closing`, `signoff` | Grußformel; Default aus Einstellungen, sonst Sprach-Standard („Mit freundlichen Grüßen“ / „Kind regards“). |
-| `unterschrift` | `signatur`, `signature`, `gezeichnet` | Name unter dem Gruß; Default = Absendername. |
-| `ort` | `place`, `stadt`, `city` | Ort für die Orts-/Datumszeile. |
-| `datum` | `date` | ISO `2026-06-09` empfohlen; fehlt = heute. Formatierung über die Einstellung **Date locale**. |
-| `anlagen` | `anlage`, `attachments`, `enclosures` | Anlagenvermerk unter der Unterschrift — Liste, ein Punkt pro Anlage. Bei genau einem Eintrag lautet das Label „Anlage", sonst „Anlagen". |
+## Letter content
 
-## Design pro Brief
+| Field | Aliases | Description |
+|-------|---------|-------------|
+| `recipient` | `empfaenger`, `empfänger`, `an`, `to`, `adresse`, `anschrift` | Recipient address as a list — one bullet per envelope line (alternatively a block scalar). |
+| `subject` | `betreff`, `thema`, `re` | Subject line. |
+| `salutation` | `anrede`, `greeting` | e.g. "Dear Ms Beispiel,". |
+| `closing` | `gruss`, `grußformel`, `grussformel`, `signoff` | Closing; defaults from the settings, otherwise the language default ("Mit freundlichen Grüßen" / "Kind regards"). |
+| `signature` | `unterschrift`, `signatur`, `gezeichnet` | Name below the closing; default = sender name. |
+| `place` | `ort`, `stadt`, `city` | Place for the place/date line. |
+| `date` | `datum` | ISO `2026-06-09` recommended; if missing = today. Formatted via the **Date locale** setting. |
+| `enclosures` | `anlagen`, `anlage`, `attachments` | Enclosure note below the signature — a list, one bullet per enclosure. With exactly one entry the label reads "Anlage", otherwise "Anlagen" (in English letters: "Enclosure" / "Enclosures"). |
 
-Überschreibt die Einstellungen **Style**, **Info line** und **Letter language** für diesen einen Brief.
+## Design per letter
 
-| Feld | Aliasse | Werte |
-|------|---------|-------|
-| `stil` | `style`, `design`, `variante` | `sachlich` (`a`), `klassisch` (`b`), `technisch` (`c`) |
-| `infozeile` | `layout` | `vollstaendig` (auch `full`, `infoblock`) · `nurdatum` (auch `minimal`, `datum`) |
-| `sprache` | `language`, `lang` | `de` · `en` — Sprache der gedruckten Labels (Anlagen/Enclosures, Infoblock, Standard-Grußformel). |
+Overrides the **Style**, **Info line** and **Letter language** settings for this
+one letter.
 
-## Infoblock (DIN-Layout, Infozeile „Vollständig")
+| Field | Aliases | Values |
+|-------|---------|--------|
+| `style` | `stil`, `design`, `variante` | `sachlich` (`a`), `klassisch` (`b`), `technisch` (`c`) |
+| `info line` (`infozeile`) | `layout` | `vollstaendig` (also `full`, `infoblock`) · `nurdatum` (also `minimal`, `datum`) |
+| `language` | `sprache`, `lang` | `de` · `en` — language of the printed labels (Anlagen/Enclosures, info block, default closing). |
 
-Rechts neben der Anschrift, als Label-Wert-Zeilen. Zeilen ohne Wert werden
-weggelassen; „Datum" erscheint immer als letzte Zeile.
+## Info block (DIN layout, info line "Full")
 
-| Feld | Aliasse | Label im Brief |
-|------|---------|----------------|
-| `steuernummer` | `steuernr`, `st_nr`, `tax_number` | „Steuernummer". |
-| `ihr_zeichen` | `your_ref` | „Ihr Zeichen". |
-| `ihr_schreiben` | `ihrschreibenvom`, `your_letter` | „Ihr Schreiben"; Datumswerte werden gemäß Locale formatiert. |
-| `unser_zeichen` | `our_ref` | „Unser Zeichen". |
-| `telefon_bezug` | `durchwahl`, `phone` | „Telefon" — nur wenn gesetzt (das Absender-Telefon steht bereits im Briefkopf). |
+To the right of the address, as label/value rows. Rows without a value are
+omitted; "Datum" / "Date" always appears as the last row.
 
-### Freie Zeilen: `info_1` … `info_4` und `info`
+| Field | Aliases | Label in the letter |
+|-------|---------|---------------------|
+| `tax_number` | `steuernummer`, `steuernr`, `st_nr` | "Steuernummer". |
+| `your_ref` | `ihr_zeichen` | "Ihr Zeichen". |
+| `your_letter` | `ihr_schreiben`, `ihrschreibenvom` | "Ihr Schreiben"; date values are formatted according to the locale. |
+| `our_ref` | `unser_zeichen` | "Unser Zeichen". |
+| `phone` | `telefon_bezug`, `durchwahl` | "Telefon" — only when set (the sender phone is already in the letterhead). |
 
-Flache Textfelder im Format „Label: Wert" — direkt in Obsidians
-Eigenschaften-Ansicht editierbar (ohne Doppelpunkt wird das Label „Info"
-verwendet):
+### Free-form rows: `info_1` … `info_4` and `info`
+
+Flat text fields in "Label: value" format — editable directly in Obsidian's
+Properties view (without a colon the label "Info" is used):
 
 ```yaml
-info_1: "Kundennummer: 12345"
-info_2: "Vertragsnummer: V-2026-007"
+info_1: "Customer number: 12345"
+info_2: "Contract number: V-2026-007"
 ```
 
-Alternativ (für YAML-Nutzer) eine Map mit beliebig vielen Zeilen (Aliasse:
+Alternatively (for YAML users) a map with any number of rows (aliases:
 `bezugszeichen`, `infoblock`):
 
 ```yaml
 info:
-  Kundennummer: 12345
-  Vertragsnummer: V-2026-007
+  Customer number: 12345
+  Contract number: V-2026-007
 ```
 
-Reihenfolge: feste Felder → `info_1`–`info_4` → `info`-Map → „Datum".
+Order: fixed fields → `info_1`–`info_4` → `info` map → "Date".
 
-## Absender pro Brief überschreiben
+## Override the sender per letter
 
-Überschreibt das Absender-Profil aus den Einstellungen — praktisch für mehrere
-Absender oder ein self-contained Beispiel. Name (oder Logo) steht links im
-Briefkopf, Straße/Ort/Telefon/E-Mail/Web rechts als Kontaktblock.
+Overrides the sender profile from the settings — handy for multiple senders or a
+self-contained example. The name (or logo) sits on the left of the letterhead,
+the street/city/phone/email/web on the right as a contact block.
 
-### Einfach: `absender` als Liste
+### Simple: `sender` as a list
 
-Eine Zeile pro Listenpunkt, wie auf dem Kuvert (Aliasse: `sender`, `von`):
+One line per bullet, as on the envelope (aliases: `absender`, `von`):
 
 ```yaml
-absender:
+sender:
   - Max Mustermann
   - Muster GmbH
   - Musterstraße 1
@@ -90,44 +94,45 @@ absender:
   - kontakt@example.com
 ```
 
-Die erste Zeile ist der Name; die übrigen Zeilen werden automatisch erkannt:
-Telefon (beginnt mit `+`/`0` oder `Tel.`), E-Mail (`@`), Web (`www.`/`https:`),
-PLZ + Ort (`12345 …`), Straße (enthält Hausnummer), Rest = Zusatz/Firma.
+The first line is the name; the remaining lines are detected automatically:
+phone (starts with `+`/`0` or `Tel.`), email (`@`), web (`www.`/`https:`),
+postal code + city (`12345 …`), street (contains a house number), the rest =
+addition/company.
 
-### Präzise: Einzelfelder
+### Precise: individual fields
 
-Gewinnen gegenüber der `absender`-Liste, Feld für Feld:
+These win over the `sender` list, field by field:
 
-| Feld | Aliasse |
-|------|---------|
-| `absender_name` | `sender_name` |
-| `absender_zusatz` | `firma`, `company` |
-| `absender_strasse` | `sender_street` |
-| `absender_plz_ort` | `absender_ort`, `sender_city` |
+| Field | Aliases |
+|-------|---------|
+| `sender_name` | `absender_name` |
+| `company` | `absender_zusatz`, `firma` |
+| `sender_street` | `absender_strasse` |
+| `sender_city` | `absender_plz_ort`, `absender_ort` |
 | `absender_telefon` | — |
 | `absender_email` | — |
-| `absender_web` | `website` |
+| `website` | `absender_web` |
 
-## Mehrzeilige Werte
+## Multi-line values
 
-`empfaenger`, `absender` und `anlagen` sind YAML-Listen — ein Listenpunkt pro
-Zeile, bequem auch in Obsidians Eigenschaften-Ansicht pflegbar:
+`recipient`, `sender` and `enclosures` are YAML lists — one bullet per line,
+also convenient to maintain in Obsidian's Properties view:
 
 ```yaml
-empfaenger:
+recipient:
   - Muster GmbH
   - Frau Erika Beispiel
   - Musterstraße 12
   - 12345 Musterstadt
-anlagen:
-  - Lebenslauf
-  - Zeugnisse
+enclosures:
+  - CV
+  - References
 ```
 
-Alternativ wird auch ein YAML-Blockskalar akzeptiert (`empfaenger: |` mit einer
-Adresszeile pro Textzeile).
+Alternatively a YAML block scalar is accepted too (`recipient: |` with one
+address line per text line).
 
-## Brieftext
+## Letter text
 
-Alles **unterhalb** des Frontmatters ist der Brieftext und wird als Markdown
-gerendert (Absätze, Listen, **fett**/*kursiv*, Überschriften).
+Everything **below** the frontmatter is the letter text and is rendered as
+Markdown (paragraphs, lists, **bold**/*italic*, headings).

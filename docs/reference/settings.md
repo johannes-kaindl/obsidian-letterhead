@@ -1,70 +1,70 @@
-# Referenz — Einstellungen
+# Reference — settings
 
-Einstellungen → Community-Plugins → **Letterhead**. Die Plugin-UI folgt der
-Obsidian-App-Sprache (Englisch als Standard, Deutsch lokalisiert); diese
-Referenz nennt die englischen Bezeichnungen und erklärt auf Deutsch. Die
-Sprache des **Briefs** ist davon unabhängig (Einstellung **Letter language**).
+Settings → Community plugins → **Letterhead**. The plugin UI follows the
+Obsidian app language (English by default, German localised); this reference uses
+the English labels. The language of the **letter** is independent of this
+(the **Letter language** setting).
 
-## Layout & Stil
+## Layout & style
 
-| Einstellung | Werte | Bedeutung |
-|-------------|-------|-----------|
-| **Layout** | `DIN 5008 (German standard)` · `Modern / international` | Brief-Grundlayout. DIN = deutscher Standard, fensterkuvert-tauglich; Modern = freies, internationales Layout. |
-| **Style** | `A · Sachlich (neutral sans)` · `B · Klassisch (serif)` · `C · Technisch (monospaced accents)` | Komplettes Erscheinungsbild (Schrift, Farben, Abstände, Briefkopf-Typo). Pro Brief per Frontmatter `stil` überschreibbar. |
-| **Info line** | `Full (info block)` · `Date only` | Full: Infoblock rechts neben der Anschrift (Steuernummer, Zeichen, … Datum). Date only: schlichte rechtsbündige Orts-/Datumszeile — für Arbeitgeber- und Privatkorrespondenz. Pro Brief per Frontmatter `infozeile` überschreibbar. |
-| **DIN 5008 form** | `Form A (27 mm)` · `Form B (45 mm)` | Position des Anschriftfelds und der Falzmarken. Form B ist der Standard. |
+| Setting | Values | Meaning |
+|---------|--------|---------|
+| **Layout** | `DIN 5008 (German standard)` · `Modern / international` | Base letter layout. DIN = German standard, window-envelope-ready; Modern = free, international layout. |
+| **Style** | `A · Matter-of-fact (neutral sans)` · `B · Classic (serif)` · `C · Technical (monospaced accents)` | The complete look (font, colours, spacing, letterhead typography). Overridable per letter via the `style` frontmatter field. |
+| **Info line** | `Full (info block)` · `Date only` | Full: info block to the right of the address (tax number, references, … date). Date only: a plain right-aligned place/date line — for employer and private correspondence. Overridable per letter via the `info line` frontmatter field. |
+| **DIN 5008 form** | `Form A (27 mm)` · `Form B (45 mm)` | Position of the address field and the fold marks. Form B is the default. |
 
-### Die drei Stile
+### The three styles
 
-| Stil | Charakter |
-|------|-----------|
-| **A · Sachlich** | Serifenlos (Helvetica/Arial). Der neutrale, sichere Standard für Behörden und Arbeitgeber. |
-| **B · Klassisch** | Serifenschrift (Palatino/Georgia). Traditionell, autoritativ, gediegen-persönlich. |
-| **C · Technisch** | Serifenloser Fließtext mit monospaced Labels in Kopf, Infoblock und Anlagenvermerk. Diszipliniert, gerastert. |
+| Style | Character |
+|-------|-----------|
+| **A · Matter-of-fact** | Sans-serif (Helvetica/Arial). The neutral, safe default for authorities and employers. |
+| **B · Classic** | Serif typeface (Palatino/Georgia). Traditional, authoritative, refined and personal. |
+| **C · Technical** | Sans-serif body text with monospaced labels in the header, info block and enclosure note. Disciplined, gridded. |
 
-Alle Stile sind reines Schwarz/Grau und lassen die DIN-Geometrie
-(Fensterkuvert-Position) unangetastet.
+All styles are pure black/grey and leave the DIN geometry (window-envelope
+position) untouched.
 
-## Sender profile (Absender-Profil)
+## Sender profile
 
-Default-Absender (Name, Company/addition, Street, Postal code and city, Phone,
-Email, Website). Gilt für alle Briefe und ist pro Brief im Frontmatter
-überschreibbar (`absender`-Liste oder `absender_name` usw.). Name (oder Logo)
-erscheint links im Briefkopf, die Kontaktdaten rechts.
+Default sender (name, company/addition, street, postal code and city, phone,
+email, website). It applies to every letter and is overridable per letter in the
+frontmatter (`sender` list or `sender_name` etc.). The name (or logo) appears on
+the left of the letterhead, the contact details on the right.
 
-| Einstellung | Bedeutung |
-|-------------|-----------|
-| **Return address line** | Rücksendeangabe — kleine Zeile über der Empfängeranschrift (fürs Fensterkuvert). Leer = automatisch aus `Name · Straße · PLZ Ort`. |
+| Setting | Meaning |
+|---------|---------|
+| **Return address line** | Return-address line — a small line above the recipient address (for the window envelope). Empty = generated automatically from `Name · Street · Postcode City`. |
 
-## Elements (Elemente)
+## Elements
 
-| Einstellung | Bedeutung |
-|-------------|-----------|
-| **Fold marks** | Faltmarken — zwei Markierungen zum Falten fürs Fensterkuvert. |
-| **Hole mark** | Lochmarke bei 148,5 mm zum Abheften. |
-| **Print offset top (mm)** | Druckversatz-Feinjustierung (Standard 0): schiebt den gesamten Briefinhalt nach unten, falls die Anschrift im Kuvertfenster zu hoch sitzt; 2–4 mm probieren. Falt-/Lochmarken bleiben papierbezogen unverändert, damit die Faltung stimmt. Druckränder setzt das Plugin immer automatisch: Seite 1 oben 10 mm (der DIN-Briefkopf sitzt konstruktionsbedingt hoch), Folgeseiten oben 25 mm, unten überall 20 mm. |
-| **Show logo** + **Logo path** | Bild statt Name im Briefkopf; vault-relativer Pfad (z. B. `assets/logo.png`), als data-URL eingebettet. |
+| Setting | Meaning |
+|---------|---------|
+| **Fold marks** | Two marks for folding to fit the window envelope. |
+| **Hole mark** | Hole mark at 148.5 mm for filing. |
+| **Print offset top (mm)** | Print-offset fine-tuning (default 0): shifts the entire letter content downwards if the address sits too high in the envelope window; try 2–4 mm. Fold/hole marks stay paper-relative and unchanged, so the fold remains correct. The plugin always sets the print margins automatically: page 1 top 10 mm (the DIN letterhead sits high by design), continuation pages top 25 mm, bottom 20 mm everywhere. |
+| **Show logo** + **Logo path** | Image instead of the name in the letterhead; a vault-relative path (e.g. `assets/logo.png`), embedded as a data URL. |
 
-## Typography & language (Typografie & Sprache)
+## Typography & language
 
-| Einstellung | Bedeutung |
-|-------------|-----------|
-| **Font (CSS font-family)** | Optionaler Override. Leer = Standard des gewählten Stils; der Platzhalter zeigt den wirksamen Wert. |
-| **Font size (pt)** | Optionaler Override. Leer = Stil-Standard (10 pt); der Platzhalter zeigt den wirksamen Wert. |
-| **Date locale** | z. B. `de-DE`, `en-GB`, `en-US` — Format der Datumsausgabe. |
-| **Letter language** | Sprache der gedruckten Labels: `Deutsch` (Anlagen, Ihr Zeichen, Datum, Tel.) oder `English` (Enclosures, Your ref., Date, Phone). Pro Brief per Frontmatter `sprache` überschreibbar. |
-| **Default closing** | Standard-Grußformel, wenn `gruss` im Frontmatter fehlt. Leer = Sprach-Standard („Mit freundlichen Grüßen“ / „Kind regards“). |
+| Setting | Meaning |
+|---------|---------|
+| **Font (CSS font-family)** | Optional override. Empty = the default of the chosen style; the placeholder shows the effective value. |
+| **Font size (pt)** | Optional override. Empty = style default (10 pt); the placeholder shows the effective value. |
+| **Date locale** | e.g. `de-DE`, `en-GB`, `en-US` — format of the date output. |
+| **Letter language** | Language of the printed labels: `Deutsch` (Anlagen, Ihr Zeichen, Datum, Tel.) or `English` (Enclosures, Your ref., Date, Phone). Overridable per letter via the `language` frontmatter field. |
+| **Default closing** | Default closing when `closing` is missing from the frontmatter. Empty = the language default ("Mit freundlichen Grüßen" / "Kind regards"). |
 
 ## Frontmatter (per letter)
 
-Eine kompakte Übersicht aller Frontmatter-Felder direkt in den Einstellungen,
-plus Button **Insert frontmatter template** (auch als Befehl
-**Insert letter frontmatter into note**): ergänzt Empfänger, Betreff, Anrede,
-Ort, Datum und Anlagen im Frontmatter der aktiven Notiz, ohne vorhandene Werte
-zu überschreiben. Vollständige Referenz: [Frontmatter-Felder](frontmatter.md).
+A compact overview of all frontmatter fields directly in the settings, plus an
+**Insert frontmatter template** button (also the command
+**Insert letter frontmatter into note**): adds recipient, subject, salutation,
+place, date and enclosures to the frontmatter of the active note without
+overwriting existing values. Full reference: [frontmatter fields](frontmatter.md).
 
-## Advanced (Erweitert)
+## Advanced
 
-| Einstellung | Bedeutung |
-|-------------|-----------|
-| **Custom CSS (optional)** | Eigenes CSS für Feinheiten jenseits von Stil + Infozeile; wird zuletzt geladen und gewinnt. Das Feld ist mit einem **komplett auskommentierten** (wirkungslosen) Preset vorbefüllt, das alle Tokens dokumentiert — Zeile einkommentieren = aktivieren. **Reset preset** stellt den Ausgangszustand wieder her. Siehe [Theming](theming.md). |
+| Setting | Meaning |
+|---------|---------|
+| **Custom CSS (optional)** | Your own CSS for details beyond style + info line; loaded last and wins. The field is pre-filled with a **fully commented-out** (inactive) preset that documents all tokens — uncomment a line to activate it. **Reset preset** restores the initial state. See [theming](theming.md). |

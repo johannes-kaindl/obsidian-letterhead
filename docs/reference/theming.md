@@ -1,59 +1,59 @@
-# Referenz — Theming & CSS-Tokens
+# Reference — theming & CSS tokens
 
-Das gesamte Aussehen läuft über **CSS Custom Properties** („Design-Tokens").
-Der in den Einstellungen gewählte **Stil** (Sachlich / Klassisch / Technisch)
-setzt die Token-Defaults; dein optionales Feld **Custom CSS** wird *danach*
-geladen und gewinnt. Du überschreibst also einfach die Tokens, die du ändern
-willst — für die meisten Anpassungen reicht aber schon die Stil-Auswahl.
+The entire look runs on **CSS custom properties** ("design tokens"). The **style**
+chosen in the settings (matter-of-fact / classic / technical) sets the token
+defaults; your optional **Custom CSS** field is loaded *afterwards* and wins. So
+you simply override the tokens you want to change — though for most adjustments
+the style selection alone is enough.
 
-Schnellstart: Das Feld **Custom CSS** (Einstellungen → Advanced) ist mit einem
-komplett auskommentierten Preset vorbefüllt — Zeile einkommentieren, Wert
-anpassen, fertig. **Reset preset** stellt den Ausgangszustand wieder her
-(identisch mit [`presets/letterhead-theme.css`](../../presets/letterhead-theme.css)).
+Quick start: The **Custom CSS** field (Settings → Advanced) is pre-filled with a
+fully commented-out preset — uncomment a line, adjust the value, done. **Reset
+preset** restores the initial state (identical to
+[`presets/letterhead-theme.css`](../../presets/letterhead-theme.css)).
 
-## Tokens — sicher anpassbar
+## Tokens — safe to adjust
 
-Defaults je Stil in Klammern: Sachlich / Klassisch / Technisch.
+Defaults per style in brackets: matter-of-fact / classic / technical.
 
-| Token | Default | Wirkung |
-|-------|---------|---------|
-| `--bk-font-family` | Helvetica-Stack / Palatino-Stack / Helvetica-Stack | Schriftfamilie (auch über die Einstellung „Schriftart"). |
-| `--bk-font-size` | `10pt` (alle Stile) | Grundschriftgröße. |
-| `--bk-line-height` | `1.45` / `1.5` / `1.5` | Zeilenabstand. |
-| `--bk-name-font` | Textschrift / Textschrift / Monospace-Stack | Schrift des Namens im Briefkopf. |
-| `--bk-name-size` | `15.5pt` / `18pt` / `12.5pt` | Größe des Namens. |
-| `--bk-name-weight` | `600` | Gewicht des Namens. |
-| `--bk-name-spacing` | `0.005em` / `0.005em` / `0.12em` | Sperrung des Namens. |
-| `--bk-name-transform` | `none` / `none` / `uppercase` | Versalien-Schaltung. |
-| `--bk-color-text` | `#1a1a1a` / `#1c1a17` / `#15171a` | Fließtextfarbe. |
-| `--bk-color-muted` | `#5a5a5a` / `#5a554e` / `#6a7078` | Infoblock-Labels, Kopf-Kontakt, Rücksendezeile. |
-| `--bk-color-rule` | `#111` / `#1c1a17` / `#15171a` | Faltmarken + Unterstrich der Rücksendeangabe. |
-| `--bk-color-hairline` | `#cfcfcf` / `#c9c2b6` / `#d4d7da` | Trennlinie unter dem Briefkopf. |
-| `--bk-space` | `2.6mm` / `2.8mm` / `2.6mm` | Absatz-Rhythmus. |
-| `--bk-block-gap` | `6mm` / `6.5mm` / `6mm` | Abstand zwischen Brief-Blöcken. |
-| `--bk-signature-gap` | `16mm` / `17mm` / `16mm` | Platz für die Unterschrift. |
+| Token | Default | Effect |
+|-------|---------|--------|
+| `--bk-font-family` | Helvetica stack / Palatino stack / Helvetica stack | Font family (also via the "Font" setting). |
+| `--bk-font-size` | `10pt` (all styles) | Base font size. |
+| `--bk-line-height` | `1.45` / `1.5` / `1.5` | Line spacing. |
+| `--bk-name-font` | Body font / body font / monospace stack | Font of the name in the letterhead. |
+| `--bk-name-size` | `15.5pt` / `18pt` / `12.5pt` | Size of the name. |
+| `--bk-name-weight` | `600` | Weight of the name. |
+| `--bk-name-spacing` | `0.005em` / `0.005em` / `0.12em` | Letter-spacing of the name. |
+| `--bk-name-transform` | `none` / `none` / `uppercase` | Uppercase switch. |
+| `--bk-color-text` | `#1a1a1a` / `#1c1a17` / `#15171a` | Body text colour. |
+| `--bk-color-muted` | `#5a5a5a` / `#5a554e` / `#6a7078` | Info-block labels, header contact, return-address line. |
+| `--bk-color-rule` | `#111` / `#1c1a17` / `#15171a` | Fold marks + underline of the return address. |
+| `--bk-color-hairline` | `#cfcfcf` / `#c9c2b6` / `#d4d7da` | Divider below the letterhead. |
+| `--bk-space` | `2.6mm` / `2.8mm` / `2.6mm` | Paragraph rhythm. |
+| `--bk-block-gap` | `6mm` / `6.5mm` / `6mm` | Gap between letter blocks. |
+| `--bk-signature-gap` | `16mm` / `17mm` / `16mm` | Space for the signature. |
 
-## Tokens — DIN-kritisch (Fensterkuvert)
+## Tokens — DIN-critical (window envelope)
 
-Diese Werte halten die Anschrift im Sichtfenster eines DIN-lang-Kuverts. Nur
-ändern, wenn dein Kuvert abweicht. Positionen hängen außerdem an der
-Einstellung **DIN-5008-Form** (A/B).
+These values keep the address inside the window of a DIN-long envelope. Only
+change them if your envelope differs. The positions also depend on the
+**DIN 5008 form** setting (A/B).
 
-Alle Positionen sind **ab Papierkante** gemessen. Gedruckt wird mit festen
-`@page`-Rändern (Seite 1 oben 10 mm, Folgeseiten oben 25 mm, unten überall
-20 mm — Tokens `--bk-print-margin-top`/`-bottom` für Seite 1), damit Drucker
-nichts abschneiden und Seitenumbrüche dokumentübliche Ränder haben; die
-Komponenten ziehen den oberen Rand intern wieder ab, sodass die
-Papierpositionen exakt stimmen.
+All positions are measured **from the paper edge**. Printing uses fixed `@page`
+margins (page 1 top 10 mm, continuation pages top 25 mm, bottom 20 mm
+everywhere — tokens `--bk-print-margin-top`/`-bottom` for page 1), so printers
+don't clip anything and page breaks keep document-standard margins; the
+components subtract the top margin again internally, so the paper positions
+match exactly.
 
 | Token | Default (Form B) | Form A |
 |-------|------------------|--------|
 | `--bk-page-width` / `--bk-page-height` | `210mm` / `297mm` | — |
 | `--bk-margin-left` / `--bk-margin-right` | `25mm` / `20mm` | — |
-| `--bk-print-margin-top` / `--bk-print-margin-bottom` | `10mm` / `20mm` (Seite 1; Folgeseiten oben `25mm`) | — |
-| `--bk-print-offset` | `0mm` (Einstellung **Print offset top**) | — |
-| `--bk-din-head-top` | `14mm` (+ Versatz) | `12mm` |
-| `--bk-din-address-top` | `45mm` (+ Versatz) | `27mm` |
+| `--bk-print-margin-top` / `--bk-print-margin-bottom` | `10mm` / `20mm` (page 1; continuation pages top `25mm`) | — |
+| `--bk-print-offset` | `0mm` (setting **Print offset top**) | — |
+| `--bk-din-head-top` | `14mm` (+ offset) | `12mm` |
+| `--bk-din-address-top` | `45mm` (+ offset) | `27mm` |
 | `--bk-din-address-left` | `25mm` | — |
 | `--bk-din-address-width` / `--bk-din-address-height` | `85mm` / `40mm` | — |
 | `--bk-din-info-top` | `50mm` | `32mm` |
@@ -64,9 +64,9 @@ Papierpositionen exakt stimmen.
 | `--bk-din-hole` | `148.5mm` | `148.5mm` |
 | `--bk-din-content-top` | `98.46mm` | — |
 
-Hintergrund: [DIN 5008](../explanation/din5008.md).
+Background: [DIN 5008](../explanation/din5008.md).
 
-## Beispiel — eigenes CSS
+## Example — custom CSS
 
 ```css
 :root {
@@ -75,27 +75,27 @@ Hintergrund: [DIN 5008](../explanation/din5008.md).
   --bk-color-text: #1a1a1a;
   --bk-block-gap: 7mm;
 }
-.bk-betreff { color: #0a7d3c; }            /* Akzentfarbe Betreff */
+.bk-betreff { color: #0a7d3c; }            /* accent colour for the subject */
 ```
 
-## Komponenten-Klassen (für Feinheiten)
+## Component classes (for fine details)
 
-Reicht ein Token nicht, kannst du Klassen direkt überschreiben:
+When a token isn't enough, you can override classes directly:
 
-| Klasse | Element |
-|--------|---------|
-| `.bk-letter` | Briefcontainer (A4). |
-| `.bk-din .bk-head` | Briefkopf (Name/Logo links, Kontakt rechts, Hairline darunter). |
-| `.bk-din .bk-head-name` · `.bk-din .bk-head-zusatz` · `.bk-din .bk-head-contact` | Name, Firmenzusatz, Kontaktblock im Kopf. |
-| `.bk-din .bk-address`¹ · `.bk-din .bk-return`² · `.bk-din .bk-recipient`³ | Anschriftfeld, Rücksendezeile, Empfänger. |
-| `.bk-din .bk-infoblock` (`.bk-info-item` / `.bk-info-label` / `.bk-info-value`) | Infoblock rechts (Infozeile „Vollständig"). |
-| `.bk-din .bk-dateline` | Orts-/Datumszeile (Infozeile „Nur Datum"). |
-| `.bk-betreff` · `.bk-greeting`⁴ · `.bk-closing`⁵ · `.bk-signature`⁶ | Textblöcke. |
-| `.bk-body` | Brieftext (gerendertes Markdown). |
-| `.bk-enclosures` (`.bk-encl-label` / `.bk-encl-list`) | Anlagenvermerk. |
-| `.bk-modern .bk-m-head` · `.bk-modern .bk-m-sender` | Kopf/Absender im Modern-Layout. |
-| `.bk-mark` (`.bk-f1`/`.bk-f2`/`.bk-lo`) | Falt-/Lochmarken. |
+| Class | Element |
+|-------|---------|
+| `.bk-letter` | Letter container (A4). |
+| `.bk-din .bk-head` | Letterhead (name/logo left, contact right, hairline below). |
+| `.bk-din .bk-head-name` · `.bk-din .bk-head-zusatz` · `.bk-din .bk-head-contact` | Name, company addition, contact block in the header. |
+| `.bk-din .bk-address`¹ · `.bk-din .bk-return`² · `.bk-din .bk-recipient`³ | Address field, return-address line, recipient. |
+| `.bk-din .bk-infoblock` (`.bk-info-item` / `.bk-info-label` / `.bk-info-value`) | Info block on the right (info line "Full"). |
+| `.bk-din .bk-dateline` | Place/date line (info line "Date only"). |
+| `.bk-betreff` · `.bk-greeting`⁴ · `.bk-closing`⁵ · `.bk-signature`⁶ | Text blocks. |
+| `.bk-body` | Letter text (rendered Markdown). |
+| `.bk-enclosures` (`.bk-encl-label` / `.bk-encl-list`) | Enclosure note. |
+| `.bk-modern .bk-m-head` · `.bk-modern .bk-m-sender` | Header/sender in the Modern layout. |
+| `.bk-mark` (`.bk-f1`/`.bk-f2`/`.bk-lo`) | Fold/hole marks. |
 
-¹–⁶ Die Elemente tragen zusätzlich ihre alten 1.0-Klassennamen als Aliasse
+¹–⁶ These elements also carry their old 1.0 class names as aliases
 (`.bk-anschrift`, `.bk-ruecksende`, `.bk-empf`, `.bk-anrede`, `.bk-gruss`,
-`.bk-signatur`) — bestehendes eigenes CSS funktioniert weiter.
+`.bk-signatur`) — existing custom CSS keeps working.

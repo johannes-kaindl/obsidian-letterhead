@@ -1,90 +1,90 @@
-# Tutorial — dein erster Brief
+# Tutorial — your first letter
 
-Ziel: in fünf Minuten von einer leeren Notiz zu einem fertigen PDF-Geschäftsbrief.
+Goal: go from an empty note to a finished PDF business letter in five minutes.
 
-## 1. Plugin installieren & aktivieren
+## 1. Install & enable the plugin
 
-`manifest.json`, `main.js`, `styles.css`, `versions.json` nach
-`<dein-vault>/.obsidian/plugins/letterhead/` kopieren (oder `npm run deploy`),
-dann in Obsidian → Einstellungen → Community-Plugins neu laden und **Letterhead**
-aktivieren.
+Copy `manifest.json`, `main.js`, `styles.css`, `versions.json` into
+`<your-vault>/.obsidian/plugins/letterhead/` (or run `npm run deploy`),
+then in Obsidian → Settings → Community plugins reload and enable **Letterhead**.
 
-## 2. Absender & Stil einmalig einstellen
+## 2. Set sender & style once
 
-Einstellungen → **Letterhead**:
+Settings → **Letterhead**:
 
-- **Sender profile** ausfüllen (Name, Firma, Straße, PLZ + Ort, Telefon,
-  E-Mail, Website). Gilt für alle Briefe, pro Brief überschreibbar.
-- **Style** wählen: Sachlich (sans), Klassisch (serif) oder Technisch (mono).
-- **Info line**: „Full" (Infoblock mit Zeichen/Datum) oder „Date only"
-  (schlichte Orts-/Datumszeile, z. B. für Bewerbungen und Privatpost).
+- Fill in the **Sender profile** (name, company, street, postal code + city,
+  phone, email, website). It applies to every letter and is overridable per
+  letter.
+- Choose a **Style**: matter-of-fact (sans), classic (serif) or technical (mono).
+- **Info line**: "Full" (info block with reference/date) or "Date only"
+  (a plain place/date line, e.g. for job applications and private mail).
 
-## 3. Eine Brief-Notiz anlegen
+## 3. Create a letter note
 
-Neue Notiz öffnen, dann Befehlspalette → **Insert letter frontmatter into
-note** — das legt die wichtigsten Felder an (auch als Button in den
-Einstellungen unter „Frontmatter"). Ausfüllen, darunter den Brieftext schreiben:
+Open a new note, then run the command palette → **Insert letter frontmatter into
+note** — this scaffolds the most important fields (also available as a button in
+the settings under "Frontmatter"). Fill them in and write the letter text below:
 
 ```markdown
 ---
-empfaenger:
+recipient:
   - Muster GmbH
   - Frau Erika Beispiel
   - Musterstraße 12
   - 12345 Musterstadt
-betreff: Angebot Nr. 2026-0042
-anrede: Sehr geehrte Frau Beispiel,
-datum: 2026-06-10
-anlagen:
-  - Leistungsverzeichnis
-  - AGB
+subject: Quote no. 2026-0042
+salutation: Dear Ms Beispiel,
+date: 2026-06-10
+enclosures:
+  - Schedule of services
+  - Terms and conditions
 ---
 
-vielen Dank für Ihre Anfrage. Anbei unser Angebot …
+Thank you for your enquiry. Please find our quote enclosed …
 ```
 
-Listen wie `empfaenger` und `anlagen` haben einen Listenpunkt pro Zeile und
-lassen sich auch bequem in Obsidians Eigenschaften-Ansicht pflegen. Alle Felder
-(inkl. `absender` als Liste, `stil`, `infozeile`, Infoblock-Zeilen):
-[Frontmatter-Referenz](reference/frontmatter.md). Ein vollständiges Beispiel
-liegt unter [`examples/Beispielbrief.md`](../examples/Beispielbrief.md).
+Lists such as `recipient` and `enclosures` have one bullet per line and can also
+be edited comfortably in Obsidian's Properties view. All fields (including
+`sender` as a list, `style`, `info line`, info-block rows):
+[frontmatter reference](reference/frontmatter.md). A complete example lives at
+[`examples/Beispielbrief.md`](../examples/Beispielbrief.md).
 
-## 4. Vorschau prüfen
+## 4. Check the preview
 
-Befehlspalette → **Open letter preview**. Die Vorschau zeigt die fertigen
-A4-Seiten inklusive Seitenumbrüchen — so siehst du das Layout, ohne zu drucken.
+Command palette → **Open letter preview**. The preview shows the finished
+A4 sheets including page breaks — so you can see the layout without printing.
 
-## 5. Als PDF exportieren
+## 5. Export as PDF
 
-Befehlspalette oder Briefumschlag-Icon → **Export letter as PDF / print**.
+Command palette or the envelope icon → **Export letter as PDF / print**.
 
-- **Desktop (macOS/Windows/Linux):** Es öffnet sich der Druckdialog des
-  Betriebssystems. PDF-Dropdown bzw. Ziel → **„Als PDF sichern"**; Skalierung
-  auf **100 %** lassen.
-- **iPhone/iPad:** Das Plugin schreibt den Brief als HTML-Datei (Name der
-  Notiz) in den Vault und übergibt sie an iOS. Der Export läuft dann so:
+- **Desktop (macOS/Windows/Linux):** The operating system's print dialog opens.
+  PDF dropdown or destination → **"Save as PDF"**; keep scaling at **100%**.
+- **iPhone/iPad:** The plugin writes the letter as an HTML file (named after the
+  note) into the vault and hands it to iOS. The export then goes like this:
 
-  1. Ein kleiner Dialog erscheint — tippe **„Öffnen"**.
-  2. iOS zeigt eine Auswahl — tippe **„Schnellansicht"**.
-  3. In der Schnellansicht tippe das **Teilen-Symbol** (unten rechts).
-  4. Wähle **„Drucken"**.
-  5. **Vorschau mit zwei Fingern aufziehen** — sie wird zum fertigen PDF mit
-     korrekten Rändern und Seitenumbrüchen.
-  6. Tippe erneut das **Teilen-Symbol**, dann **„In Dateien sichern"**.
+  1. A small dialog appears — tap **"Open"**.
+  2. iOS shows a chooser — tap **"Quick Look"**.
+  3. In Quick Look, tap the **Share** icon (bottom right).
+  4. Choose **"Print"**.
+  5. **Pinch the preview open with two fingers** — it becomes the finished PDF
+     with correct margins and page breaks.
+  6. Tap the **Share** icon again, then **"Save to Files"**.
 
-Druckränder setzt das Plugin automatisch (Seite 1 oben 10 mm, Folgeseiten
-25 mm, unten 20 mm) — gelten auf beiden Wegen, also nichts anpassen.
+The plugin sets the print margins automatically (page 1: 10 mm top, continuation
+pages: 25 mm, bottom: 20 mm) — this applies on both paths, so there's nothing to
+adjust.
 
-## 6. Falten & Kuvertieren
+## 6. Fold & insert into the envelope
 
-An den Falzmarken (links, bei 105/210 mm) falten und so ins
-DIN-lang-Fensterkuvert stecken, dass die Anschrift im Fenster liegt. Sitzt sie
-bei deinem Kuvert ein paar Millimeter zu hoch, hilft die Einstellung
-**Print offset top (mm)** (2–4 mm).
+Fold along the fold marks (left edge, at 105/210 mm) and slip the letter into the
+DIN-long window envelope so the address sits in the window. If it sits a few
+millimetres too high for your envelope, the **Print offset top (mm)** setting
+helps (try 2–4 mm).
 
-## Weiter
+## Next
 
-- Alle Felder: [Frontmatter-Referenz](reference/frontmatter.md)
-- Alle Einstellungen: [Einstellungs-Referenz](reference/settings.md)
-- Feinschliff per CSS: [Theming / CSS-Tokens](reference/theming.md)
-- Warum diese Maße: [DIN 5008](explanation/din5008.md)
+- All fields: [frontmatter reference](reference/frontmatter.md)
+- All settings: [settings reference](reference/settings.md)
+- Fine-tuning with CSS: [theming / CSS tokens](reference/theming.md)
+- Why these measurements: [DIN 5008](explanation/din5008.md)
