@@ -156,15 +156,24 @@ const UI_STRINGS = {
     cmd_export: 'Export letter as PDF / print',
     cmd_preview: 'Open letter preview',
     cmd_insert_fm: 'Insert letter frontmatter into note',
-    notice_open_note: 'Briefkopf: Open a Markdown note first.',
-    notice_fm_added: 'Briefkopf: Frontmatter fields added.',
-    notice_fm_failed: 'Briefkopf: Could not update the frontmatter.',
-    notice_logo_failed: 'Briefkopf: Could not load the logo – ',
-    notice_no_recipient: 'Briefkopf: No recipient in the frontmatter (field "empfaenger").',
-    notice_print_failed: 'Briefkopf: Printing is not possible.',
+    notice_open_note: 'Letterhead: Open a Markdown note first.',
+    notice_fm_added: 'Letterhead: Frontmatter fields added.',
+    notice_fm_failed: 'Letterhead: Could not update the frontmatter.',
+    notice_logo_failed: 'Letterhead: Could not load the logo – ',
+    notice_no_recipient: 'Letterhead: No recipient in the frontmatter (field "empfaenger").',
+    notice_print_failed: 'Letterhead: Printing is not possible.',
     modal_title: 'Letter preview',
-    modal_export: 'Export to PDF',
+    modal_export: 'Export PDF',
     modal_close: 'Close',
+    share_title: 'Export to PDF on iPhone / iPad',
+    share_intro: 'The letter was saved as a file. To make a PDF from it:',
+    share_step1: 'Tap "Quick Look".',
+    share_step2: 'Tap the Share button (bottom right).',
+    share_step3: 'Choose "Print".',
+    share_step4: 'Pinch the print preview open with two fingers — it becomes the finished PDF.',
+    share_step5: 'Tap Share again, then "Save to Files".',
+    share_open: 'Open',
+    notice_share_failed: 'Letterhead: Could not hand the file to the system.',
     set_layout: 'Layout', set_layout_desc: 'Base layout of the letter.',
     opt_layout_din: 'DIN 5008 (German standard)', opt_layout_modern: 'Modern / international',
     set_style: 'Style',
@@ -228,15 +237,24 @@ const UI_STRINGS = {
     cmd_export: 'Brief als PDF exportieren / drucken',
     cmd_preview: 'Brief-Vorschau öffnen',
     cmd_insert_fm: 'Brief-Frontmatter in Notiz einfügen',
-    notice_open_note: 'Briefkopf: Bitte zuerst eine Markdown-Notiz öffnen.',
-    notice_fm_added: 'Briefkopf: Frontmatter-Felder ergänzt.',
-    notice_fm_failed: 'Briefkopf: Frontmatter konnte nicht ergänzt werden.',
-    notice_logo_failed: 'Briefkopf: Logo konnte nicht geladen werden – ',
-    notice_no_recipient: 'Briefkopf: Kein Empfänger im Frontmatter (Feld „empfaenger").',
-    notice_print_failed: 'Briefkopf: Druck nicht möglich.',
+    notice_open_note: 'Letterhead: Bitte zuerst eine Markdown-Notiz öffnen.',
+    notice_fm_added: 'Letterhead: Frontmatter-Felder ergänzt.',
+    notice_fm_failed: 'Letterhead: Frontmatter konnte nicht ergänzt werden.',
+    notice_logo_failed: 'Letterhead: Logo konnte nicht geladen werden – ',
+    notice_no_recipient: 'Letterhead: Kein Empfänger im Frontmatter (Feld „empfaenger").',
+    notice_print_failed: 'Letterhead: Druck nicht möglich.',
     modal_title: 'Brief-Vorschau',
-    modal_export: 'Als PDF exportieren',
+    modal_export: 'PDF-Export',
     modal_close: 'Schließen',
+    share_title: 'PDF-Export auf iPhone / iPad',
+    share_intro: 'Der Brief wurde als Datei gespeichert. So wird ein PDF daraus:',
+    share_step1: '„Schnellansicht" (Quick Look) antippen.',
+    share_step2: 'Unten rechts auf das Teilen-Symbol tippen.',
+    share_step3: '„Drucken" wählen.',
+    share_step4: 'Die Druckvorschau mit zwei Fingern aufziehen — daraus wird das fertige PDF.',
+    share_step5: 'Erneut auf das Teilen-Symbol tippen, dann „In Dateien sichern".',
+    share_open: 'Öffnen',
+    notice_share_failed: 'Letterhead: Datei konnte nicht ans System übergeben werden.',
     set_layout: 'Layout', set_layout_desc: 'Grundlayout des Briefs.',
     opt_layout_din: 'DIN 5008 (deutscher Standard)', opt_layout_modern: 'Modern / international',
     set_style: 'Stil',
@@ -596,6 +614,29 @@ const PRINT_WRAPPER_CSS = `
   }
 `;
 
+/* Wrapper for the standalone export file (iOS share path): unlike
+   PRINT_WRAPPER_CSS, the letter must be visible on screen too (the user opens
+   the file in Safari before printing), while keeping the same @page margins. */
+const STANDALONE_WRAPPER_CSS = `
+  @page{ size:A4; margin:${PRINT_MARGIN_TOP_FOLLOW_MM}mm 0 ${PRINT_MARGIN_BOTTOM_MM}mm 0; }
+  @page:first{ margin-top:${PRINT_MARGIN_TOP_MM}mm; }
+  html, body{ margin:0; padding:0; background:#fff; }
+  .bk-body p{ orphans:2; widows:2; }
+  .bk-signature, .bk-enclosures, .bk-closing{ break-inside:avoid; }
+`;
+
+/* Build a self-contained HTML document for the iOS share/print path. Pure:
+   no Obsidian imports. letterHtml comes from buildLetterHtml (esc()-escaped),
+   css from buildCss (includes the --bk-* tokens and the data:-URL logo). */
+function buildStandaloneDoc(letterHtml, css) {
+  return `<!doctype html><html lang="de"><head>` +
+    `<meta charset="utf-8">` +
+    `<meta name="viewport" content="width=device-width, initial-scale=1">` +
+    `<title>Brief</title>` +
+    `<style>${css}${STANDALONE_WRAPPER_CSS}</style>` +
+    `</head><body>${letterHtml}</body></html>`;
+}
+
 const SCREEN_PREVIEW_CSS = `
   html,body{ margin:0; padding:0; }
   body{ background:#d9d9d9; padding:14px 0; }
@@ -702,10 +743,10 @@ class BriefkopfPlugin extends obsidian.Plugin {
     const K = lang === 'en'
       ? { recipient: 'recipient', betreff: 'subject', anrede: 'salutation', ort: 'place',
           datum: 'date', anlagen: 'enclosures', gruss: 'closing', unterschrift: 'signature',
-          stil: 'style', infozeile: 'layout', sprache: 'language', info1: 'info_1' }
+          stil: 'style', infozeile: 'layout', sprache: 'language' }
       : { recipient: 'empfaenger', betreff: 'betreff', anrede: 'anrede', ort: 'ort',
           datum: 'datum', anlagen: 'anlagen', gruss: 'gruss', unterschrift: 'unterschrift',
-          stil: 'stil', infozeile: 'infozeile', sprache: 'sprache', info1: 'info_1' };
+          stil: 'stil', infozeile: 'infozeile', sprache: 'sprache' };
     try {
       await this.app.fileManager.processFrontMatter(file, (fm) => {
         const has = (...keys) => keys.some((k) => fm[k] !== undefined);
@@ -717,16 +758,20 @@ class BriefkopfPlugin extends obsidian.Plugin {
         if (!has('ort', 'place', 'stadt', 'city')) fm[K.ort] = '';
         if (!has('datum', 'date')) fm[K.datum] = iso;
         if (!has('anlagen', 'anlage', 'attachments', 'enclosures')) fm[K.anlagen] = [];
-        if (!has('gruss', 'gruß', 'grussformel', 'closing', 'signoff')) fm[K.gruss] = '';
-        if (!has('unterschrift', 'signatur', 'signature', 'gezeichnet')) fm[K.unterschrift] = '';
+        if (!has('gruss', 'gruß', 'grussformel', 'closing', 'signoff')) fm[K.gruss] = this.settings.defaultGruss || (LETTER_LABELS[lang] || LETTER_LABELS.de).closing;
+        if (!has('unterschrift', 'signatur', 'signature', 'gezeichnet')) fm[K.unterschrift] = (this.settings.sender && this.settings.sender.name) || '';
         if (!has('stil', 'style', 'design', 'variante')) fm[K.stil] = '';
         if (!has('infozeile', 'layout')) fm[K.infozeile] = '';
         if (!has('sprache', 'language', 'lang', 'briefsprache')) fm[K.sprache] = lang;
-        if (!has('info_1', 'info1', 'infoblock_1', 'info_block_1')) fm[K.info1] = '';
+        /* Custom info block: the plugin renders the flat fields info_1..info_4
+           (see writeLetterModel / the i=1..4 loop), so seed all four here. */
+        for (let i = 1; i <= 4; i++) {
+          if (!has('info_' + i, 'info' + i, 'infoblock_' + i, 'info_block_' + i)) fm['info_' + i] = '';
+        }
       });
       new obsidian.Notice(t('notice_fm_added'));
     } catch (e) {
-      console.error('Briefkopf: frontmatter insert failed', e);
+      console.error('Letterhead: frontmatter insert failed', e);
       new obsidian.Notice(t('notice_fm_failed'));
     }
   }
@@ -797,7 +842,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
         await obsidian.MarkdownRenderer.renderMarkdown(markdown, tmp, sourcePath, comp);
       }
     } catch (e) {
-      console.error('Briefkopf: markdown render failed', e);
+      console.error('Letterhead: markdown render failed', e);
     }
     const html = tmp.innerHTML;
     comp.unload();
@@ -1025,7 +1070,38 @@ class BriefkopfPlugin extends obsidian.Plugin {
     if (!m) return;
     const html = this.buildLetterHtml(m);
     const css = buildCss(this.settings, m.stil);
-    this.doPrint(html, css);
+    if (obsidian.Platform.isDesktopApp) {
+      this.doPrint(html, css);
+    } else {
+      await this.exportViaShare(html, css);
+    }
+  }
+
+  /* iOS/iPad path: window.print() is a no-op in the Obsidian mobile WebView,
+     so write the letter as a standalone file into the vault and hand it to the
+     system via openWithDefaultApp — the user prints it to PDF from Safari. */
+  async exportViaShare(letterHtml, css) {
+    const dir = '.letterhead-export';
+    const file = this.app.workspace.getActiveFile();
+    const base = (file && file.basename) ? file.basename : 'Brief';
+    const safe = base.replace(/[\\/:*?"<>|]/g, '_').trim() || 'Brief';
+    const path = `${dir}/${safe}.html`;
+    // Adapter API (not Vault API): the hidden export dir is scratch space, not a tracked vault file.
+    try {
+      const adapter = this.app.vault.adapter;
+      if (await adapter.exists(dir)) {
+        const listing = await adapter.list(dir);
+        for (const f of listing.files) { await adapter.remove(f); }
+      } else {
+        await adapter.mkdir(dir);
+      }
+      const docHtml = buildStandaloneDoc(letterHtml, css);
+      await adapter.write(path, docHtml);
+      new BriefkopfShareModal(this.app, path).open();
+    } catch (e) {
+      console.error('Letterhead: share export failed', e);
+      new obsidian.Notice(t('notice_share_failed'));
+    }
   }
 
   doPrint(letterHtml, css) {
@@ -1134,18 +1210,21 @@ class BriefkopfPreviewModal extends obsidian.Modal {
       } catch (e) { /* leave the un-paginated letter visible */ }
     };
 
-    /* Fit a whole A4 sheet into the frame (zoom keeps layout + scrollbars
-       consistent, unlike transform). Never upscale beyond 100%. */
+    /* Fit a whole A4 sheet into the frame. CSS `zoom` is ignored by iOS
+       WebKit, so scale the stage with transform (works on every platform).
+       Height is tracked so the frame scrolls correctly after scaling. */
     const fitPreview = () => {
       try {
         const doc = frame.contentDocument;
-        const sheet = doc && (doc.querySelector('.bk-sheet') || doc.querySelector('.bk-letter'));
-        if (!sheet) return;
-        doc.body.style.zoom = '1';
+        const stage = doc && doc.getElementById('bk-preview-stage');
+        const sheet = stage && (doc.querySelector('.bk-sheet') || doc.querySelector('.bk-letter'));
+        if (!stage || !sheet) return;
+        stage.style.transformOrigin = 'top center';
+        stage.style.transform = 'none';
         const pageW = sheet.offsetWidth || 794;
-        const pageH = sheet.offsetHeight || 1123;
-        const z = Math.min(1, (frame.clientWidth - 30) / pageW, (frame.clientHeight - 30) / pageH);
-        if (z > 0) doc.body.style.zoom = String(z);
+        const z = Math.min(1, (frame.clientWidth - 20) / pageW);
+        stage.style.transform = `scale(${z})`;
+        doc.body.style.height = Math.ceil(stage.getBoundingClientRect().height + 28) + 'px';
       } catch (e) { /* cross-origin or detached frame — leave unscaled */ }
     };
     frame.addEventListener('load', () => { paginate(); fitPreview(); });
@@ -1161,6 +1240,46 @@ class BriefkopfPreviewModal extends obsidian.Modal {
 
   onClose() {
     if (this.resizeObserver) { this.resizeObserver.disconnect(); this.resizeObserver = null; }
+    this.contentEl.empty();
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Share modal (iOS export path)
+ * ------------------------------------------------------------------ */
+
+class BriefkopfShareModal extends obsidian.Modal {
+  constructor(app, path) {
+    super(app);
+    this.path = path;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.createEl('h3', { text: t('share_title') });
+    contentEl.createEl('p', { text: t('share_intro') });
+    const ol = contentEl.createEl('ol');
+    [t('share_step1'), t('share_step2'), t('share_step3'), t('share_step4'), t('share_step5')]
+      .forEach((s) => ol.createEl('li', { text: s }));
+    const actions = contentEl.createDiv({ cls: 'briefkopf-preview-actions' });
+    const openBtn = actions.createEl('button', { text: t('share_open'), cls: 'mod-cta' });
+    openBtn.onclick = async () => {
+      try {
+        if (typeof this.app.openWithDefaultApp === 'function') {
+          await this.app.openWithDefaultApp(this.path);
+        }
+      } catch (e) {
+        console.error('Letterhead: openWithDefaultApp failed', e);
+        new obsidian.Notice(t('notice_share_failed'));
+      }
+      this.close();
+    };
+    const closeBtn = actions.createEl('button', { text: t('modal_close') });
+    closeBtn.onclick = () => this.close();
+  }
+
+  onClose() {
     this.contentEl.empty();
   }
 }

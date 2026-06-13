@@ -7,9 +7,29 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-06-13
+
 ### Added
+- **PDF-Export auf iPhone/iPad** über das System-Teilen-Sheet: Da `window.print()`
+  in der mobilen Obsidian-WebView wirkungslos ist, schreibt das Plugin den Brief
+  als eigenständige HTML-Datei (Dateiname = Notizname) in einen versteckten
+  Export-Ordner und übergibt sie via „In Standard-App öffnen" ans System. Ein Dialog
+  führt durch die Schritte: Schnellansicht → Teilen → Drucken → Vorschau aufziehen →
+  Teilen → In Dateien sichern.
+- Die **Frontmatter-Vorlage** befüllt `gruss` und `unterschrift` jetzt mit den
+  effektiven Standardwerten (statt leer) und legt `info_1` … `info_4` vollständig an.
+
 ### Changed
+- **Umbenannt von „Briefkopf" zu „Letterhead"** (Plugin-ID `letterhead`, Repository
+  `obsidian-letterhead`) — eine international verständliche, funktionale Bezeichnung.
+  Die Brief-Funktionalität bleibt unverändert; bestehende Frontmatter-Felder gelten weiter.
+- Die Vorschau skaliert auf Mobilgeräten jetzt per `transform` statt CSS `zoom`
+  (WebKit ignoriert `zoom`) und wird auf iPhone/iPad wieder vollständig angezeigt.
+- Plugin-Beschreibung präzisiert: Druckdialog auf dem Desktop, Teilen-Sheet auf iOS.
+- Export-Schaltfläche in der Vorschau gekürzt zu „PDF-Export".
+
 ### Fixed
+- Vorschau wurde auf iOS rechts abgeschnitten (A4-Blatt wurde nicht herunterskaliert).
 
 ## [1.1.1] — 2026-06-12
 

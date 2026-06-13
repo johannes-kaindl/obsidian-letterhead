@@ -5,13 +5,13 @@ Ziel: in fünf Minuten von einer leeren Notiz zu einem fertigen PDF-Geschäftsbr
 ## 1. Plugin installieren & aktivieren
 
 `manifest.json`, `main.js`, `styles.css`, `versions.json` nach
-`<dein-vault>/.obsidian/plugins/briefkopf/` kopieren (oder `npm run deploy`),
-dann in Obsidian → Einstellungen → Community-Plugins neu laden und **Briefkopf**
+`<dein-vault>/.obsidian/plugins/letterhead/` kopieren (oder `npm run deploy`),
+dann in Obsidian → Einstellungen → Community-Plugins neu laden und **Letterhead**
 aktivieren.
 
 ## 2. Absender & Stil einmalig einstellen
 
-Einstellungen → **Briefkopf**:
+Einstellungen → **Letterhead**:
 
 - **Sender profile** ausfüllen (Name, Firma, Straße, PLZ + Ort, Telefon,
   E-Mail, Website). Gilt für alle Briefe, pro Brief überschreibbar.
@@ -56,15 +56,24 @@ A4-Seiten inklusive Seitenumbrüchen — so siehst du das Layout, ohne zu drucke
 
 ## 5. Als PDF exportieren
 
-Befehlspalette oder Briefumschlag-Icon → **Export letter as PDF / print** →
-im Druckdialog **„Als PDF sichern"**.
+Befehlspalette oder Briefumschlag-Icon → **Export letter as PDF / print**.
 
-- **macOS:** PDF-Dropdown unten links → „Als PDF sichern".
-- **iPhone/iPad:** Teilen-Symbol → „In Dateien sichern".
+- **Desktop (macOS/Windows/Linux):** Es öffnet sich der Druckdialog des
+  Betriebssystems. PDF-Dropdown bzw. Ziel → **„Als PDF sichern"**; Skalierung
+  auf **100 %** lassen.
+- **iPhone/iPad:** Das Plugin schreibt den Brief als HTML-Datei (Name der
+  Notiz) in den Vault und übergibt sie an iOS. Der Export läuft dann so:
+
+  1. Ein kleiner Dialog erscheint — tippe **„Öffnen"**.
+  2. iOS zeigt eine Auswahl — tippe **„Schnellansicht"**.
+  3. In der Schnellansicht tippe das **Teilen-Symbol** (unten rechts).
+  4. Wähle **„Drucken"**.
+  5. **Vorschau mit zwei Fingern aufziehen** — sie wird zum fertigen PDF mit
+     korrekten Rändern und Seitenumbrüchen.
+  6. Tippe erneut das **Teilen-Symbol**, dann **„In Dateien sichern"**.
 
 Druckränder setzt das Plugin automatisch (Seite 1 oben 10 mm, Folgeseiten
-25 mm, unten 20 mm) — im Druckdialog also Skalierung **100 %** lassen, nichts
-anpassen.
+25 mm, unten 20 mm) — gelten auf beiden Wegen, also nichts anpassen.
 
 ## 6. Falten & Kuvertieren
 
