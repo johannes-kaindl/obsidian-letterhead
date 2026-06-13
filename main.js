@@ -596,6 +596,29 @@ const PRINT_WRAPPER_CSS = `
   }
 `;
 
+/* Wrapper for the standalone export file (iOS share path): unlike
+   PRINT_WRAPPER_CSS, the letter must be visible on screen too (the user opens
+   the file in Safari before printing), while keeping the same @page margins. */
+const STANDALONE_WRAPPER_CSS = `
+  @page{ size:A4; margin:${PRINT_MARGIN_TOP_FOLLOW_MM}mm 0 ${PRINT_MARGIN_BOTTOM_MM}mm 0; }
+  @page:first{ margin-top:${PRINT_MARGIN_TOP_MM}mm; }
+  html, body{ margin:0; padding:0; background:#fff; }
+  .bk-body p{ orphans:2; widows:2; }
+  .bk-signature, .bk-enclosures, .bk-closing{ break-inside:avoid; }
+`;
+
+/* Build a self-contained HTML document for the iOS share/print path. Pure:
+   no Obsidian imports. letterHtml comes from buildLetterHtml (esc()-escaped),
+   css from buildCss (includes the --bk-* tokens and the data:-URL logo). */
+function buildStandaloneDoc(letterHtml, css) {
+  return `<!doctype html><html lang="de"><head>` +
+    `<meta charset="utf-8">` +
+    `<meta name="viewport" content="width=device-width, initial-scale=1">` +
+    `<title>Brief</title>` +
+    `<style>${css}${STANDALONE_WRAPPER_CSS}</style>` +
+    `</head><body>${letterHtml}</body></html>`;
+}
+
 const SCREEN_PREVIEW_CSS = `
   html,body{ margin:0; padding:0; }
   body{ background:#d9d9d9; padding:14px 0; }
