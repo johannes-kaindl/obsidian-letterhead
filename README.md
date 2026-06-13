@@ -1,16 +1,16 @@
 # Letterhead – DIN 5008 & modern letters
 
-> 🇬🇧 English · [🇩🇪 Deutsch](README.de.md)
+> 🇬🇧 English · [🇩🇪 Deutsch](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/README.de.md)
 
 An Obsidian plugin that turns a note into a professionally formatted business letter — German **DIN 5008** or a clean **modern** layout — and exports it to PDF: on desktop via the OS print dialog, on **iPhone/iPad** via Quick Look → Print → Save to Files.
 
-[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-[![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE)
+[![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE-DOCS)
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
 <p>
-  <img src="docs/images/hero-din-de.png" alt="DIN 5008 business letter (German)" width="340">
-  <img src="docs/images/hero-modern-en.png" alt="Modern business letter (English)" width="340">
+  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/hero-din-de.png" alt="DIN 5008 business letter (German)" width="340">
+  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/hero-modern-en.png" alt="Modern business letter (English)" width="340">
 </p>
 
 <sub><b>DIN 5008</b> (German) · <b>Modern</b> (English) — two layouts, two letter languages.</sub>
@@ -36,11 +36,11 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead)
 (source mirror: [codeberg.org/jkaindl/obsidian-letterhead](https://codeberg.org/jkaindl/obsidian-letterhead))
 
-### Via BRAT (beta)
+### Install from Obsidian (recommended)
 
-1. Install the [**BRAT**](https://github.com/TfTHacker/obsidian42-brat) community plugin.
-2. Open **BRAT → Add beta plugin** and enter `johannes-kaindl/obsidian-letterhead`.
-3. Enable **Letterhead** in Settings → Community plugins.
+1. Open **Settings → Community plugins → Browse**.
+2. Search for **"Letterhead"** and select **Install**.
+3. **Enable** Letterhead, then fill in your sender profile in the settings.
 
 ### Manual install
 
@@ -57,7 +57,7 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Letter
 
 ## Usage
 
-1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](examples/example-letter.md)), then fill them in.
+1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/examples/example-letter.md)), then fill them in.
 2. Run **Export letter as PDF / print** (command palette or the envelope ribbon icon). Use **Open letter preview** for a paginated preview first.
 3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** iOS shows a dialog — tap **Open** → **Quick Look** → Share → **Print** → pinch the preview open with two fingers (it becomes the PDF) → Share → **Save to Files**.
 
@@ -65,13 +65,13 @@ The note body below the frontmatter is the letter text and is rendered as Markdo
 
 ## Documentation
 
-- [Tutorial — your first letter](docs/tutorial.md)
-- [Reference — frontmatter fields](docs/reference/frontmatter.md) · [settings](docs/reference/settings.md) · [theming / CSS tokens](docs/reference/theming.md)
-- [Explanation — DIN 5008 measurements](docs/explanation/din5008.md)
+- [Tutorial — your first letter](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/tutorial.md)
+- [Reference — frontmatter fields](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/frontmatter.md) · [settings](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/settings.md) · [theming / CSS tokens](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/theming.md)
+- [Explanation — DIN 5008 measurements](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/explanation/din5008.md)
 
 ## Theming
 
-Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): the **Custom CSS** field (**Settings → Advanced**) comes pre-filled with a fully commented-out preset — uncomment a line and adjust it; the **Reset preset** button restores that initial state, or you can copy [`presets/letterhead-theme.css`](presets/letterhead-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
+Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): the **Custom CSS** field (**Settings → Advanced**) comes pre-filled with a fully commented-out preset — uncomment a line and adjust it; the **Reset preset** button restores that initial state, or you can copy [`presets/letterhead-theme.css`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/presets/letterhead-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/theming.md).
 
 ## Development
 
@@ -86,5 +86,5 @@ This is a deliberate deviation from the workspace `ts-node · obsidian-plugin` p
 
 ## License
 
-Code: **AGPL-3.0-or-later** — see [`LICENSE`](LICENSE); commercial dual-license option in [`LICENSING.md`](LICENSING.md).
-Documentation/text: **CC BY-SA 4.0** — see [`LICENSE-DOCS`](LICENSE-DOCS).
+Code: **AGPL-3.0-or-later** — see [`LICENSE`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE); commercial dual-license option in [`LICENSING.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSING.md).
+Documentation/text: **CC BY-SA 4.0** — see [`LICENSE-DOCS`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE-DOCS).
