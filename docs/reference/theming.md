@@ -9,7 +9,7 @@ willst — für die meisten Anpassungen reicht aber schon die Stil-Auswahl.
 Schnellstart: Das Feld **Custom CSS** (Einstellungen → Advanced) ist mit einem
 komplett auskommentierten Preset vorbefüllt — Zeile einkommentieren, Wert
 anpassen, fertig. **Reset preset** stellt den Ausgangszustand wieder her
-(identisch mit [`presets/briefkopf-theme.css`](../../presets/briefkopf-theme.css)).
+(identisch mit [`presets/letterhead-theme.css`](../../presets/letterhead-theme.css)).
 
 ## Tokens — sicher anpassbar
 

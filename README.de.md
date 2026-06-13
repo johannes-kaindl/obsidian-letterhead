@@ -25,8 +25,19 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 
 ## Schnellstart
 
+Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead)
+(Quell-Mirror: [codeberg.org/jkaindl/obsidian-letterhead](https://codeberg.org/jkaindl/obsidian-letterhead))
+
+### Via BRAT (Beta)
+
+1. Das Community-Plugin [**BRAT**](https://github.com/TfTHacker/obsidian42-brat) installieren.
+2. **BRAT → Add beta plugin** öffnen und `johannes-kaindl/obsidian-letterhead` eingeben.
+3. **Letterhead** unter Einstellungen → Community-Plugins aktivieren.
+
+### Manuelle Installation
+
 ```bash
-# Manuelle Installation: Plugin in den Vault kopieren
+# Plugin in den Vault kopieren
 cp manifest.json main.js styles.css versions.json \
    "<dein-vault>/.obsidian/plugins/letterhead/"
 
@@ -52,7 +63,7 @@ Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gere
 
 ## Theming
 
-Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Für Feinschliff darüber hinaus läuft das Aussehen komplett über CSS Custom Properties (Design-Tokens): In **Einstellungen → Advanced → Insert preset** gibt es einen kommentierten Startpunkt, alternativ [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.md](docs/reference/theming.md).
+Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Für Feinschliff darüber hinaus läuft das Aussehen komplett über CSS Custom Properties (Design-Tokens): In **Einstellungen → Advanced → Insert preset** gibt es einen kommentierten Startpunkt, alternativ [`presets/letterhead-theme.css`](presets/letterhead-theme.css). Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.md](docs/reference/theming.md).
 
 ## Lizenz
 

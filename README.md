@@ -25,8 +25,19 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 
 ## Quick Start
 
+Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead)
+(source mirror: [codeberg.org/jkaindl/obsidian-letterhead](https://codeberg.org/jkaindl/obsidian-letterhead))
+
+### Via BRAT (beta)
+
+1. Install the [**BRAT**](https://github.com/TfTHacker/obsidian42-brat) community plugin.
+2. Open **BRAT → Add beta plugin** and enter `johannes-kaindl/obsidian-letterhead`.
+3. Enable **Letterhead** in Settings → Community plugins.
+
+### Manual install
+
 ```bash
-# Manual install: copy the plugin into your vault
+# Copy the plugin into your vault
 cp manifest.json main.js styles.css versions.json \
    "<your-vault>/.obsidian/plugins/letterhead/"
 
@@ -52,7 +63,7 @@ The note body below the frontmatter is the letter text and is rendered as Markdo
 
 ## Theming
 
-Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): open **Settings → Advanced → Insert preset** for a commented starter, or copy [`presets/briefkopf-theme.css`](presets/briefkopf-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
+Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): open **Settings → Advanced → Insert preset** for a commented starter, or copy [`presets/letterhead-theme.css`](presets/letterhead-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
 
 ## Development
 
@@ -64,13 +75,6 @@ npm run deploy    # copy manifest.json main.js styles.css versions.json → $OBS
 ```
 
 This is a deliberate deviation from the workspace `ts-node · obsidian-plugin` profile — see `AGENTS.md` → *Abweichungen von der Leitkonvention*.
-
-## Before publishing
-
-- Add Release/CI/Downloads badges with your forge owner once the repo is pushed (see `../_docs/templates/badges.md`).
-- Set the repo description + topics on the forge (consistent with `package.json` keywords).
-- The official Obsidian directory and **BRAT** pull releases from **GitHub** — create a GitHub mirror and a release (tag = version without `v`; assets `main.js`, `manifest.json`, `styles.css`).
-- The example data (Max Mustermann, Muster GmbH, example.com) is intentionally sample/placeholder content.
 
 ## License
 
