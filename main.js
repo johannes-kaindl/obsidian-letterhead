@@ -163,13 +163,15 @@ const UI_STRINGS = {
     notice_no_recipient: 'Briefkopf: No recipient in the frontmatter (field "empfaenger").',
     notice_print_failed: 'Briefkopf: Printing is not possible.',
     modal_title: 'Letter preview',
-    modal_export: 'Export to PDF',
+    modal_export: 'Export PDF',
     modal_close: 'Close',
     share_title: 'Export to PDF on iPhone / iPad',
-    share_intro: 'The letter was saved as a file. To turn it into a PDF:',
-    share_step1: 'Tap "Open" below, then choose Safari (or "Open in…").',
-    share_step2: 'In Safari: tap the Share button.',
-    share_step3: 'Choose "Print", then pinch the preview and save as PDF.',
+    share_intro: 'The letter was saved as a file. To make a PDF from it:',
+    share_step1: 'Tap "Quick Look".',
+    share_step2: 'Tap the Share button (bottom right).',
+    share_step3: 'Choose "Print".',
+    share_step4: 'Pinch the print preview open with two fingers — it becomes the finished PDF.',
+    share_step5: 'Tap Share again, then "Save to Files".',
     share_open: 'Open',
     notice_share_failed: 'Briefkopf: Could not hand the file to the system.',
     set_layout: 'Layout', set_layout_desc: 'Base layout of the letter.',
@@ -242,13 +244,15 @@ const UI_STRINGS = {
     notice_no_recipient: 'Briefkopf: Kein Empfänger im Frontmatter (Feld „empfaenger").',
     notice_print_failed: 'Briefkopf: Druck nicht möglich.',
     modal_title: 'Brief-Vorschau',
-    modal_export: 'Als PDF exportieren',
+    modal_export: 'PDF-Export',
     modal_close: 'Schließen',
     share_title: 'PDF-Export auf iPhone / iPad',
     share_intro: 'Der Brief wurde als Datei gespeichert. So wird ein PDF daraus:',
-    share_step1: 'Unten auf „Öffnen" tippen, dann Safari wählen (oder „Öffnen in…").',
-    share_step2: 'In Safari: auf das Teilen-Symbol tippen.',
-    share_step3: '„Drucken" wählen, dann die Vorschau aufziehen und als PDF sichern.',
+    share_step1: '„Schnellansicht" (Quick Look) antippen.',
+    share_step2: 'Unten rechts auf das Teilen-Symbol tippen.',
+    share_step3: '„Drucken" wählen.',
+    share_step4: 'Die Druckvorschau mit zwei Fingern aufziehen — daraus wird das fertige PDF.',
+    share_step5: 'Erneut auf das Teilen-Symbol tippen, dann „In Dateien sichern".',
     share_open: 'Öffnen',
     notice_share_failed: 'Briefkopf: Datei konnte nicht ans System übergeben werden.',
     set_layout: 'Layout', set_layout_desc: 'Grundlayout des Briefs.',
@@ -754,8 +758,8 @@ class BriefkopfPlugin extends obsidian.Plugin {
         if (!has('ort', 'place', 'stadt', 'city')) fm[K.ort] = '';
         if (!has('datum', 'date')) fm[K.datum] = iso;
         if (!has('anlagen', 'anlage', 'attachments', 'enclosures')) fm[K.anlagen] = [];
-        if (!has('gruss', 'gruß', 'grussformel', 'closing', 'signoff')) fm[K.gruss] = '';
-        if (!has('unterschrift', 'signatur', 'signature', 'gezeichnet')) fm[K.unterschrift] = '';
+        if (!has('gruss', 'gruß', 'grussformel', 'closing', 'signoff')) fm[K.gruss] = this.settings.defaultGruss || (LETTER_LABELS[lang] || LETTER_LABELS.de).closing;
+        if (!has('unterschrift', 'signatur', 'signature', 'gezeichnet')) fm[K.unterschrift] = (this.settings.sender && this.settings.sender.name) || '';
         if (!has('stil', 'style', 'design', 'variante')) fm[K.stil] = '';
         if (!has('infozeile', 'layout')) fm[K.infozeile] = '';
         if (!has('sprache', 'language', 'lang', 'briefsprache')) fm[K.sprache] = lang;
@@ -1077,10 +1081,21 @@ class BriefkopfPlugin extends obsidian.Plugin {
      so write the letter as a standalone file into the vault and hand it to the
      system via openWithDefaultApp — the user prints it to PDF from Safari. */
   async exportViaShare(letterHtml, css) {
-    const path = '.briefkopf-export.html';
+    const dir = '.briefkopf-export';
+    const file = this.app.workspace.getActiveFile();
+    const base = (file && file.basename) ? file.basename : 'Brief';
+    const safe = base.replace(/[\\/:*?"<>|]/g, '_').trim() || 'Brief';
+    const path = `${dir}/${safe}.html`;
     try {
+      const adapter = this.app.vault.adapter;
+      if (await adapter.exists(dir)) {
+        const listing = await adapter.list(dir);
+        for (const f of listing.files) { await adapter.remove(f); }
+      } else {
+        await adapter.mkdir(dir);
+      }
       const docHtml = buildStandaloneDoc(letterHtml, css);
-      await this.app.vault.adapter.write(path, docHtml);
+      await adapter.write(path, docHtml);
       new BriefkopfShareModal(this.app, path).open();
     } catch (e) {
       console.error('Briefkopf: share export failed', e);
@@ -1244,7 +1259,7 @@ class BriefkopfShareModal extends obsidian.Modal {
     contentEl.createEl('h3', { text: t('share_title') });
     contentEl.createEl('p', { text: t('share_intro') });
     const ol = contentEl.createEl('ol');
-    [t('share_step1'), t('share_step2'), t('share_step3')]
+    [t('share_step1'), t('share_step2'), t('share_step3'), t('share_step4'), t('share_step5')]
       .forEach((s) => ol.createEl('li', { text: s }));
     const actions = contentEl.createDiv({ cls: 'briefkopf-preview-actions' });
     const openBtn = actions.createEl('button', { text: t('share_open'), cls: 'mod-cta' });
