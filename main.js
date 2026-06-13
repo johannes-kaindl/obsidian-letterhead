@@ -702,10 +702,10 @@ class BriefkopfPlugin extends obsidian.Plugin {
     const K = lang === 'en'
       ? { recipient: 'recipient', betreff: 'subject', anrede: 'salutation', ort: 'place',
           datum: 'date', anlagen: 'enclosures', gruss: 'closing', unterschrift: 'signature',
-          stil: 'style', infozeile: 'layout', sprache: 'language', info1: 'info_1' }
+          stil: 'style', infozeile: 'layout', sprache: 'language' }
       : { recipient: 'empfaenger', betreff: 'betreff', anrede: 'anrede', ort: 'ort',
           datum: 'datum', anlagen: 'anlagen', gruss: 'gruss', unterschrift: 'unterschrift',
-          stil: 'stil', infozeile: 'infozeile', sprache: 'sprache', info1: 'info_1' };
+          stil: 'stil', infozeile: 'infozeile', sprache: 'sprache' };
     try {
       await this.app.fileManager.processFrontMatter(file, (fm) => {
         const has = (...keys) => keys.some((k) => fm[k] !== undefined);
@@ -722,7 +722,11 @@ class BriefkopfPlugin extends obsidian.Plugin {
         if (!has('stil', 'style', 'design', 'variante')) fm[K.stil] = '';
         if (!has('infozeile', 'layout')) fm[K.infozeile] = '';
         if (!has('sprache', 'language', 'lang', 'briefsprache')) fm[K.sprache] = lang;
-        if (!has('info_1', 'info1', 'infoblock_1', 'info_block_1')) fm[K.info1] = '';
+        /* Custom info block: the plugin renders the flat fields info_1..info_4
+           (see writeLetterModel / the i=1..4 loop), so seed all four here. */
+        for (let i = 1; i <= 4; i++) {
+          if (!has('info_' + i, 'info' + i, 'infoblock_' + i, 'info_block_' + i)) fm['info_' + i] = '';
+        }
       });
       new obsidian.Notice(t('notice_fm_added'));
     } catch (e) {
