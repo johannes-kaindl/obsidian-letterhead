@@ -1207,6 +1207,46 @@ class BriefkopfPreviewModal extends obsidian.Modal {
 }
 
 /* ------------------------------------------------------------------ *
+ *  Share modal (iOS export path)
+ * ------------------------------------------------------------------ */
+
+class BriefkopfShareModal extends obsidian.Modal {
+  constructor(app, path) {
+    super(app);
+    this.path = path;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.createEl('h3', { text: t('share_title') });
+    contentEl.createEl('p', { text: t('share_intro') });
+    const ol = contentEl.createEl('ol');
+    [t('share_step1'), t('share_step2'), t('share_step3')]
+      .forEach((s) => ol.createEl('li', { text: s }));
+    const actions = contentEl.createDiv({ cls: 'briefkopf-preview-actions' });
+    const openBtn = actions.createEl('button', { text: t('share_open'), cls: 'mod-cta' });
+    openBtn.onclick = async () => {
+      try {
+        if (typeof this.app.openWithDefaultApp === 'function') {
+          await this.app.openWithDefaultApp(this.path);
+        }
+      } catch (e) {
+        console.error('Briefkopf: openWithDefaultApp failed', e);
+        new obsidian.Notice(t('notice_share_failed'));
+      }
+      this.close();
+    };
+    const closeBtn = actions.createEl('button', { text: t('modal_close') });
+    closeBtn.onclick = () => this.close();
+  }
+
+  onClose() {
+    this.contentEl.empty();
+  }
+}
+
+/* ------------------------------------------------------------------ *
  *  Settings tab
  * ------------------------------------------------------------------ */
 
