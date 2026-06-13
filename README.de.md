@@ -8,7 +8,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
-![Letterhead — DIN-5008-Brief](docs/images/hero.png)
+<img src="docs/images/hero.png" alt="Letterhead — ein vom Plugin erzeugter DIN-5008-Geschäftsbrief" width="420">
 
 ## Funktionen
 

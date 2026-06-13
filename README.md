@@ -8,7 +8,8 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
-![Letterhead — DIN 5008 letter](docs/images/hero.png)
+<img src="docs/images/hero.png" alt="Letterhead — a DIN 5008 business letter rendered by the plugin" width="420">
+
 
 ## Features
 
