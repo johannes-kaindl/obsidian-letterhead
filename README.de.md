@@ -8,18 +8,24 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
-<img src="docs/images/hero.png" alt="Letterhead — ein vom Plugin erzeugter DIN-5008-Geschäftsbrief" width="420">
+<p>
+  <img src="docs/images/hero-din-de.png" alt="DIN-5008-Geschäftsbrief (Deutsch)" width="340">
+  <img src="docs/images/hero-modern-en.png" alt="Moderner Geschäftsbrief (Englisch)" width="340">
+</p>
+
+<sub><b>DIN 5008</b> (Deutsch) · <b>Modern</b> (Englisch) — zwei Layouts, zwei Briefsprachen.</sub>
 
 ## Funktionen
 
+- **Briefe aus deinen Notizen:** Das Frontmatter einer Notiz hält die Metadaten, der Notiztext (Markdown) wird zum Brieftext — ein Befehl macht daraus einen fertig formatierten Geschäftsbrief.
+- **PDF-Export & Druck, überall:** Desktop (macOS/Windows/Linux) → Druckdialog → „Als PDF sichern"; **iPhone/iPad** → geführte Schritte über das System-Teilen-Menü (Öffnen → Schnellansicht → Teilen → Drucken → Vorschau aufziehen → „In Dateien sichern"). Das OS rendert das CSS — kein Electron, kein Node. Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau.
 - **Zwei Layouts:** `DIN 5008` (deutscher Standard, fensterkuvert-tauglich) und `Modern` (international) — wählbar unter **Einstellungen → Layout**.
 - **Drei Stile per Dropdown:** Sachlich-modern, Klassisch-seriös, Technisch-präzise — plus Infozeile „Vollständig" (Infoblock) oder „Nur Datum"; beides pro Brief im Frontmatter überschreibbar.
+- **Zweisprachig:** Plugin-UI folgt der Obsidian-App-Sprache (Englisch/Deutsch); die Briefsprache ist separat einstellbar — deutsche oder englische Brief-Labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), pro Brief per Frontmatter `sprache` umschaltbar.
 - **Metadaten aus dem Frontmatter:** Empfänger und Absender als YAML-Listen, Betreff, Anrede, Grußformel, Datum, Infoblock (inkl. Steuernummer + freie Zeilen), Anlagenvermerk — deutsche und englische Feld-Aliasse. Befehl **Insert letter frontmatter into note** legt die Felder an; die Einstellungen zeigen eine Feldübersicht.
 - **Absender-Profil** in den Einstellungen, pro Brief überschreibbar (Liste `absender` oder Einzelfelder).
-- **PDF-Export plattformgerecht:** Desktop (macOS/Windows/Linux) → Druckdialog → „Als PDF sichern"; iPhone/iPad → Plugin schreibt den Brief als HTML (Name der Notiz) in den Vault und übergibt ihn an iOS: Öffnen → Schnellansicht → Teilen → Drucken → Vorschau mit zwei Fingern aufziehen → Teilen → „In Dateien sichern". Das OS rendert das CSS — kein Electron, kein Node. Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau.
 - **Seitenechte Vorschau:** zeigt die fertigen A4-Blätter inklusive Seitenumbrüchen.
 - **DIN-Extras:** Faltmarken (105/210 mm bzw. 87/192 mm), Lochmarke (148,5 mm), Druckversatz-Feinjustierung fürs Kuvertfenster.
-- **Zweisprachig:** Plugin-UI folgt der Obsidian-App-Sprache (Englisch/Deutsch); die Briefsprache ist separat einstellbar — deutsche oder englische Brief-Labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), pro Brief per Frontmatter `sprache` umschaltbar.
 - **Kein CSS nötig** — Stil und Infozeile direkt in den Einstellungen; für Feinschliff bleiben dokumentierte CSS-Design-Tokens + kommentiertes Preset auf Knopfdruck.
 - **Komplett offline** — keine Netzwerkaufrufe, keine Telemetrie; das Rendering läuft lokal über die Druck-Engine des Betriebssystems.
 - Abhängigkeitsfrei, mobil-tauglich (`isDesktopOnly: false`), AGPL-3.0.

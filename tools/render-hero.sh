@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# Reproducibly render docs/images/hero.png from docs/images/sample-letter.html.
+# Reproducibly render the README hero images from their HTML sources.
+#   docs/images/sample-din-de.html    -> docs/images/hero-din-de.png
+#   docs/images/sample-modern-en.html -> docs/images/hero-modern-en.png
 # (CORE-META-03: hero/screenshots reproducible per script.)
 #
 # Requirements:
@@ -13,18 +15,28 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+USE_WEASYPRINT=0
 if python3 -c "import weasyprint" 2>/dev/null; then
-  python3 -c "from weasyprint import HTML; HTML('docs/images/sample-letter.html').write_pdf('docs/images/hero.pdf')"
+  USE_WEASYPRINT=1
 else
   CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
   command -v google-chrome >/dev/null 2>&1 && CHROME="google-chrome"
   command -v chromium >/dev/null 2>&1 && CHROME="chromium"
-  "$CHROME" --headless --disable-gpu --no-pdf-header-footer \
-    --print-to-pdf=docs/images/hero.pdf \
-    "file://$PWD/docs/images/sample-letter.html" 2>/dev/null
 fi
 
-pdftoppm -png -r 110 -singlefile docs/images/hero.pdf docs/images/hero
-rm -f docs/images/hero.pdf
+render() {
+  local html="$1" png="$2" pdf="${2%.png}.pdf"
+  if [ "$USE_WEASYPRINT" -eq 1 ]; then
+    python3 -c "from weasyprint import HTML; HTML('$html').write_pdf('$pdf')"
+  else
+    "$CHROME" --headless --disable-gpu --no-pdf-header-footer \
+      --print-to-pdf="$pdf" \
+      "file://$PWD/$html" 2>/dev/null
+  fi
+  pdftoppm -png -r 110 -singlefile "$pdf" "${png%.png}"
+  rm -f "$pdf"
+  echo "wrote $png"
+}
 
-echo "wrote docs/images/hero.png"
+render docs/images/sample-din-de.html    docs/images/hero-din-de.png
+render docs/images/sample-modern-en.html  docs/images/hero-modern-en.png

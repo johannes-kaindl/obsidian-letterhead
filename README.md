@@ -8,19 +8,25 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
-<img src="docs/images/hero.png" alt="Letterhead — a DIN 5008 business letter rendered by the plugin" width="420">
+<p>
+  <img src="docs/images/hero-din-de.png" alt="DIN 5008 business letter (German)" width="340">
+  <img src="docs/images/hero-modern-en.png" alt="Modern business letter (English)" width="340">
+</p>
+
+<sub><b>DIN 5008</b> (German) · <b>Modern</b> (English) — two layouts, two letter languages.</sub>
 
 
 ## Features
 
+- **Letters from your notes:** a note's frontmatter holds the metadata, the note body (Markdown) becomes the letter text — one command turns it into a finished, formatted business letter.
+- **PDF export & printing, everywhere:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; **iPhone/iPad** → guided steps via the system share sheet (Open → Quick Look → Share → Print → pinch the preview open → “Save to Files”). The OS renders the CSS — no Electron, no Node. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact.
 - **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international) — choose in **Settings → Layout**.
 - **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
+- **Bilingual:** the plugin UI follows the Obsidian app language (English/German); the letter language is a separate setting — German or English letter labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), switchable per letter via the `sprache` frontmatter field.
 - **Metadata from frontmatter:** recipient and sender as YAML lists, subject, salutation, closing, date, info block (incl. tax number + free-form rows), enclosures — German and English field aliases. The command **Insert letter frontmatter into note** scaffolds the fields; the settings tab shows a field reference.
-- **Sender profile** in the settings, overridable per letter (list `absender` or individual fields).
-- **PDF export, platform-aware:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; iPhone/iPad → the plugin writes the letter as HTML (filename = note name) into the vault and hands it to iOS: Open → Quick Look → Share → Print → pinch the preview open with two fingers (it becomes the finished PDF) → Share → “Save to Files”. The OS renders the CSS — no Electron, no Node. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact.
+- **Sender profile** in the settings, overridable per letter (list `absender`/`sender` or individual fields).
 - **Paginated preview:** shows the final A4 sheets including page breaks.
 - **DIN extras:** fold marks (105/210 mm or 87/192 mm), hole mark (148.5 mm), print-offset fine-tuning for the envelope window.
-- **Bilingual:** the plugin UI follows the Obsidian app language (English/German); the letter language is a separate setting — German or English letter labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), switchable per letter via the `sprache` frontmatter field.
 - **No CSS required** — style and info line are plain settings; for fine-tuning there are documented CSS design tokens + a one-click commented preset.
 - **Fully offline** — no network calls, no telemetry; rendering happens locally via the OS print engine.
 - Dependency-free, mobile-ready (`isDesktopOnly: false`), AGPL-3.0.
