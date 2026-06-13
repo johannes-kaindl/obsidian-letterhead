@@ -1,7 +1,7 @@
 {
   "name": "obsidian-briefkopf",
-  "version": "1.1.1",
-  "description": "Obsidian plugin: generate professionally formatted business letters (DIN 5008 and modern) from note frontmatter and export them to PDF via the print dialog, on desktop and iOS.",
+  "version": "1.2.0",
+  "description": "Generate professionally formatted business letters (DIN 5008 and modern) from note frontmatter and export them to PDF — via the print dialog on desktop, or the system share sheet on iPhone and iPad.",
   "keywords": [
     "obsidian",
     "obsidian-plugin",
