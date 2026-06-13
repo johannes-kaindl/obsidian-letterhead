@@ -10,6 +10,7 @@ data.json
 # Agent-/Session-State (CORE-AGENT-03/05)
 .claude/
 .remember/
+docs/superpowers/
 
 # macOS
 .DS_Store
