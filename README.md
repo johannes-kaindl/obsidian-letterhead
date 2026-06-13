@@ -2,7 +2,7 @@
 
 > 🇬🇧 English · [🇩🇪 Deutsch](README.de.md)
 
-An Obsidian plugin that turns a note into a professionally formatted business letter — German **DIN 5008** or a clean **modern** layout — and exports it to PDF through the OS print dialog, on desktop **and iPhone/iPad**.
+An Obsidian plugin that turns a note into a professionally formatted business letter — German **DIN 5008** or a clean **modern** layout — and exports it to PDF: on desktop via the OS print dialog, on **iPhone/iPad** via Safari's share sheet.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
@@ -16,7 +16,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 - **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
 - **Metadata from frontmatter:** recipient and sender as YAML lists, subject, salutation, closing, date, info block (incl. tax number + free-form rows), enclosures — German and English field aliases. The command **Insert letter frontmatter into note** scaffolds the fields; the settings tab shows a field reference.
 - **Sender profile** in the settings, overridable per letter (list `absender` or individual fields).
-- **PDF export via the print dialog** → “Save as PDF”. Cross-platform (desktop + iOS) because the OS renders the CSS — no Electron, no Node. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact.
+- **PDF export, platform-aware:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; iPhone/iPad → the plugin writes the letter as HTML into the vault and hands it to the browser; from Safari: Share → Print → save as PDF. The OS renders the CSS — no Electron, no Node. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact.
 - **Paginated preview:** shows the final A4 sheets including page breaks.
 - **DIN extras:** fold marks (105/210 mm or 87/192 mm), hole mark (148.5 mm), print-offset fine-tuning for the envelope window.
 - **Bilingual:** the plugin UI follows the Obsidian app language (English/German); the letter language is a separate setting — German or English letter labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), switchable per letter via the `sprache` frontmatter field.
@@ -40,7 +40,7 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Briefk
 
 1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](examples/Beispielbrief.md)), then fill them in.
 2. Run **Export letter as PDF / print** (command palette or the envelope ribbon icon). Use **Open letter preview** for a paginated preview first.
-3. In the print dialog choose **Save as PDF** (macOS: PDF dropdown; iOS: Share → Save to Files); keep scaling at 100%.
+3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** Safari opens automatically — tap Share → Print → long-press the preview → Save to Files.
 
 The note body below the frontmatter is the letter text and is rendered as Markdown.
 
