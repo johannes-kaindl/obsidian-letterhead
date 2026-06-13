@@ -319,7 +319,6 @@ const UI_STRINGS = {
 /* App language detection, most reliable source first:
    1. obsidian.getLanguage() — official API (Obsidian >= 1.8)
    2. moment.locale() — Obsidian keeps it on the app language
-   3. localStorage 'language' — legacy storage location
    English is the default and the fallback for every missing key. */
 function detectUiLang() {
   try {
@@ -331,10 +330,6 @@ function detectUiLang() {
   try {
     const m = window.moment && window.moment.locale && window.moment.locale();
     if (m && String(m).toLowerCase().startsWith('de')) return 'de';
-  } catch (e) { /* fall through */ }
-  try {
-    const l = window.localStorage.getItem('language');
-    if (l && String(l).toLowerCase().startsWith('de')) return 'de';
   } catch (e) { /* no window (tests) — default to English */ }
   return 'en';
 }
