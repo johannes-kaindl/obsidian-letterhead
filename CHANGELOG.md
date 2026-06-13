@@ -7,6 +7,23 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.2.1] — 2026-06-13
+
+Feinschliff nach dem Community-Verzeichnis-Review — keine funktionalen Änderungen am Brief.
+
+### Changed
+- Spracherkennung nutzt nur noch `getLanguage()` + `moment.locale()`; der redundante
+  `localStorage`-Fallback wurde entfernt.
+- `ui-monospace` aus dem Monospace-Stack des technischen Stils entfernt — auf älteren
+  Obsidian-Versionen nicht unterstützt; die benannten System-Fonts decken alle Plattformen ab.
+
+### Removed
+- Veraltete Design-Entwürfe unter `design/` (die Stile leben seit 1.1.0 in `main.js`,
+  Theming in `presets/letterhead-theme.css`).
+
+### Added
+- `package-lock.json` (leeres Lockfile — das Plugin ist dependency-free) für reproduzierbare Builds.
+
 ## [1.2.0] — 2026-06-13
 
 ### Added

@@ -88,12 +88,14 @@ function normSprache(v) {
 /* ------------------------------------------------------------------ *
  *  Built-in styles ("Stile")
  *
- *  Token sets matching design/css/briefkopf-{A,B,C}.css. No webfonts:
- *  the plugin must work offline (no network access), so variant C uses
- *  the system monospace stack instead of an @import.
+ *  Token sets for the three styles (matter-of-fact / classic / technical).
+ *  No webfonts: the plugin must work offline (no network access), so the
+ *  technical style uses the system monospace stack instead of an @import.
+ *  (ui-monospace is intentionally omitted — unsupported on older Obsidian
+ *  versions; the named system fonts below cover every platform.)
  * ------------------------------------------------------------------ */
 
-const MONO_STACK = 'ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
+const MONO_STACK = '"SF Mono", Menlo, Consolas, "Liberation Mono", monospace';
 
 const STILE = {
   sachlich: {
