@@ -48,6 +48,8 @@ Es gibt bewusst **keinen** build/test/lint/typecheck-Schritt (siehe Abweichungen
 - Conventional Commits; SemVer-Tags **ohne** v-Präfix; nur berührte Dateien stagen.
 - Remotes: Codeberg `origin`, GitHub-Mirror für Obsidian-Verzeichnis/BRAT.
 - Frontmatter-Felder deutsch-first mit Aliassen (`docs/reference/frontmatter.md`).
+- Doku ist zweisprachig: Änderungen immer in **beiden** Sprachen pflegen
+  (EN `*.md` + DE `*.de.md`), sonst driften die Versionen auseinander.
 - Workspace-weite Standards: `../_docs/CONVENTIONS.md`.
 
 ## Gotchas

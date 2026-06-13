@@ -1,5 +1,7 @@
 # Reference — settings
 
+> 🇬🇧 English · [🇩🇪 Deutsch](settings.de.md)
+
 Settings → Community plugins → **Letterhead**. The plugin UI follows the
 Obsidian app language (English by default, German localised); this reference uses
 the English labels. The language of the **letter** is independent of this

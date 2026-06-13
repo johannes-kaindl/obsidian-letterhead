@@ -1,5 +1,7 @@
 # Tutorial — your first letter
 
+> 🇬🇧 English · [🇩🇪 Deutsch](tutorial.de.md)
+
 Goal: go from an empty note to a finished PDF business letter in five minutes.
 
 ## 1. Install & enable the plugin

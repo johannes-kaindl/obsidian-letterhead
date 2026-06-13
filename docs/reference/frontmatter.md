@@ -1,5 +1,7 @@
 # Reference — frontmatter fields
 
+> 🇬🇧 English · [🇩🇪 Deutsch](frontmatter.de.md)
+
 All fields are optional. If a value is missing, the default from the plugin
 settings applies (sender, style, closing, date = today). Keys are
 case-insensitive; `_`, `-`, `.` and spaces are ignored

@@ -1,5 +1,7 @@
 # Reference — theming & CSS tokens
 
+> 🇬🇧 English · [🇩🇪 Deutsch](theming.de.md)
+
 The entire look runs on **CSS custom properties** ("design tokens"). The **style**
 chosen in the settings (matter-of-fact / classic / technical) sets the token
 defaults; your optional **Custom CSS** field is loaded *afterwards* and wins. So

@@ -64,13 +64,13 @@ Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gere
 
 ## Dokumentation
 
-- [Tutorial — dein erster Brief](docs/tutorial.md)
-- [Referenz — Frontmatter-Felder](docs/reference/frontmatter.md) · [Einstellungen](docs/reference/settings.md) · [Theming / CSS-Tokens](docs/reference/theming.md)
-- [Erläuterung — DIN-5008-Maße](docs/explanation/din5008.md)
+- [Tutorial — dein erster Brief](docs/tutorial.de.md)
+- [Referenz — Frontmatter-Felder](docs/reference/frontmatter.de.md) · [Einstellungen](docs/reference/settings.de.md) · [Theming / CSS-Tokens](docs/reference/theming.de.md)
+- [Erläuterung — DIN-5008-Maße](docs/explanation/din5008.de.md)
 
 ## Theming
 
-Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Für Feinschliff darüber hinaus läuft das Aussehen komplett über CSS Custom Properties (Design-Tokens): Das Feld **Custom CSS** (**Einstellungen → Advanced**) ist mit einem vollständig auskommentierten Preset vorbefüllt — eine Zeile einkommentieren und anpassen; der Button **Reset preset** stellt diesen Ausgangszustand wieder her, alternativ [`presets/letterhead-theme.css`](presets/letterhead-theme.css) kopieren. Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.md](docs/reference/theming.md).
+Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Für Feinschliff darüber hinaus läuft das Aussehen komplett über CSS Custom Properties (Design-Tokens): Das Feld **Custom CSS** (**Einstellungen → Advanced**) ist mit einem vollständig auskommentierten Preset vorbefüllt — eine Zeile einkommentieren und anpassen; der Button **Reset preset** stellt diesen Ausgangszustand wieder her, alternativ [`presets/letterhead-theme.css`](presets/letterhead-theme.css) kopieren. Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.de.md](docs/reference/theming.de.md).
 
 ## Lizenz
 
