@@ -25,8 +25,13 @@ auf Mobile ohne Toolchain läuft.
 - Styling ausschließlich über CSS Custom Properties (Design-Tokens): Geometrie ist
   DIN-kritisch (Fensterkuvert), Typo/Farbe/Spacing frei. Token-Referenz:
   `docs/reference/theming.md`.
-- Export = `window.print()` + `@media print` (blendet die Obsidian-DOM aus). Keine
-  Netzwerkzugriffe, keine Telemetrie, externe Assets nur als `data:`-URL (Logo).
+- Export ist plattformabhängig (`Platform.isDesktopApp`): **Desktop** =
+  `window.print()` + `@media print` (blendet die Obsidian-DOM aus). **iOS/iPad** =
+  `window.print()` ist dort wirkungslos, daher schreibt `exportViaShare()` den Brief
+  als eigenständiges HTML (`buildStandaloneDoc`, Dateiname = Notizname) in einen
+  versteckten Export-Ordner und übergibt es via `app.openWithDefaultApp()` ans System
+  (Schnellansicht → Drucken → als PDF sichern). Keine Netzwerkzugriffe, keine
+  Telemetrie, externe Assets nur als `data:`-URL (Logo).
 
 ## Commands
 
