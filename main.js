@@ -156,12 +156,12 @@ const UI_STRINGS = {
     cmd_export: 'Export letter as PDF / print',
     cmd_preview: 'Open letter preview',
     cmd_insert_fm: 'Insert letter frontmatter into note',
-    notice_open_note: 'Briefkopf: Open a Markdown note first.',
-    notice_fm_added: 'Briefkopf: Frontmatter fields added.',
-    notice_fm_failed: 'Briefkopf: Could not update the frontmatter.',
-    notice_logo_failed: 'Briefkopf: Could not load the logo – ',
-    notice_no_recipient: 'Briefkopf: No recipient in the frontmatter (field "empfaenger").',
-    notice_print_failed: 'Briefkopf: Printing is not possible.',
+    notice_open_note: 'Letterhead: Open a Markdown note first.',
+    notice_fm_added: 'Letterhead: Frontmatter fields added.',
+    notice_fm_failed: 'Letterhead: Could not update the frontmatter.',
+    notice_logo_failed: 'Letterhead: Could not load the logo – ',
+    notice_no_recipient: 'Letterhead: No recipient in the frontmatter (field "empfaenger").',
+    notice_print_failed: 'Letterhead: Printing is not possible.',
     modal_title: 'Letter preview',
     modal_export: 'Export PDF',
     modal_close: 'Close',
@@ -173,7 +173,7 @@ const UI_STRINGS = {
     share_step4: 'Pinch the print preview open with two fingers — it becomes the finished PDF.',
     share_step5: 'Tap Share again, then "Save to Files".',
     share_open: 'Open',
-    notice_share_failed: 'Briefkopf: Could not hand the file to the system.',
+    notice_share_failed: 'Letterhead: Could not hand the file to the system.',
     set_layout: 'Layout', set_layout_desc: 'Base layout of the letter.',
     opt_layout_din: 'DIN 5008 (German standard)', opt_layout_modern: 'Modern / international',
     set_style: 'Style',
@@ -237,12 +237,12 @@ const UI_STRINGS = {
     cmd_export: 'Brief als PDF exportieren / drucken',
     cmd_preview: 'Brief-Vorschau öffnen',
     cmd_insert_fm: 'Brief-Frontmatter in Notiz einfügen',
-    notice_open_note: 'Briefkopf: Bitte zuerst eine Markdown-Notiz öffnen.',
-    notice_fm_added: 'Briefkopf: Frontmatter-Felder ergänzt.',
-    notice_fm_failed: 'Briefkopf: Frontmatter konnte nicht ergänzt werden.',
-    notice_logo_failed: 'Briefkopf: Logo konnte nicht geladen werden – ',
-    notice_no_recipient: 'Briefkopf: Kein Empfänger im Frontmatter (Feld „empfaenger").',
-    notice_print_failed: 'Briefkopf: Druck nicht möglich.',
+    notice_open_note: 'Letterhead: Bitte zuerst eine Markdown-Notiz öffnen.',
+    notice_fm_added: 'Letterhead: Frontmatter-Felder ergänzt.',
+    notice_fm_failed: 'Letterhead: Frontmatter konnte nicht ergänzt werden.',
+    notice_logo_failed: 'Letterhead: Logo konnte nicht geladen werden – ',
+    notice_no_recipient: 'Letterhead: Kein Empfänger im Frontmatter (Feld „empfaenger").',
+    notice_print_failed: 'Letterhead: Druck nicht möglich.',
     modal_title: 'Brief-Vorschau',
     modal_export: 'PDF-Export',
     modal_close: 'Schließen',
@@ -254,7 +254,7 @@ const UI_STRINGS = {
     share_step4: 'Die Druckvorschau mit zwei Fingern aufziehen — daraus wird das fertige PDF.',
     share_step5: 'Erneut auf das Teilen-Symbol tippen, dann „In Dateien sichern".',
     share_open: 'Öffnen',
-    notice_share_failed: 'Briefkopf: Datei konnte nicht ans System übergeben werden.',
+    notice_share_failed: 'Letterhead: Datei konnte nicht ans System übergeben werden.',
     set_layout: 'Layout', set_layout_desc: 'Grundlayout des Briefs.',
     opt_layout_din: 'DIN 5008 (deutscher Standard)', opt_layout_modern: 'Modern / international',
     set_style: 'Stil',
@@ -771,7 +771,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
       });
       new obsidian.Notice(t('notice_fm_added'));
     } catch (e) {
-      console.error('Briefkopf: frontmatter insert failed', e);
+      console.error('Letterhead: frontmatter insert failed', e);
       new obsidian.Notice(t('notice_fm_failed'));
     }
   }
@@ -842,7 +842,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
         await obsidian.MarkdownRenderer.renderMarkdown(markdown, tmp, sourcePath, comp);
       }
     } catch (e) {
-      console.error('Briefkopf: markdown render failed', e);
+      console.error('Letterhead: markdown render failed', e);
     }
     const html = tmp.innerHTML;
     comp.unload();
@@ -1081,11 +1081,12 @@ class BriefkopfPlugin extends obsidian.Plugin {
      so write the letter as a standalone file into the vault and hand it to the
      system via openWithDefaultApp — the user prints it to PDF from Safari. */
   async exportViaShare(letterHtml, css) {
-    const dir = '.briefkopf-export';
+    const dir = '.letterhead-export';
     const file = this.app.workspace.getActiveFile();
     const base = (file && file.basename) ? file.basename : 'Brief';
     const safe = base.replace(/[\\/:*?"<>|]/g, '_').trim() || 'Brief';
     const path = `${dir}/${safe}.html`;
+    // Adapter API (not Vault API): the hidden export dir is scratch space, not a tracked vault file.
     try {
       const adapter = this.app.vault.adapter;
       if (await adapter.exists(dir)) {
@@ -1098,7 +1099,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
       await adapter.write(path, docHtml);
       new BriefkopfShareModal(this.app, path).open();
     } catch (e) {
-      console.error('Briefkopf: share export failed', e);
+      console.error('Letterhead: share export failed', e);
       new obsidian.Notice(t('notice_share_failed'));
     }
   }
@@ -1269,7 +1270,7 @@ class BriefkopfShareModal extends obsidian.Modal {
           await this.app.openWithDefaultApp(this.path);
         }
       } catch (e) {
-        console.error('Briefkopf: openWithDefaultApp failed', e);
+        console.error('Letterhead: openWithDefaultApp failed', e);
         new obsidian.Notice(t('notice_share_failed'));
       }
       this.close();
