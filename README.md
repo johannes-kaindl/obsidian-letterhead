@@ -13,7 +13,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 
 ## Features
 
-- **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international).
+- **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international) — choose in **Settings → Layout**.
 - **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
 - **Metadata from frontmatter:** recipient and sender as YAML lists, subject, salutation, closing, date, info block (incl. tax number + free-form rows), enclosures — German and English field aliases. The command **Insert letter frontmatter into note** scaffolds the fields; the settings tab shows a field reference.
 - **Sender profile** in the settings, overridable per letter (list `absender` or individual fields).
@@ -22,6 +22,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 - **DIN extras:** fold marks (105/210 mm or 87/192 mm), hole mark (148.5 mm), print-offset fine-tuning for the envelope window.
 - **Bilingual:** the plugin UI follows the Obsidian app language (English/German); the letter language is a separate setting — German or English letter labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), switchable per letter via the `sprache` frontmatter field.
 - **No CSS required** — style and info line are plain settings; for fine-tuning there are documented CSS design tokens + a one-click commented preset.
+- **Fully offline** — no network calls, no telemetry; rendering happens locally via the OS print engine.
 - Dependency-free, mobile-ready (`isDesktopOnly: false`), AGPL-3.0.
 
 ## Quick Start
@@ -50,7 +51,7 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Letter
 
 ## Usage
 
-1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](examples/Beispielbrief.md)), then fill them in.
+1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](examples/example-letter.md)), then fill them in.
 2. Run **Export letter as PDF / print** (command palette or the envelope ribbon icon). Use **Open letter preview** for a paginated preview first.
 3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** iOS shows a dialog — tap **Open** → **Quick Look** → Share → **Print** → pinch the preview open with two fingers (it becomes the PDF) → Share → **Save to Files**.
 
@@ -64,7 +65,7 @@ The note body below the frontmatter is the letter text and is rendered as Markdo
 
 ## Theming
 
-Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): open **Settings → Advanced → Insert preset** for a commented starter, or copy [`presets/letterhead-theme.css`](presets/letterhead-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
+Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): the **Custom CSS** field (**Settings → Advanced**) comes pre-filled with a fully commented-out preset — uncomment a line and adjust it; the **Reset preset** button restores that initial state, or you can copy [`presets/letterhead-theme.css`](presets/letterhead-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
 
 ## Development
 

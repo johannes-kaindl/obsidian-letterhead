@@ -47,7 +47,7 @@ Lists such as `recipient` and `enclosures` have one bullet per line and can also
 be edited comfortably in Obsidian's Properties view. All fields (including
 `sender` as a list, `style`, `info line`, info-block rows):
 [frontmatter reference](reference/frontmatter.md). A complete example lives at
-[`examples/Beispielbrief.md`](../examples/Beispielbrief.md).
+[`examples/example-letter.md`](../examples/example-letter.md).
 
 ## 4. Check the preview
 

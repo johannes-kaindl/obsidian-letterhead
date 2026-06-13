@@ -36,8 +36,8 @@ one letter.
 
 | Field | Aliases | Values |
 |-------|---------|--------|
-| `style` | `stil`, `design`, `variante` | `sachlich` (`a`), `klassisch` (`b`), `technisch` (`c`) |
-| `info line` (`infozeile`) | `layout` | `vollstaendig` (also `full`, `infoblock`) · `nurdatum` (also `minimal`, `datum`) |
+| `style` | `stil`, `design`, `variante` | `a` (`sachlich`) · `b` (`klassisch`) · `c` (`technisch`) — the short codes match the settings UI, so `style: a` works |
+| `info line` (`infozeile`) | `layout` | `vollstaendig` (also `full`, `infoblock`) · `nurdatum` (also `minimal`, `datum`) — mind the space in the key, e.g. `info line: "full"`, or use the no-space alias `infozeile: full` |
 | `language` | `sprache`, `lang` | `de` · `en` — language of the printed labels (Anlagen/Enclosures, info block, default closing). |
 
 ## Info block (DIN layout, info line "Full")
@@ -111,7 +111,13 @@ These win over the `sender` list, field by field:
 | `sender_city` | `absender_plz_ort`, `absender_ort` |
 | `absender_telefon` | — |
 | `absender_email` | — |
-| `website` | `absender_web` |
+| `absender_web` | `website` |
+
+Phone, email and web are normally **auto-detected from the `sender` list**
+(one item per line, see above); the individual fields `absender_telefon`,
+`absender_email` and `absender_web` (alias `website`) are the explicit fallback
+when you don't supply a `sender` list. Note that `absender_telefon` and
+`absender_email` have no separate English alias.
 
 ## Multi-line values
 

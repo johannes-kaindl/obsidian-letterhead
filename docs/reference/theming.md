@@ -11,6 +11,9 @@ fully commented-out preset — uncomment a line, adjust the value, done. **Reset
 preset** restores the initial state (identical to
 [`presets/letterhead-theme.css`](../../presets/letterhead-theme.css)).
 
+> Note: the `--bk-…` token prefix and `.bk-…` classes are historical — `bk` =
+> "Briefkopf", the German word for letterhead and the project's original name.
+
 ## Tokens — safe to adjust
 
 Defaults per style in brackets: matter-of-fact / classic / technical.
