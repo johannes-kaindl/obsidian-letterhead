@@ -1194,18 +1194,21 @@ class BriefkopfPreviewModal extends obsidian.Modal {
       } catch (e) { /* leave the un-paginated letter visible */ }
     };
 
-    /* Fit a whole A4 sheet into the frame (zoom keeps layout + scrollbars
-       consistent, unlike transform). Never upscale beyond 100%. */
+    /* Fit a whole A4 sheet into the frame. CSS `zoom` is ignored by iOS
+       WebKit, so scale the stage with transform (works on every platform).
+       Height is tracked so the frame scrolls correctly after scaling. */
     const fitPreview = () => {
       try {
         const doc = frame.contentDocument;
-        const sheet = doc && (doc.querySelector('.bk-sheet') || doc.querySelector('.bk-letter'));
-        if (!sheet) return;
-        doc.body.style.zoom = '1';
+        const stage = doc && doc.getElementById('bk-preview-stage');
+        const sheet = stage && (doc.querySelector('.bk-sheet') || doc.querySelector('.bk-letter'));
+        if (!stage || !sheet) return;
+        stage.style.transformOrigin = 'top center';
+        stage.style.transform = 'none';
         const pageW = sheet.offsetWidth || 794;
-        const pageH = sheet.offsetHeight || 1123;
-        const z = Math.min(1, (frame.clientWidth - 30) / pageW, (frame.clientHeight - 30) / pageH);
-        if (z > 0) doc.body.style.zoom = String(z);
+        const z = Math.min(1, (frame.clientWidth - 20) / pageW);
+        stage.style.transform = `scale(${z})`;
+        doc.body.style.height = Math.ceil(stage.getBoundingClientRect().height * z + 28) + 'px';
       } catch (e) { /* cross-origin or detached frame — leave unscaled */ }
     };
     frame.addEventListener('load', () => { paginate(); fitPreview(); });
