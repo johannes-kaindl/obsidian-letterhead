@@ -1,6 +1,6 @@
 {
-  "id": "briefkopf",
-  "name": "Briefkopf – Letter Generator",
+  "id": "letterhead",
+  "name": "Letterhead – DIN 5008 & modern letters",
   "version": "1.2.0",
   "minAppVersion": "1.4.0",
   "description": "Generate professionally formatted business letters (DIN 5008 and modern) from note frontmatter and export them to PDF — via the print dialog on desktop, or the system share sheet on iPhone and iPad.",
