@@ -445,6 +445,8 @@ function esc(s) {
 
 function escLines(lines) { return (lines || []).map(esc).join('\n'); }
 
+// Base64-encodes a local vault file (the user's configured logo) for an inline data:
+// URL — the plugin's only btoa() use. No network fetch, no obfuscation; see SECURITY.md.
 function arrayBufferToBase64(buf) {
   let bin = '';
   const bytes = new Uint8Array(buf);

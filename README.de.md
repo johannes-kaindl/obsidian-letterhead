@@ -72,6 +72,10 @@ Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gere
 
 Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Für Feinschliff darüber hinaus läuft das Aussehen komplett über CSS Custom Properties (Design-Tokens): Das Feld **Custom CSS** (**Einstellungen → Advanced**) ist mit einem vollständig auskommentierten Preset vorbefüllt — eine Zeile einkommentieren und anpassen; der Button **Reset preset** stellt diesen Ausgangszustand wieder her, alternativ [`presets/letterhead-theme.css`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/presets/letterhead-theme.css) kopieren. Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.de.md](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/theming.de.md).
 
+## Datenschutz & Sicherheit
+
+Letterhead läuft vollständig auf deinem Gerät: keine Netzwerkaufrufe, keine Telemetrie, kein Tracking. Weil es als lesbarer Quellcode ausgeliefert wird — das veröffentlichte `main.js` ist die committete Datei, unminifiziert, ungebündelt, ohne Build-Schritt — kannst du genau prüfen, was es tut. Der einzige `btoa()`-Aufruf bettet dein konfiguriertes Logo als inline `data:`-URL ein. Vollständige Erklärung und Meldung von Sicherheitslücken: [`SECURITY.de.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.de.md).
+
 ## Lizenz
 
 Code: **AGPL-3.0-or-later** — siehe [`LICENSE`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE); kommerzielle Dual-License-Option in [`LICENSING.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSING.md).
