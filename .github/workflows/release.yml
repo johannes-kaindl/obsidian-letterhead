@@ -1,0 +1,50 @@
+# Release + GitHub artifact attestation for a Zero-Build plugin.
+#
+# This plugin is intentionally build-free: main.js / manifest.json / styles.css
+# ARE the committed source. There is no compile step, so this workflow does NOT
+# build anything — it checks out the committed files and signs those exact bytes.
+# `actions/attest` hashes the named subject files and signs the digests with a
+# short-lived Sigstore certificate; it never modifies or rebuilds the artifacts.
+# Result: source == released asset == attested subject, byte for byte.
+#
+# Trigger: push a tag (e.g. `git push github 1.2.2`). This is the GitHub mirror;
+# Codeberg stays the primary origin and is unaffected.
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write        # create the GitHub Release and upload assets
+  id-token: write        # mint the OIDC token for Sigstore signing
+  attestations: write    # persist the provenance attestation
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the committed plugin files
+        uses: actions/checkout@v4
+
+      # No build step on purpose: the committed files are the release artifacts.
+      - name: Sanity-check that main.js parses
+        run: node --check main.js
+
+      - name: Attest the committed release files
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
+
+      - name: Create the GitHub Release with the same files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes \
+            main.js manifest.json styles.css

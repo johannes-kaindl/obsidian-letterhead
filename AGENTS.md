@@ -43,6 +43,21 @@ npm run deploy    # cp manifest.json main.js styles.css versions.json → $OBSID
 Manuelles Deploy-Ziel: `<vault>/.obsidian/plugins/letterhead/`.
 Es gibt bewusst **keinen** build/test/lint/typecheck-Schritt (siehe Abweichungen).
 
+## Releasing
+
+Releases erzeugt **GitHub Actions** (`.github/workflows/release.yml`), getriggert durch
+einen Tag-Push, der GitHub erreicht: `git push github <tag>` (Tag ohne v-Präfix). Der
+Workflow erstellt das GitHub-Release **und** eine Sigstore-Artifact-Attestation
+(SLSA-Provenance) auf die committeten `main.js`/`manifest.json`/`styles.css` — **ohne
+Build**; das attestierte Subjekt ist byte-identisch mit der Quelle (verstärkt
+source-as-output statt es zu ersetzen).
+
+- **Nicht mehr** manuell `gh release create` aufrufen: Die Attestation kann nur der
+  Actions-Lauf signieren (OIDC-Identität = Workflow, nicht Laptop); ein manuelles
+  Release für denselben Tag hätte keine Provenance und kollidiert mit dem Workflow.
+- `origin` bleibt Codeberg; nur der Tag muss zusätzlich auf den `github`-Remote, damit
+  der Workflow feuert. Voraussetzung: Actions sind im Mirror-Repo aktiviert.
+
 ## Conventions
 
 - Conventional Commits; SemVer-Tags **ohne** v-Präfix; nur berührte Dateien stagen.

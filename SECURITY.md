@@ -26,8 +26,15 @@ Letterhead is built so you can verify what it does by reading it:
   exported letter into a dedicated export folder (the iOS print path).
 
 ### A note on the community scorecard
-The directory scorecard flags *"build verification not available"* and *"missing
-artifact attestations"*. This is a direct consequence of the deliberate zero-build
-design: there is no build to verify because the released file **is** the source. We
-treat readable, unbundled source as the stronger guarantee and keep it that way on
-purpose (see [`AGENTS.md`](AGENTS.md) → *Abweichungen von der Leitkonvention*).
+The directory scorecard's *"build verification not available"* note is a direct
+consequence of the deliberate zero-build design: there is no build to verify because
+the released file **is** the source. We treat readable, unbundled source as the
+stronger guarantee and keep it that way on purpose (see [`AGENTS.md`](AGENTS.md) →
+*Abweichungen von der Leitkonvention*).
+
+On top of that readable source, releases carry a **GitHub artifact attestation**
+(Sigstore/SLSA build provenance): the release workflow signs the exact committed
+`main.js`, `manifest.json` and `styles.css` bytes — it builds nothing, so the attested
+subject is byte-for-byte identical to the source you can read. You get both: open
+source you can audit by eye, and cryptographic proof of where the released bytes came
+from.

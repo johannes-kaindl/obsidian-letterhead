@@ -28,8 +28,15 @@ Letterhead ist so gebaut, dass du durch Lesen überprüfen kannst, was es tut:
   exportierten Brief in einen dedizierten Export-Ordner (der iOS-Druck-Pfad).
 
 ### Hinweis zum Community-Scorecard
-Der Verzeichnis-Scorecard markiert *„build verification not available"* und *„missing
-artifact attestations"*. Das ist eine direkte Folge des bewussten Zero-Build-Designs: Es
-gibt keinen Build zu verifizieren, weil die veröffentlichte Datei **die** Quelle ist. Wir
-betrachten lesbaren, ungebündelten Quellcode als die stärkere Garantie und behalten das
-absichtlich bei (siehe [`AGENTS.md`](AGENTS.md) → *Abweichungen von der Leitkonvention*).
+Der Hinweis *„build verification not available"* im Verzeichnis-Scorecard ist eine
+direkte Folge des bewussten Zero-Build-Designs: Es gibt keinen Build zu verifizieren,
+weil die veröffentlichte Datei **die** Quelle ist. Wir betrachten lesbaren, ungebündelten
+Quellcode als die stärkere Garantie und behalten das absichtlich bei (siehe
+[`AGENTS.md`](AGENTS.md) → *Abweichungen von der Leitkonvention*).
+
+Zusätzlich zu diesem lesbaren Quellcode tragen Releases eine **GitHub Artifact
+Attestation** (Sigstore/SLSA-Build-Provenance): Der Release-Workflow signiert exakt die
+committeten Bytes von `main.js`, `manifest.json` und `styles.css` — er baut nichts, das
+attestierte Subjekt ist also byte-für-byte identisch mit der Quelle, die du lesen kannst.
+Du bekommst beides: offenen Code, den du mit bloßem Auge prüfen kannst, und einen
+kryptografischen Nachweis, woher die veröffentlichten Bytes stammen.
