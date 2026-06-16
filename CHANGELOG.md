@@ -7,6 +7,18 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.2.2] — 2026-06-16
+
+Lieferketten-Transparenz — keine funktionalen Änderungen am Brief.
+
+### Added
+- **GitHub Artifact Attestation** für Release-Dateien: Releases werden über GitHub
+  Actions veröffentlicht und signieren `main.js`, `manifest.json` und `styles.css`
+  kryptografisch (Sigstore/SLSA-Provenance). Da das Plugin abhängigkeits- und build-frei
+  ist, wird **nichts gebaut** — signiert werden exakt die committeten Bytes, die du liest
+  und installierst. Verifizierbar mit `gh attestation verify`. Die lesbare, ungebündelte
+  Quelle bleibt die primäre Garantie; die Attestation legt eine Provenance-Schicht darüber.
+
 ## [1.2.1] — 2026-06-13
 
 Feinschliff nach dem Community-Verzeichnis-Review — keine funktionalen Änderungen am Brief.
