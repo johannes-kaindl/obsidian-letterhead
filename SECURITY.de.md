@@ -40,3 +40,14 @@ committeten Bytes von `main.js`, `manifest.json` und `styles.css` — er baut ni
 attestierte Subjekt ist also byte-für-byte identisch mit der Quelle, die du lesen kannst.
 Du bekommst beides: offenen Code, den du mit bloßem Auge prüfen kannst, und einen
 kryptografischen Nachweis, woher die veröffentlichten Bytes stammen.
+
+### Release verifizieren
+Jeder Release wird über GitHub Actions veröffentlicht und signiert die Dateien mit einer
+Sigstore/SLSA-Build-Provenance-Attestation. Du kannst bestätigen, dass das laufende
+`main.js` aus der getaggten Quelle dieses Repositorys stammt:
+
+```sh
+gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead
+```
+
+Der attestierte Digest stimmt byte-für-byte mit dem committeten, ungebündelten `main.js` überein.

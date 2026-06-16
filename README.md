@@ -86,7 +86,7 @@ This is a deliberate deviation from the workspace `ts-node · obsidian-plugin` p
 
 ## Privacy & security
 
-Letterhead runs entirely on your device: no network calls, no telemetry, no tracking. Because it ships as readable source — the released `main.js` is the committed file, unminified, unbundled, with no build step — you can audit exactly what it does. The only `btoa()` call embeds your configured logo as an inline `data:` URL. Full statement and how to report a vulnerability: [`SECURITY.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.md).
+Letterhead runs entirely on your device: no network calls, no telemetry, no tracking. Because it ships as readable source — the released `main.js` is the committed file, unminified, unbundled, with no build step — you can audit exactly what it does. The only `btoa()` call embeds your configured logo as an inline `data:` URL. Releases are also cryptographically signed with a Sigstore/SLSA build-provenance attestation — confirm the `main.js` you run came from this source with `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`. Full statement and how to report a vulnerability: [`SECURITY.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.md).
 
 ## License
 

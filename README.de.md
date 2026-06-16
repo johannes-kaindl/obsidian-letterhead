@@ -74,7 +74,7 @@ Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Fü
 
 ## Datenschutz & Sicherheit
 
-Letterhead läuft vollständig auf deinem Gerät: keine Netzwerkaufrufe, keine Telemetrie, kein Tracking. Weil es als lesbarer Quellcode ausgeliefert wird — das veröffentlichte `main.js` ist die committete Datei, unminifiziert, ungebündelt, ohne Build-Schritt — kannst du genau prüfen, was es tut. Der einzige `btoa()`-Aufruf bettet dein konfiguriertes Logo als inline `data:`-URL ein. Vollständige Erklärung und Meldung von Sicherheitslücken: [`SECURITY.de.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.de.md).
+Letterhead läuft vollständig auf deinem Gerät: keine Netzwerkaufrufe, keine Telemetrie, kein Tracking. Weil es als lesbarer Quellcode ausgeliefert wird — das veröffentlichte `main.js` ist die committete Datei, unminifiziert, ungebündelt, ohne Build-Schritt — kannst du genau prüfen, was es tut. Der einzige `btoa()`-Aufruf bettet dein konfiguriertes Logo als inline `data:`-URL ein. Releases werden zusätzlich kryptografisch mit einer Sigstore/SLSA-Build-Provenance-Attestation signiert — prüfe mit `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`, dass das laufende `main.js` aus dieser Quelle stammt. Vollständige Erklärung und Meldung von Sicherheitslücken: [`SECURITY.de.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.de.md).
 
 ## Lizenz
 

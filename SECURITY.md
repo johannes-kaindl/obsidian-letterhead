@@ -38,3 +38,14 @@ On top of that readable source, releases carry a **GitHub artifact attestation**
 subject is byte-for-byte identical to the source you can read. You get both: open
 source you can audit by eye, and cryptographic proof of where the released bytes came
 from.
+
+### Verifying a release
+Every release is published through GitHub Actions, which signs the files with a
+Sigstore/SLSA build-provenance attestation. You can confirm that the `main.js` you run
+came from this repository's tagged source:
+
+```sh
+gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead
+```
+
+The attested digest matches the committed, unbundled `main.js` byte-for-byte.
