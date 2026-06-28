@@ -41,6 +41,13 @@ test('Falz-/Lochmarken sind 3 Linien am Blattrand (x1=0) auf Seite 0', () => {
   assert.strictEqual(marks.length, 3); // 2 Falz + 1 Loch
 });
 
+test('Kopf-Trennlinie wird gezeichnet (von linkem bis rechtem Rand)', () => {
+  const r = layoutLetter(baseModel, settings, blocks);
+  // leftPt = 25mm ≈ 70.87 pt; rightEdge = 595.28 - 20mm ≈ 538.6 pt
+  const sep = r.ops.filter(o => o.kind === 'line' && o.page === 0 && Math.abs(o.x1 - 70.87) < 1 && o.x2 > 500);
+  assert.strictEqual(sep.length, 1);
+});
+
 test('langer Body paginiert auf >= 2 Seiten', () => {
   const many = Array.from({ length: 120 }, () => ({ kind: 'p', runs: [{ text: 'Zeile über Zeile über Zeile.', bold: false, italic: false }] }));
   const r = layoutLetter(baseModel, settings, many);

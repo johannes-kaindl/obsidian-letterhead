@@ -1158,7 +1158,7 @@ class BriefkopfPlugin extends obsidian.Plugin {
       await adapter.writeBinary(path, bytes.buffer);
       const fileObj = (typeof File === 'function') ? new File([bytes], `${safe}.pdf`, { type: 'application/pdf' }) : null;
       if (fileObj && navigator.canShare && navigator.canShare({ files: [fileObj] })) {
-        try { await navigator.share({ files: [fileObj], title: safe }); return true; }
+        try { await navigator.share({ files: [fileObj] }); return true; }
         catch (e) { if (e && e.name === 'AbortError') return true; }
       }
       if (typeof this.app.openWithDefaultApp === 'function') { await this.app.openWithDefaultApp(path); return true; }
@@ -1626,6 +1626,14 @@ function dinGeometry(dinForm) {
   });
 }
 
+/* #rrggbb → [r,g,b] in 0..1 (für PDF-Farboperatoren). Fallback Schwarz. */
+function hexToRgb01(hex) {
+  const m = /^#?([0-9a-fA-F]{6})$/.exec(String(hex == null ? '' : hex).trim());
+  if (!m) return [0, 0, 0];
+  const n = parseInt(m[1], 16);
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+}
+
 /* ------------------------------------------------------------------ *
  *  PDF · WinAnsi-Encoding + String-Escaping (pur)
  * ------------------------------------------------------------------ */
@@ -1879,11 +1887,14 @@ function layoutLetter(model, settings, bodyBlocks) {
   const leftPt = mmToPt(g.marginLeftMm);
   const rightEdge = PAGE_W_PT - mmToPt(g.marginRightMm);
   const contentWidthPt = mmToPt(210 - g.marginLeftMm - g.marginRightMm);
+  const tokens = (STILE[stilKey] || STILE.sachlich).tokens;
+  const TEXTCOL = hexToRgb01(tokens.colorText);
+  const MUTED = hexToRgb01(tokens.colorMuted);
+  const RULE = hexToRgb01(tokens.colorRule);
+  const HAIRLINE = hexToRgb01(tokens.colorHairline);
   const ops = [];
-  const RULE = [0.07, 0.07, 0.07];
-  const MUTED = [0.35, 0.35, 0.35];
   const T = (page, x, y, str, fontKey, sz, rgb) => {
-    if (str !== '' && str != null) ops.push({ page, kind:'text', x, y, str:String(str), fontKey, sizePt: sz || sizePt, rgb: rgb || [0,0,0] });
+    if (str !== '' && str != null) ops.push({ page, kind:'text', x, y, str:String(str), fontKey, sizePt: sz || sizePt, rgb: rgb || TEXTCOL });
   };
   const L = (page, x1, y1, x2, y2, w, rgb) => ops.push({ page, kind:'line', x1, y1, x2, y2, wPt:w, rgb: rgb || RULE });
 
@@ -1902,6 +1913,18 @@ function layoutLetter(model, settings, bodyBlocks) {
     const wpt = textWidthPt(fonts.body, sizePt - 1.5, ln);
     T(0, rightEdge - wpt, cy, ln, fonts.body, sizePt - 1.5, MUTED);
     cy -= (sizePt - 1.5) * 1.4;
+  }
+
+  // Trennlinie unter dem Briefkopf (entspricht border-bottom von .bk-head)
+  if (model.logo || model.senderName || contact.length) {
+    const logoAllowPt = model.logo ? mmToPt(Math.min(22, g.addrTopMm - g.headTopMm - 8)) : 0;
+    const nameBlockPt = (!model.logo && model.senderName) ? (sizePt + 5) * 1.1 + (model.senderZusatz ? 9 * 1.2 : 0) : 0;
+    const contactBlockPt = contact.length * (sizePt - 1.5) * 1.4;
+    const headBlockPt = Math.max(nameBlockPt, contactBlockPt, logoAllowPt, mmToPt(6));
+    let sepY = headY - headBlockPt - mmToPt(1.5);
+    const minSepY = yTopMmToPt(g.addrTopMm - 3 + off);
+    if (sepY < minSepY) sepY = minSepY;
+    L(0, leftPt, sepY, rightEdge, sepY, 0.3 * PT_PER_MM, HAIRLINE);
   }
 
   // ---- Anschriftfeld: Rücksendezeile + Empfänger ----
@@ -2051,7 +2074,7 @@ module.exports = BriefkopfPlugin;
    ignoriert Zusatz-Properties. Die puren Engine-Funktionen sind hier exponiert,
    damit `node --test` sie ohne Build/Dependency prüfen kann. */
 module.exports.__test__ = {
-  mmToPt, yTopMmToPt, dinGeometry, PT_PER_MM, PAGE_W_PT, PAGE_H_PT,
+  mmToPt, yTopMmToPt, dinGeometry, hexToRgb01, PT_PER_MM, PAGE_W_PT, PAGE_H_PT,
   winAnsiBytes, pdfTextBytes,
   charWidth1000, textWidthPt, BASE_FONTS,
   PdfWriter, wrapRuns, layoutLetter, styleFonts, walkBodyNodes

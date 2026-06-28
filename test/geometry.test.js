@@ -1,7 +1,15 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { mmToPt, yTopMmToPt, dinGeometry, PAGE_H_PT } = require('../main.js').__test__;
+const { mmToPt, yTopMmToPt, dinGeometry, hexToRgb01, PAGE_H_PT } = require('../main.js').__test__;
+
+test('hexToRgb01 wandelt Hex in 0..1', () => {
+  assert.deepStrictEqual(hexToRgb01('#000000'), [0, 0, 0]);
+  assert.deepStrictEqual(hexToRgb01('#ffffff'), [1, 1, 1]);
+  const g = hexToRgb01('#cfcfcf');
+  assert.ok(Math.abs(g[0] - 207 / 255) < 1e-9 && g[0] === g[1] && g[1] === g[2]);
+  assert.deepStrictEqual(hexToRgb01('kaputt'), [0, 0, 0]); // Fallback
+});
 
 test('mmToPt: 0, 10, 210', () => {
   assert.ok(Math.abs(mmToPt(0) - 0) < 1e-9);
