@@ -1573,6 +1573,46 @@ function textWidthPt(fontKey, sizePt, str) {
 }
 
 /* ------------------------------------------------------------------ *
+ *  PDF · Textumbruch (pur) — AFM-genaue Zeilen
+ * ------------------------------------------------------------------ */
+/* Bricht eine Folge stilisierter Runs in Zeilen ≤ maxWidthPt. Wörter sind
+   durch Whitespace getrennt; Stilwechsel (fontKey) bleiben erhalten. Ein zu
+   langes Einzelwort bleibt ungebrochen in eigener Zeile. */
+function wrapRuns(runs, maxWidthPt, sizePt) {
+  const toks = [];
+  for (const r of runs) {
+    const parts = String(r.text).split(/(\s+)/);
+    for (const part of parts) {
+      if (part === '') continue;
+      toks.push({ w: /^\s+$/.test(part) ? ' ' : part, fontKey: r.fontKey, space: /^\s+$/.test(part) });
+    }
+  }
+  const widthOf = (t) => textWidthPt(t.fontKey, sizePt, t.w);
+  const lines = [];
+  let cur = [], curW = 0;
+  for (const t of toks) {
+    const tw = widthOf(t);
+    if (t.space) { if (cur.length === 0) continue; cur.push(t); curW += tw; continue; }
+    if (curW + tw > maxWidthPt && cur.length > 0) {
+      while (cur.length && cur[cur.length - 1].space) curW -= widthOf(cur.pop());
+      lines.push(cur); cur = []; curW = 0;
+    }
+    cur.push(t); curW += tw;
+  }
+  if (cur.length) { while (cur.length && cur[cur.length - 1].space) cur.pop(); lines.push(cur); }
+  return lines.map((lineToks) => {
+    const segs = []; let x = 0;
+    for (const t of lineToks) {
+      const last = segs[segs.length - 1];
+      if (last && last.fontKey === t.fontKey) last.text += t.w;
+      else segs.push({ text: t.w, fontKey: t.fontKey, xPt: x });
+      x += widthOf(t);
+    }
+    return { segments: segs, widthPt: x };
+  });
+}
+
+/* ------------------------------------------------------------------ *
  *  PDF · Writer (pur, Obsidian-frei) — minimaler Ein-Pass-Erzeuger
  * ------------------------------------------------------------------ */
 function fmt(n) { // kompakte Zahl, max 2 Nachkommastellen, kein -0
@@ -1676,5 +1716,5 @@ module.exports.__test__ = {
   mmToPt, yTopMmToPt, dinGeometry, PT_PER_MM, PAGE_W_PT, PAGE_H_PT,
   winAnsiBytes, pdfTextBytes,
   charWidth1000, textWidthPt, BASE_FONTS,
-  PdfWriter
+  PdfWriter, wrapRuns
 };
