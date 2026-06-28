@@ -7,6 +7,30 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-06-28
+
+Mobiler PDF-Export als **ein Tipp** — die schwächste Stelle des Plugins (der
+manuelle Quick-Look-Tanz auf iOS) ist behoben.
+
+### Added
+- **Mobiler Vektor-PDF-Export:** Auf iPhone/iPad erzeugt der Brief jetzt ein echtes,
+  textselektierbares Vektor-PDF und teilt es direkt über den System-Share-Sheet
+  (`navigator.share()`) — statt HTML zu schreiben und den Nutzer durch Schnellansicht →
+  Drucken → Aufziehen → Sichern zu schicken. Eigener, **abhängigkeits- und build-freier**
+  PDF-Writer (PDF 1.7, Adobe-Core-14-Standardschriften, WinAnsi mit Umlauten/€); keine
+  neue Bibliothek, keine Netzwerkzugriffe — die Zero-Build-/`source = output`-Garantie
+  bleibt unverändert.
+- Neuer Befehl **„Brief als PDF exportieren (Vektor)"** — erzeugt das Vektor-PDF auf
+  Desktop und Mobile.
+- Einstellung **„Mobiler Export"** (`Vektor-PDF` ⁄ `Drucken / Quick Look`) als
+  Sicherheitsventil; Standard ist das neue Vektor-PDF.
+- Node-Tests (`npm test`, reines `node --test` ohne Build-Toolchain) für die puren
+  Engine-Funktionen (Einheiten, Encoding, Metriken, Writer, Umbruch, Layout, Body).
+
+### Notes
+- Komplexe Body-Inhalte (Tabellen, eingebettete Bilder, Code-Blöcke) lösen automatisch
+  den bisherigen HTML/Quick-Look-Weg als Fallback aus; der Desktop-Druckweg ist unverändert.
+
 ## [1.2.2] — 2026-06-16
 
 Lieferketten-Transparenz — keine funktionalen Änderungen am Brief.

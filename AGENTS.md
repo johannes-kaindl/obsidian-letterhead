@@ -32,11 +32,21 @@ auf Mobile ohne Toolchain läuft.
   versteckten Export-Ordner und übergibt es via `app.openWithDefaultApp()` ans System
   (Schnellansicht → Drucken → als PDF sichern). Keine Netzwerkzugriffe, keine
   Telemetrie, externe Assets nur als `data:`-URL (Logo).
+- **Vektor-PDF-Export (ab 1.3.0):** Ein eigener, abhängigkeits- und build-freier
+  PDF-Writer in `main.js` (Sektionen `PDF · …`) erzeugt ein echtes, textselektierbares
+  Vektor-PDF (PDF 1.7, Adobe-Core-14-Standardschriften, WinAnsi mit Umlauten/€). Auf
+  Mobile teilt `exportViaPdf()` es per `navigator.share()` (ein Tipp), sonst
+  `openWithDefaultApp()`. Reine, Obsidian-freie Schichten: `pdf` (Byte-Writer), `layout`
+  (DIN-Geometrie → Draw-Ops, AFM-Metriken), Body-Walk `walkBodyNodes`. Bei komplexem
+  Body (Tabellen/Bilder/Code) oder Setting `mobileExport: 'print'` greift automatisch
+  der HTML/Quick-Look-Weg als Fallback. Keine neue Dependency, kein Build — `source =
+  output` bleibt gewahrt.
 
 ## Commands
 
 ```bash
 npm run check     # node --check main.js (Syntax-Gate)
+npm test          # node --test (reine node:test-Specs für die puren PDF-Funktionen)
 npm run deploy    # cp manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
 ```
 
@@ -93,8 +103,9 @@ Session-Handoff unter `.remember/` (gitignored).
 - **PROF-TS-01..04** — Bewusst **kein** TypeScript/esbuild/vitest-Setup. Das Plugin
   ist abhängigkeitsfreies Zero-Build-Vanilla-JS (`main.js` = Quelle = Output),
   Begründung analog zur No-Build-Pflicht PROF-WEB-01. Syntax-Gate via
-  `npm run check` (`node --check`) statt typecheck/build. Unit-Tests können später
-  als reine Node-Specs für die Obsidian-freien Funktionen ergänzt werden, ohne
-  Build-Toolchain.
+  `npm run check` (`node --check`) statt typecheck/build. Unit-Tests sind als reine
+  `node:test`-Specs (`npm test`, ohne Build-Toolchain) für die Obsidian-freien
+  PDF-Engine-Funktionen umgesetzt; in Node ladbar via tolerantem `require('obsidian')`
+  + `module.exports.__test__`-Hook.
 - **CORE-META-03** — Hero/Screenshot reproduzierbar via `tools/render-hero.sh`
   (benötigt `weasyprint` + `poppler`/`pdftoppm`) statt eines npm-Screenshot-Tools.

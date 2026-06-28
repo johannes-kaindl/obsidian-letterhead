@@ -2,7 +2,7 @@
 
 > 🇬🇧 English · [🇩🇪 Deutsch](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/README.de.md)
 
-An Obsidian plugin that turns a note into a professionally formatted business letter — German **DIN 5008** or a clean **modern** layout — and exports it to PDF: on desktop via the OS print dialog, on **iPhone/iPad** via Quick Look → Print → Save to Files.
+An Obsidian plugin that turns a note into a professionally formatted business letter — German **DIN 5008** or a clean **modern** layout — and exports it to PDF: on desktop via the OS print dialog, on **iPhone/iPad** as a real, text-selectable PDF shared with one tap.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE)
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE-DOCS)
@@ -19,7 +19,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 ## Features
 
 - **Letters from your notes:** a note's frontmatter holds the metadata, the note body (Markdown) becomes the letter text — one command turns it into a finished, formatted business letter.
-- **PDF export & printing, everywhere:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; **iPhone/iPad** → guided steps via the system share sheet (Open → Quick Look → Share → Print → pinch the preview open → “Save to Files”). The OS renders the CSS — no Electron, no Node. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact.
+- **PDF export & printing, everywhere:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; **iPhone/iPad** → a real, text-selectable **vector PDF** generated inside the plugin and shared with **one tap** (system share sheet → “Save to Files” or send anywhere). The built-in PDF engine is dependency-free and offline — no network, no Electron, no Node. The classic Quick Look route stays available (Settings → Mobile export). Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact.
 - **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international) — choose in **Settings → Layout**.
 - **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
 - **Bilingual:** the plugin UI follows the Obsidian app language (English/German); the letter language is a separate setting — German or English letter labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), switchable per letter via the `sprache` frontmatter field.
@@ -59,7 +59,7 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Letter
 
 1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/examples/example-letter.md)), then fill them in.
 2. Run **Export letter as PDF / print** (command palette or the envelope ribbon icon). Use **Open letter preview** for a paginated preview first.
-3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** iOS shows a dialog — tap **Open** → **Quick Look** → Share → **Print** → pinch the preview open with two fingers (it becomes the PDF) → Share → **Save to Files**.
+3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** the system share sheet opens with the finished PDF — tap **Save to Files** (or send it anywhere). Prefer the classic route? Switch **Settings → Mobile export → Print / Quick Look**.
 
 The note body below the frontmatter is the letter text and is rendered as Markdown.
 

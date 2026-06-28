@@ -23,7 +23,12 @@ Letterhead is built so you can verify what it does by reading it:
   configured logo (a local vault file) into the letter as a `data:` URL — nothing is
   fetched from the web.
 - **Minimal vault access.** Reads notes via the Obsidian API and writes only the
-  exported letter into a dedicated export folder (the iOS print path).
+  exported letter (HTML or the generated PDF) into a dedicated export folder
+  (the mobile export path).
+- **Own PDF engine, no new dependency.** The mobile vector-PDF export is produced by
+  a small, dependency-free PDF writer inside `main.js` — no library, no `fetch`, no
+  build step. The finished file is handed to the OS via the system share sheet. The
+  zero-build *source = output* guarantee is unchanged.
 
 ### A note on the community scorecard
 The directory scorecard's *"build verification not available"* note is a direct

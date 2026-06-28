@@ -2,7 +2,7 @@
 
 > 🇩🇪 Deutsch · [🇬🇧 English](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/README.md)
 
-Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Geschäftsbrief macht — deutscher **DIN 5008** oder ein klares **modernes** Layout — und ihn als PDF exportiert: auf dem Desktop per Druckdialog, auf **iPhone/iPad** über Schnellansicht → Drucken → In Dateien sichern.
+Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Geschäftsbrief macht — deutscher **DIN 5008** oder ein klares **modernes** Layout — und ihn als PDF exportiert: auf dem Desktop per Druckdialog, auf **iPhone/iPad** als echtes, textselektierbares PDF mit einem Tipp.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE)
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE-DOCS)
@@ -18,7 +18,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 ## Funktionen
 
 - **Briefe aus deinen Notizen:** Das Frontmatter einer Notiz hält die Metadaten, der Notiztext (Markdown) wird zum Brieftext — ein Befehl macht daraus einen fertig formatierten Geschäftsbrief.
-- **PDF-Export & Druck, überall:** Desktop (macOS/Windows/Linux) → Druckdialog → „Als PDF sichern"; **iPhone/iPad** → geführte Schritte über das System-Teilen-Menü (Öffnen → Schnellansicht → Teilen → Drucken → Vorschau aufziehen → „In Dateien sichern"). Das OS rendert das CSS — kein Electron, kein Node. Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau.
+- **PDF-Export & Druck, überall:** Desktop (macOS/Windows/Linux) → Druckdialog → „Als PDF sichern"; **iPhone/iPad** → ein echtes, textselektierbares **Vektor-PDF**, das im Plugin erzeugt und mit **einem Tipp** geteilt wird (System-Teilen-Menü → „In Dateien sichern" oder beliebig weiterleiten). Die eingebaute PDF-Engine ist abhängigkeitsfrei und offline — kein Netz, kein Electron, kein Node. Der klassische Schnellansicht-Weg bleibt verfügbar (Einstellungen → Mobiler Export). Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau.
 - **Zwei Layouts:** `DIN 5008` (deutscher Standard, fensterkuvert-tauglich) und `Modern` (international) — wählbar unter **Einstellungen → Layout**.
 - **Drei Stile per Dropdown:** Sachlich-modern, Klassisch-seriös, Technisch-präzise — plus Infozeile „Vollständig" (Infoblock) oder „Nur Datum"; beides pro Brief im Frontmatter überschreibbar.
 - **Zweisprachig:** Plugin-UI folgt der Obsidian-App-Sprache (Englisch/Deutsch); die Briefsprache ist separat einstellbar — deutsche oder englische Brief-Labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), pro Brief per Frontmatter `sprache` umschaltbar.
@@ -58,7 +58,7 @@ Dann: Obsidian → Einstellungen → Community-Plugins → neu laden → **Lette
 
 1. Notiz öffnen und mit dem Befehl **Insert letter frontmatter into note** die Felder anlegen (oder siehe [Beispiel](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/examples/example-letter.md)), dann ausfüllen.
 2. Befehl **Export letter as PDF / print** (Befehlspalette oder Briefumschlag-Icon). Mit **Open letter preview** vorab seitenecht prüfen.
-3. **Desktop:** Im Druckdialog **„Als PDF sichern"** wählen (macOS: PDF-Dropdown unten links), Skalierung auf 100 % lassen. **iPhone/iPad:** iOS zeigt einen Dialog — **Öffnen** → **Schnellansicht** → Teilen → **Drucken** → Vorschau mit zwei Fingern aufziehen (wird zum PDF) → Teilen → **„In Dateien sichern"**.
+3. **Desktop:** Im Druckdialog **„Als PDF sichern"** wählen (macOS: PDF-Dropdown unten links), Skalierung auf 100 % lassen. **iPhone/iPad:** Das System-Teilen-Menü öffnet sich mit dem fertigen PDF — **„In Dateien sichern"** tippen (oder beliebig weiterleiten). Lieber den klassischen Weg? **Einstellungen → Mobiler Export → Drucken / Quick Look** umstellen.
 
 Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gerendert.
 

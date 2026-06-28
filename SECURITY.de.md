@@ -25,7 +25,12 @@ Letterhead ist so gebaut, dass du durch Lesen überprüfen kannst, was es tut:
   konfiguriertes Logo (eine lokale Vault-Datei) als `data:`-URL in den Brief ein — es
   wird nichts aus dem Web geladen.
 - **Minimaler Vault-Zugriff.** Liest Notizen über die Obsidian-API und schreibt nur den
-  exportierten Brief in einen dedizierten Export-Ordner (der iOS-Druck-Pfad).
+  exportierten Brief (HTML oder das erzeugte PDF) in einen dedizierten Export-Ordner
+  (der mobile Export-Pfad).
+- **Eigene PDF-Engine, keine neue Dependency.** Der mobile Vektor-PDF-Export entsteht in
+  einem kleinen, abhängigkeitsfreien PDF-Writer in `main.js` — keine Bibliothek, kein
+  `fetch`, kein Build-Schritt. Die fertige Datei wird über das System-Teilen-Menü ans
+  Betriebssystem übergeben. Die Zero-Build-Garantie *Quelle = Auslieferung* bleibt unberührt.
 
 ### Hinweis zum Community-Scorecard
 Der Hinweis *„build verification not available"* im Verzeichnis-Scorecard ist eine
