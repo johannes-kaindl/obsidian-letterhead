@@ -1487,8 +1487,35 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
   }
 }
 
+/* ------------------------------------------------------------------ *
+ *  PDF · Einheiten & Geometrie (pur, Obsidian-frei)
+ * ------------------------------------------------------------------ */
+const PT_PER_MM = 2.8346456693;
+const PAGE_W_PT = 595.28;
+const PAGE_H_PT = 841.89;
+const PRINT_TOP_1_MM = PRINT_MARGIN_TOP_MM;        // 10  (Seite 1)
+const PRINT_TOP_N_MM = PRINT_MARGIN_TOP_FOLLOW_MM; // 25  (Folgeseiten)
+const PRINT_BOTTOM_MM = PRINT_MARGIN_BOTTOM_MM;    // 20  (alle Seiten)
+
+function mmToPt(mm) { return Number(mm) * PT_PER_MM; }
+function yTopMmToPt(yMm) { return PAGE_H_PT - mmToPt(yMm); }
+
+/* Spiegel der DIN-Tokens aus buildCss() — kuvert-kritisch, nicht ändern ohne
+   Render-Check. headTop/addrTop/infoTop/fold je Form, Rest konstant. */
+function dinGeometry(dinForm) {
+  const f = String(dinForm) === 'A'
+    ? { headTopMm: 12, addrTopMm: 27, infoTopMm: 32, fold1Mm: 87,  fold2Mm: 192 }
+    : { headTopMm: 14, addrTopMm: 45, infoTopMm: 50, fold1Mm: 105, fold2Mm: 210 };
+  return Object.assign(f, {
+    holeMm: 148.5, marginLeftMm: 25, marginRightMm: 20,
+    addrWidthMm: 85, dateTopMm: 84, contentTopMm: 98.46
+  });
+}
+
 module.exports = BriefkopfPlugin;
 /* Test-only: Obsidian nutzt nur den Default-Export (die Plugin-Klasse) und
    ignoriert Zusatz-Properties. Die puren Engine-Funktionen sind hier exponiert,
    damit `node --test` sie ohne Build/Dependency prüfen kann. */
-module.exports.__test__ = {};
+module.exports.__test__ = {
+  mmToPt, yTopMmToPt, dinGeometry, PT_PER_MM, PAGE_W_PT, PAGE_H_PT
+};
