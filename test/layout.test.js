@@ -54,6 +54,15 @@ test('langer Body paginiert auf >= 2 Seiten', () => {
   assert.ok(r.pageCount >= 2);
 });
 
+test('Name nutzt nameSize des Stils (klassisch=18pt), Betreff = Body-Größe', () => {
+  const m = Object.assign({}, baseModel, { stil: 'klassisch' });
+  const r = layoutLetter(m, settings, blocks);
+  const name = r.ops.find(o => o.kind === 'text' && o.str === 'Erika Beispiel' && o.sizePt === 18);
+  assert.ok(name && name.fontKey === 'timesB');
+  const betreff = r.ops.find(o => o.kind === 'text' && o.str === 'Testbetreff');
+  assert.strictEqual(betreff.sizePt, 10); // Body-Größe, nicht +0.5
+});
+
 test('klassischer Stil nutzt Times im Body', () => {
   const m = Object.assign({}, baseModel, { stil: 'klassisch' });
   const r = layoutLetter(m, settings, blocks);

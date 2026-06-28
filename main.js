@@ -1634,6 +1634,16 @@ function hexToRgb01(hex) {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 }
 
+/* Stil-Token-Länge ("18pt" | "6.5mm" | Zahl) → Punkte. */
+function parseLenPt(v, fallbackPt) {
+  const s = String(v == null ? '' : v).trim();
+  let m;
+  if ((m = /^(-?[\d.]+)\s*mm$/.exec(s))) return mmToPt(parseFloat(m[1]));
+  if ((m = /^(-?[\d.]+)\s*pt$/.exec(s))) return parseFloat(m[1]);
+  const n = parseFloat(s);
+  return isFinite(n) ? n : fallbackPt;
+}
+
 /* ------------------------------------------------------------------ *
  *  PDF · WinAnsi-Encoding + String-Escaping (pur)
  * ------------------------------------------------------------------ */
@@ -1870,7 +1880,9 @@ async function logoToJpeg(dataUrl, maxWpx) {
  *  PDF · Brief-Layout-Engine (pur) — Modell-Felder → Draw-Ops
  * ------------------------------------------------------------------ */
 function styleFonts(stilKey) {
-  if (normStil(stilKey) === 'klassisch') return { body:'times', bold:'timesB', italic:'timesI', name:'timesB' };
+  const k = normStil(stilKey);
+  if (k === 'klassisch') return { body:'times', bold:'timesB', italic:'timesI', name:'timesB' };
+  if (k === 'technisch') return { body:'helv', bold:'helvB', italic:'helvI', name:'courB' };
   return { body:'helv', bold:'helvB', italic:'helvI', name:'helvB' };
 }
 
@@ -1882,65 +1894,78 @@ function layoutLetter(model, settings, bodyBlocks) {
   const off = Number(settings.printOffsetTopMm) || 0;
   const stilKey = normStil(model.stil || settings.stil) || 'sachlich';
   const fonts = styleFonts(stilKey);
-  const sizePt = Number(settings.fontSizePt) || (STILE[stilKey] || STILE.sachlich).tokens.fontSizePt;
-  const lineGap = 1.45;
-  const leftPt = mmToPt(g.marginLeftMm);
-  const rightEdge = PAGE_W_PT - mmToPt(g.marginRightMm);
-  const contentWidthPt = mmToPt(210 - g.marginLeftMm - g.marginRightMm);
   const tokens = (STILE[stilKey] || STILE.sachlich).tokens;
+  const sizePt = Number(settings.fontSizePt) || tokens.fontSizePt;
+  const nameSizePt = parseLenPt(tokens.nameSize, sizePt + 5);
+  const lineH = parseFloat(tokens.lineHeight) || 1.45;
+  const spacePt = parseLenPt(tokens.space, mmToPt(2.6));
+  const blockGapPt = parseLenPt(tokens.blockGap, mmToPt(6));
+  const sigGapPt = parseLenPt(tokens.signatureGap, mmToPt(16));
+  const contactPt = sizePt - 1.5;
+  const upperName = String(tokens.nameTransform || '').indexOf('upper') >= 0;
   const TEXTCOL = hexToRgb01(tokens.colorText);
   const MUTED = hexToRgb01(tokens.colorMuted);
   const RULE = hexToRgb01(tokens.colorRule);
   const HAIRLINE = hexToRgb01(tokens.colorHairline);
+  const leftPt = mmToPt(g.marginLeftMm);
+  const rightEdge = PAGE_W_PT - mmToPt(g.marginRightMm);
+  const contentWidthPt = mmToPt(210 - g.marginLeftMm - g.marginRightMm);
+  // DIN-Positionen sind Text-OBERKANTEN (wie CSS top); die Baseline liegt um die
+  // Ascent tiefer. ascent≈0.78·Schriftgröße deckt die Core-14-Fonts gut ab.
+  const ASCENT = 0.78;
+  const baseAt = (topMm, szPt) => yTopMmToPt(topMm + off) - ASCENT * szPt;
+  const mmDown = (pt) => pt / PT_PER_MM; // pt → mm (für Folgepositionen)
   const ops = [];
   const T = (page, x, y, str, fontKey, sz, rgb) => {
     if (str !== '' && str != null) ops.push({ page, kind:'text', x, y, str:String(str), fontKey, sizePt: sz || sizePt, rgb: rgb || TEXTCOL });
   };
   const L = (page, x1, y1, x2, y2, w, rgb) => ops.push({ page, kind:'line', x1, y1, x2, y2, wPt:w, rgb: rgb || RULE });
 
-  // ---- Seite 0: Kopf (Name links — Logo ergänzt die Orchestrierung als Bild) ----
-  const headY = yTopMmToPt(g.headTopMm + off);
-  if (!model.logo && model.senderName) T(0, leftPt, headY, model.senderName, fonts.name, sizePt + 5);
-  if (model.senderZusatz && !model.logo) T(0, leftPt, headY - (sizePt + 5) * 0.95, model.senderZusatz, fonts.body, 9, MUTED);
-  // Kontakt rechts
+  // ---- Seite 0: Briefkopf (Name links — Logo ergänzt die Orchestrierung als Bild) ----
+  const headTopMm = g.headTopMm;
+  if (!model.logo && model.senderName) {
+    const nm = upperName ? String(model.senderName).toUpperCase() : model.senderName;
+    T(0, leftPt, baseAt(headTopMm, nameSizePt), nm, fonts.name, nameSizePt);
+    if (model.senderZusatz) T(0, leftPt, baseAt(headTopMm + mmDown(nameSizePt) + 1.2, 9), model.senderZusatz, fonts.body, 9, MUTED);
+  }
+  // Kontakt rechts (rechtsbündig, gleiche Oberkante wie der Name)
   const contact = [
     [model.senderStrasse, model.senderPlzOrt].filter(Boolean).join(' · '),
-    [model.senderTelefon ? (model.labels && model.labels.telPrefix || '') + model.senderTelefon : '', model.senderEmail].filter(Boolean).join(' · '),
+    [model.senderTelefon ? ((model.labels && model.labels.telPrefix) || '') + model.senderTelefon : '', model.senderEmail].filter(Boolean).join(' · '),
     model.senderWeb || ''
   ].filter(Boolean);
-  let cy = headY;
-  for (const ln of contact) {
-    const wpt = textWidthPt(fonts.body, sizePt - 1.5, ln);
-    T(0, rightEdge - wpt, cy, ln, fonts.body, sizePt - 1.5, MUTED);
-    cy -= (sizePt - 1.5) * 1.4;
+  for (let i = 0; i < contact.length; i++) {
+    const wpt = textWidthPt(fonts.body, contactPt, contact[i]);
+    T(0, rightEdge - wpt, baseAt(headTopMm + mmDown(i * contactPt * 1.4), contactPt), contact[i], fonts.body, contactPt, MUTED);
   }
 
   // Trennlinie unter dem Briefkopf (entspricht border-bottom von .bk-head)
   if (model.logo || model.senderName || contact.length) {
-    const logoAllowPt = model.logo ? mmToPt(Math.min(22, g.addrTopMm - g.headTopMm - 8)) : 0;
-    const nameBlockPt = (!model.logo && model.senderName) ? (sizePt + 5) * 1.1 + (model.senderZusatz ? 9 * 1.2 : 0) : 0;
-    const contactBlockPt = contact.length * (sizePt - 1.5) * 1.4;
-    const headBlockPt = Math.max(nameBlockPt, contactBlockPt, logoAllowPt, mmToPt(6));
-    let sepY = headY - headBlockPt - mmToPt(1.5);
-    const minSepY = yTopMmToPt(g.addrTopMm - 3 + off);
-    if (sepY < minSepY) sepY = minSepY;
-    L(0, leftPt, sepY, rightEdge, sepY, 0.3 * PT_PER_MM, HAIRLINE);
+    const logoMm = model.logo ? Math.min(22, g.addrTopMm - headTopMm - 8) : 0;
+    const nameBlockMm = (!model.logo && model.senderName) ? mmDown(nameSizePt) * 1.15 + (model.senderZusatz ? mmDown(9) * 1.2 : 0) : 0;
+    const contactBlockMm = mmDown(contact.length * contactPt * 1.4);
+    let sepMm = headTopMm + Math.max(nameBlockMm, contactBlockMm, logoMm, 5) + 1.5;
+    if (sepMm > g.addrTopMm - 3) sepMm = g.addrTopMm - 3;
+    L(0, leftPt, yTopMmToPt(sepMm + off), rightEdge, yTopMmToPt(sepMm + off), 0.3 * PT_PER_MM, HAIRLINE);
   }
 
   // ---- Anschriftfeld: Rücksendezeile + Empfänger ----
-  let ay = yTopMmToPt(g.addrTopMm + off);
+  let recipTopMm = g.addrTopMm;
   if (model.ruecksende) {
-    T(0, leftPt, ay, model.ruecksende, fonts.body, 7, MUTED);
-    L(0, leftPt, ay - 3, leftPt + mmToPt(g.addrWidthMm), ay - 3, 0.25 * PT_PER_MM, RULE);
-    ay -= mmToPt(6.5);
+    T(0, leftPt, baseAt(g.addrTopMm, 7), model.ruecksende, fonts.body, 7, MUTED);
+    const ulMm = g.addrTopMm + mmDown(7) + 1.2;
+    L(0, leftPt, yTopMmToPt(ulMm + off), leftPt + mmToPt(g.addrWidthMm), yTopMmToPt(ulMm + off), 0.25 * PT_PER_MM, RULE);
+    recipTopMm = g.addrTopMm + 9;
   }
-  for (const ln of (model.recipient || [])) { T(0, leftPt, ay, ln, fonts.body, sizePt); ay -= sizePt * lineGap; }
+  for (let i = 0; i < (model.recipient || []).length; i++) {
+    T(0, leftPt, baseAt(recipTopMm + mmDown(i * sizePt * 1.4), sizePt), model.recipient[i], fonts.body, sizePt);
+  }
 
   // ---- Infoblock oder Datumzeile ----
   if (model.infozeile === 'nurdatum') {
     const dl = (model.ort ? model.ort + ', ' : '') + model.datum;
     const wpt = textWidthPt(fonts.body, sizePt, dl);
-    T(0, rightEdge - wpt, yTopMmToPt(g.dateTopMm + off), dl, fonts.body, sizePt);
+    T(0, rightEdge - wpt, baseAt(g.dateTopMm, sizePt), dl, fonts.body, sizePt);
   } else {
     const L0 = model.labels || {};
     const rows = [];
@@ -1950,13 +1975,12 @@ function layoutLetter(model, settings, bodyBlocks) {
     add(L0.telefon, model.telefonBezug);
     for (const [k, v] of (model.infoExtra || [])) add(k, v);
     rows.push([L0.datum || 'Datum', model.datum]);
-    let iy = yTopMmToPt(g.infoTopMm + off);
     const ix = rightEdge - mmToPt(64);
-    for (const [lab, val] of rows) {
-      T(0, ix, iy, lab, fonts.body, 9, MUTED);
-      const vw = textWidthPt(fonts.body, 9, String(val));
-      T(0, rightEdge - vw, iy, String(val), fonts.body, 9);
-      iy -= 9 * 1.35;
+    for (let i = 0; i < rows.length; i++) {
+      const yMm = g.infoTopMm + mmDown(i * 9 * 1.35);
+      T(0, ix, baseAt(yMm, 9), rows[i][0], fonts.body, 9, MUTED);
+      const vw = textWidthPt(fonts.body, 9, String(rows[i][1]));
+      T(0, rightEdge - vw, baseAt(yMm, 9), String(rows[i][1]), fonts.body, 9);
     }
   }
 
@@ -1971,34 +1995,36 @@ function layoutLetter(model, settings, bodyBlocks) {
 
   // ---- Fließtext ab Content-Top, mit Pagination ----
   let page = 0;
-  let y = yTopMmToPt(g.contentTopMm + off);
+  let y = baseAt(g.contentTopMm, sizePt);     // Baseline der ersten Inhaltszeile
   const bottomY = mmToPt(PRINT_BOTTOM_MM);
-  const topYFollow = yTopMmToPt(PRINT_TOP_N_MM);
+  const topYFollow = yTopMmToPt(PRINT_TOP_N_MM) - ASCENT * sizePt;
   const advance = (h) => {
     if (y - h < bottomY) { page += 1; y = topYFollow; }
     const yy = y; y -= h; return yy;
   };
-  const emitLines = (runs, sz, gapAfter) => {
-    const lines = wrapRuns(runs, contentWidthPt, sz);
+  const emitLines = (runs, sz, gapAfter, indentPt) => {
+    const ind = indentPt || 0;
+    const lines = wrapRuns(runs, contentWidthPt - ind, sz);
     for (const ln of lines) {
-      const yy = advance(sz * lineGap);
-      for (const seg of ln.segments) T(page, leftPt + seg.xPt, yy, seg.text, seg.fontKey, sz);
+      const yy = advance(sz * lineH);
+      for (const seg of ln.segments) T(page, leftPt + ind + seg.xPt, yy, seg.text, seg.fontKey, sz);
     }
     y -= gapAfter || 0;
   };
 
-  if (model.betreff) emitLines([{ text: model.betreff, fontKey: fonts.bold }], sizePt + 0.5, mmToPt(6));
+  if (model.betreff) {
+    const bt = stilKey === 'technisch' ? String(model.betreff).toUpperCase() : model.betreff;
+    emitLines([{ text: bt, fontKey: fonts.bold }], sizePt, blockGapPt);
+  }
   if (model.anrede) emitLines([{ text: model.anrede, fontKey: fonts.body }], sizePt, mmToPt(3));
   for (const blk of (bodyBlocks || [])) {
-    const runs = (blk.runs || []).map((r) => ({
-      text: (blk.kind === 'li' ? '•  ' : '') + r.text,
-      fontKey: r.bold ? fonts.bold : (r.italic ? fonts.italic : fonts.body)
-    }));
-    if (runs.length === 0) { y -= sizePt * lineGap; continue; }
-    emitLines(runs, sizePt, mmToPt(2.6));
+    const runs = (blk.runs || []).map((r) => ({ text: r.text, fontKey: r.bold ? fonts.bold : (r.italic ? fonts.italic : fonts.body) }));
+    if (runs.length === 0) { y -= sizePt * lineH; continue; }
+    if (blk.kind === 'li') emitLines([{ text: '•  ', fontKey: fonts.body }].concat(runs), sizePt, spacePt * 0.5, mmToPt(6));
+    else emitLines(runs, sizePt, spacePt);
   }
-  if (model.gruss) { y -= mmToPt(3); emitLines([{ text: model.gruss, fontKey: fonts.body }], sizePt, 0); }
-  if (model.unterschrift) { y -= mmToPt(16); emitLines([{ text: model.unterschrift, fontKey: fonts.body }], sizePt, 0); }
+  if (model.gruss) { y -= Math.max(0, blockGapPt - spacePt); emitLines([{ text: model.gruss, fontKey: fonts.body }], sizePt, 0); }
+  if (model.unterschrift) { y -= sigGapPt; emitLines([{ text: model.unterschrift, fontKey: fonts.body }], sizePt, 0); }
   if (model.anlagen && model.anlagen.length) {
     y -= mmToPt(10);
     const label = model.anlagen.length === 1 ? (model.labels && model.labels.anlage) : (model.labels && model.labels.anlagen);
