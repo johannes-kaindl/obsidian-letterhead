@@ -1708,6 +1708,134 @@ class PdfWriter {
   }
 }
 
+/* ------------------------------------------------------------------ *
+ *  PDF · Brief-Layout-Engine (pur) — Modell-Felder → Draw-Ops
+ * ------------------------------------------------------------------ */
+function styleFonts(stilKey) {
+  if (normStil(stilKey) === 'klassisch') return { body:'times', bold:'timesB', italic:'timesI', name:'timesB' };
+  return { body:'helv', bold:'helvB', italic:'helvI', name:'helvB' };
+}
+
+/* Positioniert alle Briefelemente als absolute Draw-Ops (PDF-pt, Ursprung
+   unten-links). Kopf/Anschrift/Infoblock/Marken auf Seite 0; Fließtext ab
+   Content-Top mit Seitenumbruch (Folgeseiten ohne Briefkopf, Top = 25 mm). */
+function layoutLetter(model, settings, bodyBlocks) {
+  const g = dinGeometry(settings.dinForm);
+  const off = Number(settings.printOffsetTopMm) || 0;
+  const stilKey = normStil(model.stil || settings.stil) || 'sachlich';
+  const fonts = styleFonts(stilKey);
+  const sizePt = Number(settings.fontSizePt) || (STILE[stilKey] || STILE.sachlich).tokens.fontSizePt;
+  const lineGap = 1.45;
+  const leftPt = mmToPt(g.marginLeftMm);
+  const rightEdge = PAGE_W_PT - mmToPt(g.marginRightMm);
+  const contentWidthPt = mmToPt(210 - g.marginLeftMm - g.marginRightMm);
+  const ops = [];
+  const RULE = [0.07, 0.07, 0.07];
+  const MUTED = [0.35, 0.35, 0.35];
+  const T = (page, x, y, str, fontKey, sz, rgb) => {
+    if (str !== '' && str != null) ops.push({ page, kind:'text', x, y, str:String(str), fontKey, sizePt: sz || sizePt, rgb: rgb || [0,0,0] });
+  };
+  const L = (page, x1, y1, x2, y2, w, rgb) => ops.push({ page, kind:'line', x1, y1, x2, y2, wPt:w, rgb: rgb || RULE });
+
+  // ---- Seite 0: Kopf (Name links — Logo ergänzt die Orchestrierung als Bild) ----
+  const headY = yTopMmToPt(g.headTopMm + off);
+  if (!model.logo && model.senderName) T(0, leftPt, headY, model.senderName, fonts.name, sizePt + 5);
+  if (model.senderZusatz && !model.logo) T(0, leftPt, headY - (sizePt + 5) * 0.95, model.senderZusatz, fonts.body, 9, MUTED);
+  // Kontakt rechts
+  const contact = [
+    [model.senderStrasse, model.senderPlzOrt].filter(Boolean).join(' · '),
+    [model.senderTelefon ? (model.labels && model.labels.telPrefix || '') + model.senderTelefon : '', model.senderEmail].filter(Boolean).join(' · '),
+    model.senderWeb || ''
+  ].filter(Boolean);
+  let cy = headY;
+  for (const ln of contact) {
+    const wpt = textWidthPt(fonts.body, sizePt - 1.5, ln);
+    T(0, rightEdge - wpt, cy, ln, fonts.body, sizePt - 1.5, MUTED);
+    cy -= (sizePt - 1.5) * 1.4;
+  }
+
+  // ---- Anschriftfeld: Rücksendezeile + Empfänger ----
+  let ay = yTopMmToPt(g.addrTopMm + off);
+  if (model.ruecksende) {
+    T(0, leftPt, ay, model.ruecksende, fonts.body, 7, MUTED);
+    L(0, leftPt, ay - 3, leftPt + mmToPt(g.addrWidthMm), ay - 3, 0.25 * PT_PER_MM, RULE);
+    ay -= mmToPt(6.5);
+  }
+  for (const ln of (model.recipient || [])) { T(0, leftPt, ay, ln, fonts.body, sizePt); ay -= sizePt * lineGap; }
+
+  // ---- Infoblock oder Datumzeile ----
+  if (model.infozeile === 'nurdatum') {
+    const dl = (model.ort ? model.ort + ', ' : '') + model.datum;
+    const wpt = textWidthPt(fonts.body, sizePt, dl);
+    T(0, rightEdge - wpt, yTopMmToPt(g.dateTopMm + off), dl, fonts.body, sizePt);
+  } else {
+    const L0 = model.labels || {};
+    const rows = [];
+    const add = (lab, val) => { if (val) rows.push([lab, val]); };
+    add(L0.steuernummer, model.steuernummer); add(L0.ihrZeichen, model.ihrZeichen);
+    add(L0.ihrSchreiben, model.ihrSchreiben); add(L0.unserZeichen, model.unserZeichen);
+    add(L0.telefon, model.telefonBezug);
+    for (const [k, v] of (model.infoExtra || [])) add(k, v);
+    rows.push([L0.datum || 'Datum', model.datum]);
+    let iy = yTopMmToPt(g.infoTopMm + off);
+    const ix = rightEdge - mmToPt(64);
+    for (const [lab, val] of rows) {
+      T(0, ix, iy, lab, fonts.body, 9, MUTED);
+      const vw = textWidthPt(fonts.body, 9, String(val));
+      T(0, rightEdge - vw, iy, String(val), fonts.body, 9);
+      iy -= 9 * 1.35;
+    }
+  }
+
+  // ---- Falz-/Lochmarken (nur Seite 0, x1 = 0 am Blattrand) ----
+  if (settings.showFoldMarks) {
+    L(0, 0, yTopMmToPt(g.fold1Mm), mmToPt(5), yTopMmToPt(g.fold1Mm), 0.3 * PT_PER_MM);
+    L(0, 0, yTopMmToPt(g.fold2Mm), mmToPt(5), yTopMmToPt(g.fold2Mm), 0.3 * PT_PER_MM);
+  }
+  if (settings.showHoleMark) {
+    L(0, 0, yTopMmToPt(g.holeMm), mmToPt(8), yTopMmToPt(g.holeMm), 0.3 * PT_PER_MM);
+  }
+
+  // ---- Fließtext ab Content-Top, mit Pagination ----
+  let page = 0;
+  let y = yTopMmToPt(g.contentTopMm + off);
+  const bottomY = mmToPt(PRINT_BOTTOM_MM);
+  const topYFollow = yTopMmToPt(PRINT_TOP_N_MM);
+  const advance = (h) => {
+    if (y - h < bottomY) { page += 1; y = topYFollow; }
+    const yy = y; y -= h; return yy;
+  };
+  const emitLines = (runs, sz, gapAfter) => {
+    const lines = wrapRuns(runs, contentWidthPt, sz);
+    for (const ln of lines) {
+      const yy = advance(sz * lineGap);
+      for (const seg of ln.segments) T(page, leftPt + seg.xPt, yy, seg.text, seg.fontKey, sz);
+    }
+    y -= gapAfter || 0;
+  };
+
+  if (model.betreff) emitLines([{ text: model.betreff, fontKey: fonts.bold }], sizePt + 0.5, mmToPt(6));
+  if (model.anrede) emitLines([{ text: model.anrede, fontKey: fonts.body }], sizePt, mmToPt(3));
+  for (const blk of (bodyBlocks || [])) {
+    const runs = (blk.runs || []).map((r) => ({
+      text: (blk.kind === 'li' ? '•  ' : '') + r.text,
+      fontKey: r.bold ? fonts.bold : (r.italic ? fonts.italic : fonts.body)
+    }));
+    if (runs.length === 0) { y -= sizePt * lineGap; continue; }
+    emitLines(runs, sizePt, mmToPt(2.6));
+  }
+  if (model.gruss) { y -= mmToPt(3); emitLines([{ text: model.gruss, fontKey: fonts.body }], sizePt, 0); }
+  if (model.unterschrift) { y -= mmToPt(16); emitLines([{ text: model.unterschrift, fontKey: fonts.body }], sizePt, 0); }
+  if (model.anlagen && model.anlagen.length) {
+    y -= mmToPt(10);
+    const label = model.anlagen.length === 1 ? (model.labels && model.labels.anlage) : (model.labels && model.labels.anlagen);
+    emitLines([{ text: label || 'Anlagen', fontKey: fonts.body }], 9.5, mmToPt(1.6));
+    for (const a of model.anlagen) emitLines([{ text: a, fontKey: fonts.body }], 9.5, 0);
+  }
+
+  return { pageCount: page + 1, ops };
+}
+
 module.exports = BriefkopfPlugin;
 /* Test-only: Obsidian nutzt nur den Default-Export (die Plugin-Klasse) und
    ignoriert Zusatz-Properties. Die puren Engine-Funktionen sind hier exponiert,
@@ -1716,5 +1844,5 @@ module.exports.__test__ = {
   mmToPt, yTopMmToPt, dinGeometry, PT_PER_MM, PAGE_W_PT, PAGE_H_PT,
   winAnsiBytes, pdfTextBytes,
   charWidth1000, textWidthPt, BASE_FONTS,
-  PdfWriter, wrapRuns
+  PdfWriter, wrapRuns, layoutLetter, styleFonts
 };
