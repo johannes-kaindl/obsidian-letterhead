@@ -17,6 +17,7 @@
   "private": true,
   "scripts": {
     "check": "node --check main.js",
+    "test": "node --test",
     "deploy": "mkdir -p \"${OBSIDIAN_PLUGIN_DIR:?set OBSIDIAN_PLUGIN_DIR to <vault>/.obsidian/plugins/letterhead}\" && cp manifest.json main.js styles.css versions.json \"${OBSIDIAN_PLUGIN_DIR}/\""
   }
 }

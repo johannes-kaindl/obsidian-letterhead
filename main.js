@@ -13,7 +13,22 @@
  * Dependency-free vanilla JS, so this file is also the source — drop it in and go.
  */
 
-const obsidian = require('obsidian');
+/* In der Obsidian-App liefert require('obsidian') die echte API. Außerhalb
+   (Node, `node --test`) existiert das Modul nicht — dann minimale Stubs, damit
+   main.js ladbar bleibt und die puren Helfer (module.exports.__test__) testbar
+   sind. Kein Build, keine Dependency. In Produktion läuft der catch-Zweig nie. */
+let obsidian;
+try {
+  obsidian = require('obsidian');
+} catch (e) {
+  const Noop = class {};
+  obsidian = {
+    Plugin: Noop, Modal: Noop, PluginSettingTab: Noop, Setting: Noop, Notice: Noop,
+    Component: class { unload() {} }, MarkdownRenderer: {},
+    Platform: { isDesktopApp: true }, normalizePath: (p) => p,
+    getLanguage: undefined
+  };
+}
 
 /* ------------------------------------------------------------------ *
  *  Settings
@@ -1473,3 +1488,7 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
 }
 
 module.exports = BriefkopfPlugin;
+/* Test-only: Obsidian nutzt nur den Default-Export (die Plugin-Klasse) und
+   ignoriert Zusatz-Properties. Die puren Engine-Funktionen sind hier exponiert,
+   damit `node --test` sie ohne Build/Dependency prüfen kann. */
+module.exports.__test__ = {};
