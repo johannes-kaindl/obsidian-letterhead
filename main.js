@@ -1836,6 +1836,66 @@ function layoutLetter(model, settings, bodyBlocks) {
   return { pageCount: page + 1, ops };
 }
 
+/* ------------------------------------------------------------------ *
+ *  PDF · Body-Subset-Renderer — gerendertes Markdown (DOM) → Blöcke
+ * ------------------------------------------------------------------ */
+/* Wandelt gerendertes Markdown (echtes DOM oder duck-typed Node mit nodeType/
+   nodeName/childNodes/textContent) in flache Blöcke. runs tragen bold/italic.
+   Tabellen/Bilder/Code/Blockquote → hasUnsupported (Aufrufer nutzt Fallback). */
+function walkBodyNodes(rootEl) {
+  const blocks = [];
+  let unsupported = false;
+  const UNSUP = new Set(['TABLE', 'IMG', 'PRE', 'CODE', 'BLOCKQUOTE', 'SVG', 'HR']);
+  const nameOf = (n) => (n.nodeName || '').toUpperCase();
+  const isText = (n) => n.nodeType === 3;
+  const isElem = (n) => n.nodeType === 1;
+
+  function runsFrom(node, bold, italic, acc) {
+    for (const c of (node.childNodes || [])) {
+      if (isText(c)) {
+        const txt = c.textContent || '';
+        if (txt) acc.push({ text: txt, bold, italic });
+      } else if (isElem(c)) {
+        const nm = nameOf(c);
+        if (UNSUP.has(nm)) { unsupported = true; continue; }
+        if (nm === 'BR') { acc.push({ text: '\n', bold, italic }); continue; }
+        runsFrom(c, bold || nm === 'STRONG' || nm === 'B', italic || nm === 'EM' || nm === 'I', acc);
+      }
+    }
+    return acc;
+  }
+  function mergeRuns(runs) {
+    const out = [];
+    for (const r of runs) {
+      if (r.text === '\n') { out.push(r); continue; }
+      const last = out[out.length - 1];
+      if (last && last.bold === r.bold && last.italic === r.italic && last.text !== '\n') last.text += r.text;
+      else out.push({ text: r.text, bold: r.bold, italic: r.italic });
+    }
+    return out.filter((r) => r.text !== '');
+  }
+  function block(kind, node) {
+    const runs = mergeRuns(runsFrom(node, false, false, []));
+    if (runs.length) blocks.push({ kind, runs });
+  }
+  function walk(node) {
+    for (const c of (node.childNodes || [])) {
+      if (!isElem(c)) {
+        if (isText(c) && (c.textContent || '').trim()) blocks.push({ kind: 'p', runs: [{ text: c.textContent.trim(), bold: false, italic: false }] });
+        continue;
+      }
+      const nm = nameOf(c);
+      if (nm === 'P' || nm === 'H1' || nm === 'H2' || nm === 'H3' || nm === 'H4') block('p', c);
+      else if (nm === 'UL' || nm === 'OL') { for (const li of (c.childNodes || [])) if (isElem(li) && nameOf(li) === 'LI') block('li', li); }
+      else if (nm === 'LI') block('li', c);
+      else if (UNSUP.has(nm)) unsupported = true;
+      else walk(c); // div/section/… durchsteigen
+    }
+  }
+  walk(rootEl);
+  return { blocks, hasUnsupported: unsupported };
+}
+
 module.exports = BriefkopfPlugin;
 /* Test-only: Obsidian nutzt nur den Default-Export (die Plugin-Klasse) und
    ignoriert Zusatz-Properties. Die puren Engine-Funktionen sind hier exponiert,
@@ -1844,5 +1904,5 @@ module.exports.__test__ = {
   mmToPt, yTopMmToPt, dinGeometry, PT_PER_MM, PAGE_W_PT, PAGE_H_PT,
   winAnsiBytes, pdfTextBytes,
   charWidth1000, textWidthPt, BASE_FONTS,
-  PdfWriter, wrapRuns, layoutLetter, styleFonts
+  PdfWriter, wrapRuns, layoutLetter, styleFonts, walkBodyNodes
 };
