@@ -59,7 +59,8 @@ const DEFAULT_SETTINGS = {
   briefSprache: 'de',        // letter label language ('de' | 'en'); UI language follows the app
   defaultGruss: '',          // empty => language default ("Mit freundlichen Grüßen" / "Kind regards")
   printOffsetTopMm: 0,       // shifts the letter content down (fold marks stay paper-true)
-  customCss: ''
+  customCss: '',
+  mobileExport: 'pdf'        // 'pdf' (vector PDF, one tap) | 'print' (HTML/Quick Look)
 };
 
 /* ------------------------------------------------------------------ *
@@ -171,6 +172,7 @@ const STILE = {
 const UI_STRINGS = {
   en: {
     cmd_export: 'Export letter as PDF / print',
+    cmd_export_pdf: 'Export letter as PDF (vector)',
     cmd_preview: 'Open letter preview',
     cmd_insert_fm: 'Insert letter frontmatter into note',
     notice_open_note: 'Letterhead: Open a Markdown note first.',
@@ -201,6 +203,10 @@ const UI_STRINGS = {
     opt_info_full: 'Full (info block)', opt_info_date: 'Date only',
     set_dinform: 'DIN 5008 form',
     set_dinform_desc: 'Address field position: Form A 27 mm, Form B 45 mm (standard).',
+    set_mobileexport: 'Mobile export',
+    set_mobileexport_desc: 'On iPhone/iPad: one-tap vector PDF (recommended) or the classic print/Quick Look route.',
+    opt_mobile_pdf: 'Vector PDF (one tap)',
+    opt_mobile_print: 'Print / Quick Look (classic)',
     head_sender: 'Sender profile',
     sender_intro: 'Default sender; override per letter via the "absender" frontmatter list.',
     f_name: 'Name', f_company: 'Company / addition', f_street: 'Street', f_city: 'Postal code and city',
@@ -252,6 +258,7 @@ const UI_STRINGS = {
   },
   de: {
     cmd_export: 'Brief als PDF exportieren / drucken',
+    cmd_export_pdf: 'Brief als PDF exportieren (Vektor)',
     cmd_preview: 'Brief-Vorschau öffnen',
     cmd_insert_fm: 'Brief-Frontmatter in Notiz einfügen',
     notice_open_note: 'Letterhead: Bitte zuerst eine Markdown-Notiz öffnen.',
@@ -282,6 +289,10 @@ const UI_STRINGS = {
     opt_info_full: 'Vollständig (Infoblock)', opt_info_date: 'Nur Datum',
     set_dinform: 'DIN-5008-Form',
     set_dinform_desc: 'Anschrift-Position: Form A 27 mm, Form B 45 mm (Standard).',
+    set_mobileexport: 'Mobiler Export',
+    set_mobileexport_desc: 'Auf iPhone/iPad: Ein-Tipp-Vektor-PDF (empfohlen) oder der klassische Druck-/Quick-Look-Weg.',
+    opt_mobile_pdf: 'Vektor-PDF (ein Tipp)',
+    opt_mobile_print: 'Drucken / Quick Look (klassisch)',
     head_sender: 'Absender-Profil',
     sender_intro: 'Standard-Absender; pro Brief per Frontmatter-Liste „absender" überschreibbar.',
     f_name: 'Name', f_company: 'Zusatz / Firma', f_street: 'Straße', f_city: 'PLZ und Ort',
@@ -726,6 +737,11 @@ class BriefkopfPlugin extends obsidian.Plugin {
       callback: () => this.exportLetter()
     });
     this.addCommand({
+      id: 'export-letter-pdf',
+      name: t('cmd_export_pdf'),
+      callback: () => this.exportLetterPdf()
+    });
+    this.addCommand({
       id: 'open-preview',
       name: t('cmd_preview'),
       callback: () => this.previewLetter()
@@ -1077,18 +1093,107 @@ class BriefkopfPlugin extends obsidian.Plugin {
     </div>`;
   }
 
+  /* ---- vector PDF export (own dependency-free writer) ---- */
+
+  /* Body-HTML (Obsidian-Render) → Blöcke fürs PDF. DOMParser (Runtime). */
+  parseBodyBlocks(bodyHtml) {
+    try {
+      const doc = new DOMParser().parseFromString('<div id="r">' + (bodyHtml || '') + '</div>', 'text/html');
+      return walkBodyNodes(doc.getElementById('r'));
+    } catch (e) {
+      console.error('Letterhead: body parse failed', e);
+      const text = (bodyHtml || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      return { blocks: text ? [{ kind: 'p', runs: [{ text, bold: false, italic: false }] }] : [], hasUnsupported: false };
+    }
+  }
+
+  /* Baut das Vektor-PDF aus dem Modell. null ⇒ Aufrufer nutzt Fallback. */
+  async buildLetterPdfBytes(model) {
+    const settings = this.settings;
+    const parsed = this.parseBodyBlocks(model.bodyHtml);
+    if (parsed.hasUnsupported) return null; // komplexe Bodies → HTML/Print-Fallback
+    const { pageCount, ops } = layoutLetter(model, settings, parsed.blocks);
+    const writer = new PdfWriter();
+    const pages = [];
+    for (let i = 0; i < pageCount; i++) pages.push(writer.addPage());
+    if (model.logo) {
+      const jp = await logoToJpeg(model.logo, 1200);
+      if (jp) {
+        const g = dinGeometry(settings.dinForm);
+        const off = Number(settings.printOffsetTopMm) || 0;
+        const maxHmm = Math.max(8, g.addrTopMm - g.headTopMm - 8);
+        const ratio = jp.wPx / jp.hPx;
+        let hmm = Math.min(maxHmm, 22), wmm = hmm * ratio;
+        if (wmm > 90) { wmm = 90; hmm = wmm / ratio; }
+        const name = writer.addJpeg(jp.u8, jp.wPx, jp.hPx);
+        pages[0].image(name, mmToPt(g.marginLeftMm), yTopMmToPt(g.headTopMm + off + hmm), mmToPt(wmm), mmToPt(hmm));
+      }
+    }
+    for (const o of ops) {
+      const pg = pages[o.page] || pages[pages.length - 1];
+      if (o.kind === 'text') pg.text(o.x, o.y, o.str, o.fontKey, o.sizePt, o.rgb);
+      else if (o.kind === 'line') pg.line(o.x1, o.y1, o.x2, o.y2, o.wPt, o.rgb);
+    }
+    return writer.build();
+  }
+
+  /* Schreibt das PDF und teilt es: Mobile via navigator.share (ein Tipp),
+     sonst via openWithDefaultApp. false ⇒ Aufrufer nutzt Fallback. */
+  async exportViaPdf(model) {
+    let bytes;
+    try { bytes = await this.buildLetterPdfBytes(model); }
+    catch (e) { console.error('Letterhead: PDF build failed', e); return false; }
+    if (!bytes) return false;
+    const dir = '.letterhead-export';
+    const file = this.app.workspace.getActiveFile();
+    const base = (file && file.basename) ? file.basename : 'Brief';
+    const safe = base.replace(/[\\/:*?"<>|]/g, '_').trim() || 'Brief';
+    const path = `${dir}/${safe}.pdf`;
+    try {
+      const adapter = this.app.vault.adapter;
+      if (await adapter.exists(dir)) {
+        const listing = await adapter.list(dir);
+        for (const f of listing.files) { await adapter.remove(f); }
+      } else { await adapter.mkdir(dir); }
+      await adapter.writeBinary(path, bytes.buffer);
+      const fileObj = (typeof File === 'function') ? new File([bytes], `${safe}.pdf`, { type: 'application/pdf' }) : null;
+      if (fileObj && navigator.canShare && navigator.canShare({ files: [fileObj] })) {
+        try { await navigator.share({ files: [fileObj], title: safe }); return true; }
+        catch (e) { if (e && e.name === 'AbortError') return true; }
+      }
+      if (typeof this.app.openWithDefaultApp === 'function') { await this.app.openWithDefaultApp(path); return true; }
+      return true;
+    } catch (e) {
+      console.error('Letterhead: PDF export failed', e);
+      return false;
+    }
+  }
+
   /* ---- export via print dialog (desktop + iOS) ---- */
 
   async exportLetter() {
     const m = await this.resolveLetter();
     if (!m) return;
-    const html = this.buildLetterHtml(m);
-    const css = buildCss(this.settings, m.stil);
     if (obsidian.Platform.isDesktopApp) {
-      this.doPrint(html, css);
-    } else {
-      await this.exportViaShare(html, css);
+      this.doPrint(this.buildLetterHtml(m), buildCss(this.settings, m.stil));
+      return;
     }
+    if (this.settings.mobileExport === 'pdf') {
+      const ok = await this.exportViaPdf(m);
+      if (ok) return;                 // one tap done
+    }
+    // Fallback: classic HTML/Quick-Look route
+    await this.exportViaShare(this.buildLetterHtml(m), buildCss(this.settings, m.stil));
+  }
+
+  /* Explicit "vector PDF" command — both platforms. */
+  async exportLetterPdf() {
+    const m = await this.resolveLetter();
+    if (!m) return;
+    const ok = await this.exportViaPdf(m);
+    if (ok) return;
+    if (obsidian.Platform.isDesktopApp) this.doPrint(this.buildLetterHtml(m), buildCss(this.settings, m.stil));
+    else await this.exportViaShare(this.buildLetterHtml(m), buildCss(this.settings, m.stil));
   }
 
   /* iOS/iPad path: window.print() is a no-op in the Obsidian mobile WebView,
@@ -1346,6 +1451,15 @@ class BriefkopfSettingTab extends obsidian.PluginSettingTab {
         .addOption('B', 'Form B (45 mm)')
         .setValue(s.dinForm)
         .onChange(async (v) => { s.dinForm = v; await this.plugin.saveSettings(); }));
+
+    new obsidian.Setting(containerEl)
+      .setName(t('set_mobileexport'))
+      .setDesc(t('set_mobileexport_desc'))
+      .addDropdown((d) => d
+        .addOption('pdf', t('opt_mobile_pdf'))
+        .addOption('print', t('opt_mobile_print'))
+        .setValue(s.mobileExport || 'pdf')
+        .onChange(async (v) => { s.mobileExport = v; await this.plugin.saveSettings(); }));
 
     new obsidian.Setting(containerEl).setName(t('head_sender')).setHeading();
     containerEl.createEl('p', { text: t('sender_intro'), cls: 'setting-item-description' });
@@ -1705,6 +1819,42 @@ class PdfWriter {
     xref += `trailer\n<< /Size ${objs.length + 1} /Root ${catalogNo} 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
     for (const b of strBytes(xref)) out.push(b);
     return Uint8Array.from(out);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  PDF · Logo-Rasterung (Runtime: Image/canvas) → JPEG-Bytes
+ * ------------------------------------------------------------------ */
+/* Rastert das (ggf. SVG-)Logo aus seiner data:-URL auf weißem Grund zu JPEG-
+   Bytes für die PDF-Einbettung. Transparenz wird auf Weiß geflacht (Brief).
+   Gibt null zurück, wenn kein Logo oder ein Fehler — dann ohne Logo. */
+async function logoToJpeg(dataUrl, maxWpx) {
+  if (!dataUrl) return null;
+  try {
+    const img = await new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im);
+      im.onerror = rej;
+      im.src = dataUrl;
+    });
+    const naturalW = img.naturalWidth || img.width || 1;
+    const naturalH = img.naturalHeight || img.height || 1;
+    const scale = Math.min(1, (maxWpx || 1200) / naturalW);
+    const wPx = Math.max(1, Math.round(naturalW * scale));
+    const hPx = Math.max(1, Math.round(naturalH * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = wPx; canvas.height = hPx;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, wPx, hPx);
+    ctx.drawImage(img, 0, 0, wPx, hPx);
+    const b64 = canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+    const bin = atob(b64);
+    const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return { u8, wPx, hPx };
+  } catch (e) {
+    console.error('Letterhead: logo rasterization failed', e);
+    return null;
   }
 }
 
