@@ -109,3 +109,10 @@ Session-Handoff unter `.remember/` (gitignored).
   + `module.exports.__test__`-Hook.
 - **CORE-META-03** — Hero/Screenshot reproduzierbar via `tools/render-hero.sh`
   (benötigt `weasyprint` + `poppler`/`pdftoppm`) statt eines npm-Screenshot-Tools.
+
+## Dach-Kontext (obsidian-plugins)
+
+Dieses Repo liegt unter dem Koordinations-Dach `/Users/Shared/code/obsidian-plugins/`.
+**Vor dem Lösen eines Problems:** `../AGENTS.md` (Kit-first-Regel) und `../REGISTRY.md`
+(Lösungs-Registry) prüfen — viele Probleme sind in Nachbar-Plugins oder im
+`obsidian-kit` bereits gelöst.
