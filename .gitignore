@@ -14,3 +14,9 @@ docs/superpowers/
 
 # macOS
 .DS_Store
+
+# Build artifacts (paperize pattern)
+main.js
+main.js.map
+data.json
+node_modules/

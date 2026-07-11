@@ -2,22 +2,25 @@
   "name": "obsidian-letterhead",
   "version": "1.3.0",
   "description": "Generate professionally formatted business letters (DIN 5008 and modern) from note frontmatter and export them to PDF — via the print dialog on desktop, or the system share sheet on iPhone and iPad.",
-  "keywords": [
-    "obsidian",
-    "obsidian-plugin",
-    "pdf",
-    "letter",
-    "din-5008",
-    "geschaeftsbrief",
-    "print"
-  ],
   "main": "main.js",
-  "license": "AGPL-3.0-or-later",
-  "author": "Johannes Kaindl <code@jkaindl.de>",
-  "private": true,
   "scripts": {
-    "check": "node --check main.js",
-    "test": "node --test",
-    "deploy": "mkdir -p \"${OBSIDIAN_PLUGIN_DIR:?set OBSIDIAN_PLUGIN_DIR to <vault>/.obsidian/plugins/letterhead}\" && cp manifest.json main.js styles.css versions.json \"${OBSIDIAN_PLUGIN_DIR}/\""
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc --noEmit && node esbuild.config.mjs --production",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "check:pure": "sh -c \"! grep -rl \\\"from 'obsidian'\\\" src/core src/vendor 2>/dev/null\"",
+    "gate": "npm run typecheck && npm test && npm run check:pure && npm run build",
+    "deploy": "npm run build && cp main.js manifest.json styles.css \"${OBSIDIAN_PLUGIN_DIR:?set OBSIDIAN_PLUGIN_DIR}\"/",
+    "version-bump": "node scripts/version-bump.mjs",
+    "release": "node scripts/release.mjs"
+  },
+  "license": "AGPL-3.0-or-later",
+  "devDependencies": {
+    "@types/node": "^20",
+    "esbuild": "^0.20.0",
+    "happy-dom": "^20.10.6",
+    "obsidian": "latest",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
   }
 }
