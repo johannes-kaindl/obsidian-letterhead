@@ -220,6 +220,11 @@ export const PRINT_MARGIN_TOP_MM = 10;         // page 1
 export const PRINT_MARGIN_TOP_FOLLOW_MM = 25;  // page 2+
 export const PRINT_MARGIN_BOTTOM_MM = 20;      // all pages
 
+/* Body-cursor aliases (main.js.reference:1611-1612) — used by body-ir.ts's
+   own letterhead cursor for the frame elements around the Markdown body. */
+export const PRINT_TOP_N_MM = PRINT_MARGIN_TOP_FOLLOW_MM; // 25 (Folgeseiten)
+export const PRINT_BOTTOM_MM = PRINT_MARGIN_BOTTOM_MM;    // 20 (alle Seiten)
+
 /* ------------------------------------------------------------------ *
  *  PDF · Einheiten & Geometrie (pur, Obsidian-frei)
  * ------------------------------------------------------------------ */
