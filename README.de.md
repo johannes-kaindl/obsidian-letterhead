@@ -18,7 +18,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 ## Funktionen
 
 - **Briefe aus deinen Notizen:** Das Frontmatter einer Notiz hält die Metadaten, der Notiztext (Markdown) wird zum Brieftext — ein Befehl macht daraus einen fertig formatierten Geschäftsbrief.
-- **PDF-Export & Druck, überall:** Desktop (macOS/Windows/Linux) → Druckdialog → „Als PDF sichern"; **iPhone/iPad** → ein echtes, textselektierbares **Vektor-PDF**, das im Plugin erzeugt und mit **einem Tipp** geteilt wird (System-Teilen-Menü → „In Dateien sichern" oder beliebig weiterleiten). Die eingebaute PDF-Engine ist abhängigkeitsfrei und offline — kein Netz, kein Electron, kein Node. Der klassische Schnellansicht-Weg bleibt verfügbar (Einstellungen → Mobiler Export). Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau. Das mobile PDF nutzt die Standard-PDF-Schriften (Helvetica/Times/Courier), bleibt dadurch winzig und öffnet in jedem Viewer identisch.
+- **PDF-Export & Druck, überall:** Desktop (macOS/Windows/Linux) → Druckdialog → „Als PDF sichern"; **iPhone/iPad** → ein echtes, textselektierbares **Vektor-PDF**, das im Plugin erzeugt und mit **einem Tipp** geteilt wird (System-Teilen-Menü → „In Dateien sichern" oder beliebig weiterleiten). Die eingebaute PDF-Engine hat keine Laufzeit-Abhängigkeiten und arbeitet vollständig offline — kein Netz, kein Electron, kein Node — und rendert reiche Briefinhalte (Tabellen, eingebettete Bilder, Code-Blöcke, mehrseitige Paginierung), nicht nur reinen Text. Der klassische Schnellansicht-Weg bleibt verfügbar (Einstellungen → Mobiler Export). Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau. Das mobile PDF nutzt die Standard-PDF-Schriften (Helvetica/Times/Courier), bleibt dadurch winzig und öffnet in jedem Viewer identisch.
 - **Zwei Layouts:** `DIN 5008` (deutscher Standard, fensterkuvert-tauglich) und `Modern` (international) — wählbar unter **Einstellungen → Layout**.
 - **Drei Stile per Dropdown:** Sachlich-modern, Klassisch-seriös, Technisch-präzise — plus Infozeile „Vollständig" (Infoblock) oder „Nur Datum"; beides pro Brief im Frontmatter überschreibbar.
 - **Zweisprachig:** Plugin-UI folgt der Obsidian-App-Sprache (Englisch/Deutsch); die Briefsprache ist separat einstellbar — deutsche oder englische Brief-Labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), pro Brief per Frontmatter `sprache` umschaltbar.
@@ -28,7 +28,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 - **DIN-Extras:** Faltmarken (105/210 mm bzw. 87/192 mm), Lochmarke (148,5 mm), Druckversatz-Feinjustierung fürs Kuvertfenster.
 - **Kein CSS nötig** — Stil und Infozeile direkt in den Einstellungen; für Feinschliff bleiben dokumentierte CSS-Design-Tokens + kommentiertes Preset auf Knopfdruck.
 - **Komplett offline** — keine Netzwerkaufrufe, keine Telemetrie; das Rendering läuft lokal über die Druck-Engine des Betriebssystems.
-- Abhängigkeitsfrei, mobil-tauglich (`isDesktopOnly: false`), AGPL-3.0.
+- TypeScript, per esbuild gebündelt, ohne Laufzeit-Abhängigkeiten, mobil-tauglich (`isDesktopOnly: false`), AGPL-3.0.
 
 ## Schnellstart
 
@@ -72,9 +72,23 @@ Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gere
 
 Stil und Infozeile wählst du direkt in den Einstellungen — ganz ohne CSS. Für Feinschliff darüber hinaus läuft das Aussehen komplett über CSS Custom Properties (Design-Tokens): Das Feld **Custom CSS** (**Einstellungen → Advanced**) ist mit einem vollständig auskommentierten Preset vorbefüllt — eine Zeile einkommentieren und anpassen; der Button **Reset preset** stellt diesen Ausgangszustand wieder her, alternativ [`presets/letterhead-theme.css`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/presets/letterhead-theme.css) kopieren. Als *DIN-kritisch* markierte Geometrie-Tokens halten die Anschrift im Kuvertfenster — bewusst ändern. Vollständige Tokenliste: [docs/reference/theming.de.md](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/theming.de.md).
 
+## Entwicklung
+
+TypeScript, per `esbuild` zu `main.js` gebündelt. `main.js` ist Build-Output (gitignored, nicht committet) — einmal Abhängigkeiten installieren, dann bauen und ins Vault deployen.
+
+```bash
+npm install
+npm run build     # Typecheck + esbuild → main.js
+npm test          # vitest
+npm run gate      # Typecheck + Test + check:pure + Build
+npm run deploy    # bauen, dann manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR kopieren
+```
+
+Vollständige Architektur-Hinweise und verbleibende bewusste Abweichungen vom Workspace-Profil `ts-node · obsidian-plugin` stehen in `AGENTS.md`.
+
 ## Datenschutz & Sicherheit
 
-Letterhead läuft vollständig auf deinem Gerät: keine Netzwerkaufrufe, keine Telemetrie, kein Tracking. Weil es als lesbarer Quellcode ausgeliefert wird — das veröffentlichte `main.js` ist die committete Datei, unminifiziert, ungebündelt, ohne Build-Schritt — kannst du genau prüfen, was es tut. Der einzige `btoa()`-Aufruf bettet dein konfiguriertes Logo als inline `data:`-URL ein. Releases werden zusätzlich kryptografisch mit einer Sigstore/SLSA-Build-Provenance-Attestation signiert — prüfe mit `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`, dass das laufende `main.js` aus dieser Quelle stammt. Vollständige Erklärung und Meldung von Sicherheitslücken: [`SECURITY.de.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.de.md).
+Letterhead läuft vollständig auf deinem Gerät: keine Netzwerkaufrufe, keine Telemetrie, kein Tracking. Die Quelle ist TypeScript in `src/`, lesbar und prüfbar; `main.js` selbst ist Build-Output, keine committete Datei. Der einzige `btoa()`-Aufruf bettet dein konfiguriertes Logo als inline `data:`-URL ein. Releases werden kryptografisch mit einer Sigstore/SLSA-Build-Provenance-Attestation signiert, die GitHub Actions frisch aus der getaggten Quelle baut — prüfe mit `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`, dass das laufende `main.js` aus dieser Quelle stammt. Vollständige Erklärung und Meldung von Sicherheitslücken: [`SECURITY.de.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.de.md).
 
 ## Lizenz
 

@@ -12,45 +12,54 @@ Please do **not** report security issues publicly as an issue. Email **code@jkai
 ## Auditability & supply chain
 Letterhead is built so you can verify what it does by reading it:
 
-- **The source is the release.** The plugin is dependency-free, zero-build Vanilla JS.
-  The shipped `main.js` is the committed source — unminified, unbundled, byte-identical.
-  There is no build step you have to trust; you can read exactly what runs.
+- **Readable source, reproducibly built.** The plugin is TypeScript in `src/`,
+  bundled to `main.js` via `esbuild`. `main.js` is a build artifact — it is
+  gitignored and not committed — so there is no byte-identical "source = output"
+  file to point at; instead every release is built fresh from the tagged source by
+  GitHub Actions and cryptographically attested (see *Verifying a release* below).
+  The source itself stays fully readable, unminified, and dependency-light.
 - **No network, no telemetry.** No `fetch`/`XMLHttpRequest`, no remote endpoints, no
   tracking. Everything happens locally in your vault.
 - **No dynamic code execution.** No `eval`, no `new Function`, no dynamic `import()`.
-  The only module import is Obsidian's own API.
-- **External assets only as `data:` URLs.** The single `btoa()` call embeds your
-  configured logo (a local vault file) into the letter as a `data:` URL — nothing is
-  fetched from the web.
+  The only third-party runtime dependency is Obsidian's own API.
+- **External assets only as `data:` URLs.** The single `btoa()` call
+  (`src/core/frontmatter.ts`) embeds your configured logo (a local vault file) into
+  the letter as a `data:` URL — nothing is fetched from the web.
 - **Minimal vault access.** Reads notes via the Obsidian API and writes only the
   exported letter (HTML or the generated PDF) into a dedicated export folder
   (the mobile export path).
-- **Own PDF engine, no new dependency.** The mobile vector-PDF export is produced by
-  a small, dependency-free PDF writer inside `main.js` — no library, no `fetch`, no
-  build step. The finished file is handed to the OS via the system share sheet. The
-  zero-build *source = output* guarantee is unchanged.
+- **Own PDF engine, no runtime dependency.** The mobile vector-PDF export is produced
+  by a dependency-free PDF writer (the vendored `obsidian-kit` PDF engine under
+  `src/vendor/kit/pdf/`) — no third-party PDF library, no `fetch`. The finished file
+  is handed to the OS via the system share sheet.
 
 ### A note on the community scorecard
-The directory scorecard's *"build verification not available"* note is a direct
-consequence of the deliberate zero-build design: there is no build to verify because
-the released file **is** the source. We treat readable, unbundled source as the
-stronger guarantee and keep it that way on purpose (see [`AGENTS.md`](AGENTS.md) →
-*Abweichungen von der Leitkonvention*).
+Earlier versions of Letterhead were zero-build Vanilla JS, and the directory
+scorecard's *"build verification not available"* note reflected that there was no
+build to verify — the released file *was* the source. Since the plugin adopted a
+TypeScript + esbuild build (to share the PDF engine with other plugins via a vendored
+kit — see [`AGENTS.md`](AGENTS.md) → *Abweichungen von der Leitkonvention*), that note
+no longer applies in the same way: `main.js` is now genuinely built. Provenance now
+comes from the reproducible-build attestation described below, not from source/output
+byte-identity.
 
-On top of that readable source, releases carry a **GitHub artifact attestation**
-(Sigstore/SLSA build provenance): the release workflow signs the exact committed
-`main.js`, `manifest.json` and `styles.css` bytes — it builds nothing, so the attested
-subject is byte-for-byte identical to the source you can read. You get both: open
-source you can audit by eye, and cryptographic proof of where the released bytes came
-from.
+Releases carry a **GitHub artifact attestation** (Sigstore/SLSA build provenance): the
+release workflow checks out the tagged commit, runs `npm ci` + `npm run gate` (which
+includes the build), and signs the resulting `main.js`, `manifest.json` and
+`styles.css` — the exact bytes it just built, tied by OIDC to the GitHub Actions
+workflow run and the tagged commit. You get both: open, readable TypeScript source you
+can audit, and cryptographic proof that the shipped build came from that source.
 
 ### Verifying a release
-Every release is published through GitHub Actions, which signs the files with a
-Sigstore/SLSA build-provenance attestation. You can confirm that the `main.js` you run
-came from this repository's tagged source:
+Every release is published through GitHub Actions, which builds `main.js` from the
+tagged source and signs it with a Sigstore/SLSA build-provenance attestation. You can
+confirm that the `main.js` you run was built by this repository's release workflow
+from the tagged source:
 
 ```sh
 gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead
 ```
 
-The attested digest matches the committed, unbundled `main.js` byte-for-byte.
+This does not mean the shipped `main.js` is byte-identical to any file in the
+repository (there is none — it is build output); it means the attested bytes were
+produced by a verifiable build of the tagged commit, not substituted afterwards.

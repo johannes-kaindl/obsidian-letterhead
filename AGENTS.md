@@ -10,18 +10,21 @@ Conventions for AI agents (Claude Code, Codex, …) working on this repository.
 
 Obsidian-Plugin „Letterhead": macht aus der aktiven Notiz einen formatierten
 Geschäftsbrief (DIN 5008 Form A/B + „Modern"-Theme) und exportiert ihn über den
-OS-Druckdialog als PDF — Desktop **und iOS**. Bewusst **abhängigkeitsfreies
-Vanilla-JS ohne Build**, damit `main.js` zugleich Quelle und Auslieferung ist und
-auf Mobile ohne Toolchain läuft.
+OS-Druckdialog als PDF — Desktop **und iOS**. TypeScript + `esbuild`-Build (`src/`
+→ `main.js`), ohne Laufzeit-Abhängigkeiten; `main.js` ist Build-Output (gitignored,
+nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
 
 - **Plugin-ID:** `letterhead` (deployed unter `.obsidian/plugins/letterhead/`).
 - **Test-Vault:** `/Users/Shared/10_ObsidianVaults/10_Pallas/`.
 
 ## Architecture principles
 
-- Kein Electron-/Node-API → mobil-tauglich. Nur Obsidian-API + Browser-APIs.
-- Reine Funktionen (`buildCss`, `getField`, `toLines`, `esc`, `buildFmIndex`) sind
-  frei von Obsidian-Imports und damit in Node testbar (Geist von PROF-OBS-04).
+- Kein Electron-/Node-API zur Laufzeit → mobil-tauglich. Nur Obsidian-API +
+  Browser-APIs im gebauten `main.js`.
+- Reine Funktionen (`src/core/*`, `src/vendor/kit/pdf/*`) sind frei von
+  Obsidian-Imports und damit isoliert mit `vitest` testbar (PROF-OBS-04). Die Grenze
+  wird von `npm run check:pure` erzwungen (kein `from 'obsidian'`-Import in
+  `src/core` oder `src/vendor`).
 - Styling ausschließlich über CSS Custom Properties (Design-Tokens): Geometrie ist
   DIN-kritisch (Fensterkuvert), Typo/Farbe/Spacing frei. Token-Referenz:
   `docs/reference/theming.md`.
@@ -32,35 +35,43 @@ auf Mobile ohne Toolchain läuft.
   versteckten Export-Ordner und übergibt es via `app.openWithDefaultApp()` ans System
   (Schnellansicht → Drucken → als PDF sichern). Keine Netzwerkzugriffe, keine
   Telemetrie, externe Assets nur als `data:`-URL (Logo).
-- **Vektor-PDF-Export (ab 1.3.0):** Ein eigener, abhängigkeits- und build-freier
-  PDF-Writer in `main.js` (Sektionen `PDF · …`) erzeugt ein echtes, textselektierbares
-  Vektor-PDF (PDF 1.7, Adobe-Core-14-Standardschriften, WinAnsi mit Umlauten/€). Auf
-  Mobile teilt `exportViaPdf()` es per `navigator.share()` (ein Tipp), sonst
-  `openWithDefaultApp()`. Reine, Obsidian-freie Schichten: `pdf` (Byte-Writer), `layout`
-  (DIN-Geometrie → Draw-Ops, AFM-Metriken), Body-Walk `walkBodyNodes`. Bei komplexem
-  Body (Tabellen/Bilder/Code) oder Setting `mobileExport: 'print'` greift automatisch
-  der HTML/Quick-Look-Weg als Fallback. Keine neue Dependency, kein Build — `source =
-  output` bleibt gewahrt.
+- **Vektor-PDF-Export (ab 1.3.0, seit 1.4.0 mit reichen Bodies):** Die Engine ist das
+  vendorte, geteilte Kit `src/vendor/kit/pdf/` (nicht mehr ein In-`main.js`-Writer) —
+  erzeugt ein echtes, textselektierbares Vektor-PDF (PDF 1.7, Adobe-Core-14-
+  Standardschriften, WinAnsi mit Umlauten/€) ohne Fremdbibliothek für PDF. Auf Mobile
+  teilt `exportViaPdf()` es per `navigator.share()` (ein Tipp), sonst
+  `openWithDefaultApp()`. Reine, Obsidian-freie Schichten unter `src/vendor/kit/pdf/`:
+  `writer`/`encoding` (Byte-Writer), `layout`/`geometry` (DIN-Geometrie → Draw-Ops,
+  AFM-Metriken via `metrics`), `ir` (Body-IR) — gefüttert aus `src/core/dom-to-ir.ts`
+  (`domToIrSync`, Nachfolger von `walkBodyNodes`). Tabellen, eingebettete Bilder, Code-Blöcke und
+  mehrseitige Paginierung werden seit 1.4.0 direkt im Vektor-PDF gerendert (Degradation
+  bei nicht unterstützten Elementen); Setting `mobileExport: 'print'` bleibt als
+  expliziter HTML/Quick-Look-Fallback wählbar. Die Engine selbst zieht keine
+  Laufzeit-Dependency, aber das Bündeln erfolgt über den `esbuild`-Build — `main.js` ist
+  Build-Output, nicht committete Quelle.
 
 ## Commands
 
 ```bash
-npm run check     # node --check main.js (Syntax-Gate)
-npm test          # node --test (reine node:test-Specs für die puren PDF-Funktionen)
-npm run deploy    # cp manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
+npm run typecheck  # tsc --noEmit
+npm test           # vitest run (reine, Obsidian-freie Specs für src/core + src/vendor)
+npm run build      # tsc --noEmit + esbuild --production → main.js
+npm run check:pure # kein `from 'obsidian'`-Import in src/core, src/vendor
+npm run gate       # typecheck && test && check:pure && build — CI-Gate, siehe Releasing
+npm run deploy     # build, dann cp manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
 ```
 
 Manuelles Deploy-Ziel: `<vault>/.obsidian/plugins/letterhead/`.
-Es gibt bewusst **keinen** build/test/lint/typecheck-Schritt (siehe Abweichungen).
 
 ## Releasing
 
 Releases erzeugt **GitHub Actions** (`.github/workflows/release.yml`), getriggert durch
 einen Tag-Push, der GitHub erreicht: `git push github <tag>` (Tag ohne v-Präfix). Der
-Workflow erstellt das GitHub-Release **und** eine Sigstore-Artifact-Attestation
-(SLSA-Provenance) auf die committeten `main.js`/`manifest.json`/`styles.css` — **ohne
-Build**; das attestierte Subjekt ist byte-identisch mit der Quelle (verstärkt
-source-as-output statt es zu ersetzen).
+Workflow checkt den Tag aus, führt `npm ci` + `npm run gate` aus (baut also `main.js`
+frisch aus `src/`) und erstellt das GitHub-Release **und** eine
+Sigstore-Artifact-Attestation (SLSA-Provenance) auf die dabei gebauten
+`main.js`/`manifest.json`/`styles.css` — das attestierte Subjekt ist Build-Output aus
+dem getaggten Commit, nicht eine committete Kopie.
 
 - **Nicht mehr** manuell `gh release create` aufrufen: Die Attestation kann nur der
   Actions-Lauf signieren (OIDC-Identität = Workflow, nicht Laptop); ein manuelles
@@ -91,7 +102,8 @@ source-as-output statt es zu ersetzen).
   `--bk-print-margin-top` per `calc()` ab. Die Vorschau paginiert den Brief in
   `.bk-sheet`-Blätter mit denselben Schnitthöhen (Modal `paginate()`). Beim
   Ändern von Positionen immer dieses Schema beibehalten.
-- `main.js` ist die Quelle — nicht minifizieren/bundeln und committen.
+- `main.js`/`main.js.map` sind Build-Output (gitignored) — **nicht** committen; Quelle
+  ist `src/`.
 
 ## Memory
 
@@ -100,13 +112,12 @@ Session-Handoff unter `.remember/` (gitignored).
 
 ## Abweichungen von der Leitkonvention
 
-- **PROF-TS-01..04** — Bewusst **kein** TypeScript/esbuild/vitest-Setup. Das Plugin
-  ist abhängigkeitsfreies Zero-Build-Vanilla-JS (`main.js` = Quelle = Output),
-  Begründung analog zur No-Build-Pflicht PROF-WEB-01. Syntax-Gate via
-  `npm run check` (`node --check`) statt typecheck/build. Unit-Tests sind als reine
-  `node:test`-Specs (`npm test`, ohne Build-Toolchain) für die Obsidian-freien
-  PDF-Engine-Funktionen umgesetzt; in Node ladbar via tolerantem `require('obsidian')`
-  + `module.exports.__test__`-Hook.
+- **PROF-TS-01..04** — entfällt seit dem Umbau auf TypeScript + `esbuild` + `vitest`
+  (`src/` → `main.js`, Tests via `npm test`, Gate via `npm run gate`): das Plugin
+  entspricht jetzt dem Standardprofil `ts-node · obsidian-plugin`, keine Abweichung
+  mehr. Grund für den Umbau: der PDF-Engine-Kern wird als geteiltes Kit
+  (`src/vendor/kit/`) vendored statt pro Plugin neu geschrieben — das ist mit reinem
+  Zero-Build nicht mehr praktikabel (siehe `CHANGELOG.md` → 1.4.0).
 - **CORE-META-03** — Hero/Screenshot reproduzierbar via `tools/render-hero.sh`
   (benötigt `weasyprint` + `poppler`/`pdftoppm`) statt eines npm-Screenshot-Tools.
 

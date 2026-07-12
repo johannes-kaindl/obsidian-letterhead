@@ -19,7 +19,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 ## Features
 
 - **Letters from your notes:** a note's frontmatter holds the metadata, the note body (Markdown) becomes the letter text — one command turns it into a finished, formatted business letter.
-- **PDF export & printing, everywhere:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; **iPhone/iPad** → a real, text-selectable **vector PDF** generated inside the plugin and shared with **one tap** (system share sheet → “Save to Files” or send anywhere). The built-in PDF engine is dependency-free and offline — no network, no Electron, no Node. The classic Quick Look route stays available (Settings → Mobile export). Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact. The mobile PDF uses the standard PDF typefaces (Helvetica/Times/Courier), so files stay tiny and open identically in any viewer.
+- **PDF export & printing, everywhere:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; **iPhone/iPad** → a real, text-selectable **vector PDF** generated inside the plugin and shared with **one tap** (system share sheet → “Save to Files” or send anywhere). The built-in PDF engine has no runtime dependencies and works fully offline — no network, no Electron, no Node — and renders rich letter bodies (tables, embedded images, code blocks, multi-page pagination), not just plain text. The classic Quick Look route stays available (Settings → Mobile export). Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact. The mobile PDF uses the standard PDF typefaces (Helvetica/Times/Courier), so files stay tiny and open identically in any viewer.
 - **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international) — choose in **Settings → Layout**.
 - **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
 - **Bilingual:** the plugin UI follows the Obsidian app language (English/German); the letter language is a separate setting — German or English letter labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), switchable per letter via the `sprache` frontmatter field.
@@ -29,7 +29,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 - **DIN extras:** fold marks (105/210 mm or 87/192 mm), hole mark (148.5 mm), print-offset fine-tuning for the envelope window.
 - **No CSS required** — style and info line are plain settings; for fine-tuning there are documented CSS design tokens + a one-click commented preset.
 - **Fully offline** — no network calls, no telemetry; rendering happens locally via the OS print engine.
-- Dependency-free, mobile-ready (`isDesktopOnly: false`), AGPL-3.0.
+- TypeScript, esbuild-bundled, no runtime dependencies, mobile-ready (`isDesktopOnly: false`), AGPL-3.0.
 
 ## Quick Start
 
@@ -75,18 +75,21 @@ Pick a style and info-line mode directly in the settings — no CSS required. Fo
 
 ## Development
 
-Dependency-free vanilla JS: `main.js` is both source and build output — no npm install, no build step. Edit it and `npm run deploy` (or copy the files) into your vault, then reload Obsidian.
+TypeScript, bundled to `main.js` with `esbuild`. `main.js` is build output (gitignored, not committed) — install dependencies once, then build and deploy into your vault.
 
 ```bash
-npm run check     # node --check main.js (syntax gate)
-npm run deploy    # copy manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
+npm install
+npm run build     # typecheck + esbuild → main.js
+npm test          # vitest
+npm run gate      # typecheck + test + check:pure + build
+npm run deploy    # build, then copy manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
 ```
 
-This is a deliberate deviation from the workspace `ts-node · obsidian-plugin` profile — see `AGENTS.md` → *Abweichungen von der Leitkonvention*.
+See `AGENTS.md` for the full architecture notes and remaining deliberate deviations from the workspace `ts-node · obsidian-plugin` profile.
 
 ## Privacy & security
 
-Letterhead runs entirely on your device: no network calls, no telemetry, no tracking. Because it ships as readable source — the released `main.js` is the committed file, unminified, unbundled, with no build step — you can audit exactly what it does. The only `btoa()` call embeds your configured logo as an inline `data:` URL. Releases are also cryptographically signed with a Sigstore/SLSA build-provenance attestation — confirm the `main.js` you run came from this source with `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`. Full statement and how to report a vulnerability: [`SECURITY.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.md).
+Letterhead runs entirely on your device: no network calls, no telemetry, no tracking. The source is TypeScript in `src/`, readable and auditable; `main.js` itself is build output, not a committed file. The only `btoa()` call embeds your configured logo as an inline `data:` URL. Releases are cryptographically signed with a Sigstore/SLSA build-provenance attestation, built fresh from the tagged source by GitHub Actions — confirm the `main.js` you run came from this source with `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`. Full statement and how to report a vulnerability: [`SECURITY.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.md).
 
 ## License
 
