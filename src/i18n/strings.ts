@@ -1,6 +1,12 @@
 // Ported verbatim from .superpowers/sdd/main.js.reference:172-371
 // (UI_STRINGS, detectUiLang, UI_LANG, t). Do not reword, drop, or reorder
 // entries when touching this file — see Task D1 in .superpowers/sdd/.
+//
+// NOTE on the 'obsidian' import: this file is NOT under `check:pure` (which
+// only restricts src/core and src/vendor), so importing the official
+// getLanguage() API here is allowed and is required to keep language detection
+// identical to the legacy main.js (Obsidian locale as the primary source).
+import { getLanguage } from 'obsidian';
 
 /** English UI strings — canonical source; every key must exist here. */
 const en = {
@@ -224,17 +230,14 @@ export type UiStringKey = keyof typeof en;
    2. moment.locale() — Obsidian keeps it on the app language
    English is the default and the fallback for every missing key.
 
-   This module intentionally does not statically `import` the 'obsidian'
-   package (kept dependency-free for pure string lookup); the official-API
-   check below reads a global `obsidian` object if one happens to be present
-   instead. In the real Obsidian app that global is not set by the module
-   bundler, so in practice detection currently falls through to branch 2
-   (window.moment), matching the legacy main.js runtime behavior. */
+   Ported from main.js.reference:351-363. The primary source is the official
+   getLanguage() API, imported statically above (allowed: this file is not
+   under check:pure). The try/catch keeps Node/tests working when the API is
+   absent or throws, falling through to window.moment, then English. */
 export function detectUiLang(): UiLang {
   try {
-    const g = globalThis as unknown as { obsidian?: { getLanguage?: () => string } };
-    if (g.obsidian && typeof g.obsidian.getLanguage === 'function') {
-      const l = g.obsidian.getLanguage();
+    if (typeof getLanguage === 'function') {
+      const l = getLanguage();
       if (l) return String(l).toLowerCase().startsWith('de') ? 'de' : 'en';
     }
   } catch (e) {
