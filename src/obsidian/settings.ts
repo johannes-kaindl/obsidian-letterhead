@@ -87,8 +87,8 @@ export class LetterheadSettingTab extends PluginSettingTab {
       .setDesc(t('set_mobileexport_desc'))
       .addDropdown((d) => d
         .addOption('pdf', t('opt_mobile_pdf'))
-        // NOTE: the reference also offered 'print' (opt_mobile_print) —
-        // the HTML/Quick-Look mobile fallback. Removed: mobile export is
+        // NOTE: the reference also offered a 'print' option — the
+        // HTML/Quick-Look mobile fallback. Removed: mobile export is
         // vector-PDF only now (Degradation model). The `mobileExport`
         // setting key is preserved so old stored values still load.
         .setValue(s.mobileExport || DEFAULT_SETTINGS.mobileExport)
