@@ -7,6 +7,28 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-07-12
+
+Umbau der Build- und Provenance-Basis — die Brief-Funktionalität ist unverändert,
+aber der mobile Vektor-PDF-Export wird deutlich leistungsfähiger.
+
+### Changed
+- **Build-System:** Das Plugin ist nicht mehr abhängigkeits- und build-frei. `src/`
+  (TypeScript) wird per `esbuild` zu `main.js` gebündelt; `main.js` ist jetzt ein
+  Build-Artefakt (gitignored), keine committete Quelle mehr. Grund: der
+  PDF-Engine-Kern wird als geteiltes Kit vendored (`src/vendor/kit/`) statt pro
+  Plugin neu geschrieben — das ist mit reinem Zero-Build nicht mehr praktikabel.
+- **Release-/Provenance-Modell:** Die GitHub-Attestation (`actions/attest-build-provenance`)
+  signiert jetzt den **Build-Output** (`main.js`/`manifest.json`/`styles.css`), frisch aus
+  dem getaggten Quellstand via `npm ci` + `npm run gate` gebaut — nicht mehr committete Bytes
+  1:1 (bisheriges `source = output`-Modell aus 1.2.2). Provenance-Garantie: reproduzierbar aus
+  dem attestierten Commit, verifizierbar mit `gh attestation verify`.
+- **Mobiler Vektor-PDF-Export erzeugt jetzt reiche Markdown-Bodies:** Tabellen,
+  eingebettete Bilder, Code-Blöcke und mehrseitige Paginierung werden direkt im
+  Vektor-PDF gerendert (per Degradation auf einfachere Darstellung bei nicht
+  unterstützten Elementen) — statt wie bisher auf den HTML/Quick-Look-Weg
+  auszuweichen. Der Desktop-Druckweg (`window.print()`) ist unverändert.
+
 ## [1.3.0] — 2026-06-28
 
 Mobiler PDF-Export als **ein Tipp** — die schwächste Stelle des Plugins (der

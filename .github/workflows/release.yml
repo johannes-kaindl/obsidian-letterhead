@@ -1,38 +1,65 @@
-# Release + GitHub artifact attestation for a Zero-Build plugin.
-#
-# This plugin is intentionally build-free: main.js / manifest.json / styles.css
-# ARE the committed source. There is no compile step, so this workflow does NOT
-# build anything — it checks out the committed files and signs those exact bytes.
-# `actions/attest` hashes the named subject files and signs the digests with a
-# short-lived Sigstore certificate; it never modifies or rebuilds the artifacts.
-# Result: source == released asset == attested subject, byte for byte.
-#
-# Trigger: push a tag (e.g. `git push github 1.2.2`). This is the GitHub mirror;
-# Codeberg stays the primary origin and is unaffected.
 name: Release
 
+# Builds the plugin, attests the built assets, and publishes a GitHub release.
+# Runs on the GitHub side (mirror of Codeberg) on a SemVer tag (no v-prefix) or
+# manually. Unlike a zero-build plugin, Letterhead's `main.js` is esbuild-bundled
+# from `src/` — this workflow builds it fresh from the tagged source and attests
+# the resulting bundle (not a committed file: main.js is gitignored, see
+# .gitignore). The attested subject is therefore the build OUTPUT, produced
+# reproducibly from the attested commit — not a byte-identical copy of source.
 on:
   push:
     tags:
-      - "*"
+      - "[0-9]+.[0-9]+.[0-9]+"   # SemVer without v-prefix
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build and release (e.g. 0.1.0)"
+        required: true
 
 permissions:
-  contents: write        # create the GitHub Release and upload assets
-  id-token: write        # mint the OIDC token for Sigstore signing
-  attestations: write    # persist the provenance attestation
+  contents: write       # create the release + upload assets
+  id-token: write       # OIDC for the attestation signature
+  attestations: write   # write attestations
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the committed plugin files
-        uses: actions/checkout@v4
+      - name: Resolve tag
+        id: tag
+        run: echo "tag=${{ github.event.inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
 
-      # No build step on purpose: the committed files are the release artifacts.
-      - name: Sanity-check that main.js parses
-        run: node --check main.js
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
 
-      - name: Attest the committed release files
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Gate (typecheck + test + check:pure + build)
+        run: npm run gate
+
+      - name: Verify tag == package.json == manifest.json and versions.json covers it
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          PKG="$(node -p "require('./package.json').version")"
+          MAN="$(node -p "require('./manifest.json').version")"
+          HAS="$(node -p "require('./versions.json')['$TAG'] ? 'yes' : 'no'")"
+          if [ "$TAG" != "$PKG" ] || [ "$TAG" != "$MAN" ]; then
+            echo "::error::Tag $TAG, package.json $PKG, manifest.json $MAN — must all match"
+            exit 1
+          fi
+          if [ "$HAS" != "yes" ]; then
+            echo "::error::versions.json has no entry for $TAG"
+            exit 1
+          fi
+
+      - name: Attest build provenance
         uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
@@ -40,11 +67,15 @@ jobs:
             manifest.json
             styles.css
 
-      - name: Create the GitHub Release with the same files
+      - name: Create or update release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" \
-            --title "${GITHUB_REF_NAME}" \
-            --generate-notes \
-            main.js manifest.json styles.css
+          tag="${{ steps.tag.outputs.tag }}"
+          notes=$(awk -v t="## [$tag]" 'index($0,t)==1{f=1;next} /^## \[/{f=0} f' CHANGELOG.md)
+          [ -z "$notes" ] && notes="Release $tag"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" main.js manifest.json styles.css --clobber
+          else
+            gh release create "$tag" main.js manifest.json styles.css --title "$tag" --notes "$notes"
+          fi
