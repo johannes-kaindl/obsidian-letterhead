@@ -1,5 +1,6 @@
 // src/core/dom-to-ir.ts
 import { Block, Inline, ListItem, Cell, Align } from '../vendor/kit/pdf';
+import { parseCodePlaceholder, type ExtractedCode } from './code-blocks';
 
 const EMPTY = new Uint8Array(0);
 const nameOf = (n: Node) => (n.nodeName || '').toUpperCase();
@@ -55,12 +56,22 @@ function cellAlign(td: Element): Align | undefined {
 
 export function domToIrSync(
   root: HTMLElement,
-  opts?: { pageBreakMarker?: string },
+  opts?: { pageBreakMarker?: string; codes?: ExtractedCode[] },
 ): { blocks: Block[]; imageEls: HTMLImageElement[]; unsupportedCount: number } {
   const blocks: Block[] = [];
   const imageEls: HTMLImageElement[] = [];
   let unsupportedCount = 0;
   const marker = opts?.pageBreakMarker;
+  const codes = opts?.codes;
+
+  // A placeholder paragraph stands for a fenced block that was pulled out of the Markdown
+  // before rendering (see extractCodeBlocks) — Obsidian post-processors from other plugins
+  // never saw it, so the original code is still intact here.
+  const codeFor = (txt: string): ExtractedCode | null => {
+    if (!codes || !codes.length) return null;
+    const i = parseCodePlaceholder(txt);
+    return i === null ? null : (codes[i] ?? null);
+  };
 
   const parseList = (listEl: Element): ListItem[] => {
     const items: ListItem[] = [];
@@ -109,7 +120,10 @@ export function domToIrSync(
       const nm = nameOf(el);
       if (/^H[1-6]$/.test(nm)) blocks.push({ type: 'heading', level: Number(nm[1]) as 1, inlines: inlinesOf(el) });
       else if (nm === 'P') {
-        if (marker && (el.textContent || '').trim() === marker) { blocks.push({ type: 'pagebreak' }); continue; }
+        const txt = (el.textContent || '').trim();
+        if (marker && txt === marker) { blocks.push({ type: 'pagebreak' }); continue; }
+        const code = codeFor(txt);
+        if (code) { blocks.push({ type: 'code', lang: code.lang, text: code.text }); continue; }
         const inl = inlinesOf(el);
         if (inl.length) blocks.push({ type: 'paragraph', inlines: inl });
         for (const img of Array.from(el.querySelectorAll('img'))) {

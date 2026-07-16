@@ -28,6 +28,7 @@ import { Plugin, Notice, Component, MarkdownRenderer, Platform, normalizePath, t
 import { layoutHead } from '../core/head-layout';
 import { layoutBody } from '../core/body-ir';
 import { domToIrSync, resolveImages } from '../core/dom-to-ir';
+import { extractCodeBlocks } from '../core/code-blocks';
 import { imageToJpeg } from '../core/image';
 import { dinGeometry, DEFAULT_SETTINGS, LETTER_LABELS, type LetterheadSettings } from '../core/model';
 import {
@@ -369,8 +370,14 @@ export default class LetterheadPlugin extends Plugin {
     let bodyBlocks: Block[] = [];
     let simplified = 0;
     try {
-      await MarkdownRenderer.render(this.app, model.bodyMarkdown || '', holder, model.sourcePath || '', comp);
-      const ex = domToIrSync(holder, {});
+      // Pull fenced code out of the Markdown BEFORE rendering. MarkdownRenderer runs every
+      // registered post-processor, including other plugins' — a code-block processor (e.g.
+      // json-editor on ```json) replaces the <pre> with its own widget DOM, and the original
+      // code would be unrecoverable from it. The HTML/print path (renderMarkdownToHtml) is
+      // unaffected and must keep the widget: a browser renders it correctly.
+      const { markdown, codes } = extractCodeBlocks(model.bodyMarkdown || '');
+      await MarkdownRenderer.render(this.app, markdown, holder, model.sourcePath || '', comp);
+      const ex = domToIrSync(holder, { codes });
       simplified = ex.unsupportedCount;
       const res = await resolveImages(ex.blocks, ex.imageEls, (src) => this.decodeImage(src, model.sourceFile));
       bodyBlocks = res.blocks;

@@ -28,6 +28,14 @@ aber der mobile Vektor-PDF-Export wird deutlich leistungsfähiger.
   Vektor-PDF gerendert (per Degradation auf einfachere Darstellung bei nicht
   unterstützten Elementen) — statt wie bisher auf den HTML/Quick-Look-Weg
   auszuweichen. Der Desktop-Druckweg (`window.print()`) ist unverändert.
+- **Code-Blöcke bleiben auch dann intakt, wenn andere Plugins sie einfärben:**
+  Fenced-Code wird für den PDF-Weg direkt aus dem Markdown gelesen, statt aus dem
+  gerenderten DOM. Obsidians Renderer führt alle installierten Markdown-Prozessoren
+  aus — ein fremdes Plugin, das z. B. ```json in ein eigenes Widget verwandelt (etwa
+  „JSON Editor"), hinterlässt dort kein `<pre>` mehr, sondern seine Bedienelemente.
+  Im PDF erscheint jetzt der Code, den Sie geschrieben haben, unabhängig von Ihren
+  übrigen Plugins. Der Desktop-Druckweg nutzt weiterhin die gerenderte Ansicht (dort
+  ist die Plugin-Darstellung korrekt und gewollt).
 
 ## [1.3.0] — 2026-06-28
 
