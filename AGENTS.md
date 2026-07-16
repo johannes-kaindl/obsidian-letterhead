@@ -28,13 +28,20 @@ nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
 - Styling ausschließlich über CSS Custom Properties (Design-Tokens): Geometrie ist
   DIN-kritisch (Fensterkuvert), Typo/Farbe/Spacing frei. Token-Referenz:
   `docs/reference/theming.md`.
-- Export ist plattformabhängig (`Platform.isDesktopApp`): **Desktop** =
-  `window.print()` + `@media print` (blendet die Obsidian-DOM aus). **iOS/iPad** =
-  `window.print()` ist dort wirkungslos, daher schreibt `exportViaShare()` den Brief
-  als eigenständiges HTML (`buildStandaloneDoc`, Dateiname = Notizname) in einen
-  versteckten Export-Ordner und übergibt es via `app.openWithDefaultApp()` ans System
-  (Schnellansicht → Drucken → als PDF sichern). Keine Netzwerkzugriffe, keine
-  Telemetrie, externe Assets nur als `data:`-URL (Logo).
+- Export ist plattformabhängig (`Platform.isDesktopApp`, die **einzige** Platform-Abfrage
+  in `src/`): **Desktop** = `doPrint()` → `window.print()` + `@media print` (blendet die
+  Obsidian-DOM aus, schreibt keine Datei — der OS-Druckdialog übernimmt). **iOS/iPad** =
+  `window.print()` ist dort wirkungslos, daher baut `exportViaPdf()` das Vektor-PDF und
+  `writePdf()` (`src/obsidian/output.ts`) reicht es weiter: Datei in den versteckten
+  Export-Ordner `.letterhead-export/`, dann **capability**-gegatete Kaskade
+  `navigator.canShare({files})` → `navigator.share()` (Ein-Tipp-Share-Sheet) → sonst
+  `app.openWithDefaultApp()`. Keine Netzwerkzugriffe, keine Telemetrie, externe Assets
+  nur als `data:`-URL (Logo).
+  > **Historisch:** Bis 1.3.0 schrieb `exportViaShare()` hier ein eigenständiges HTML
+  > (`buildStandaloneDoc`) für den Quick-Look-Umweg. Die Methode **existiert seit 1.4.0
+  > nicht mehr**; `buildStandaloneDoc` lebt noch in `html-engine.ts`, wird aber von keinem
+  > Export-Pfad mehr aufgerufen (Löschkandidat). Mobile ist seither immer Vektor-PDF
+  > (Degradation statt Fallback).
 - **Vektor-PDF-Export (ab 1.3.0, seit 1.4.0 mit reichen Bodies):** Die Engine ist das
   vendorte, geteilte Kit `src/vendor/kit/pdf/` (nicht mehr ein In-`main.js`-Writer) —
   erzeugt ein echtes, textselektierbares Vektor-PDF (PDF 1.7, Adobe-Core-14-
