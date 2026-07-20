@@ -31,12 +31,20 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 - **Fully offline** — no network calls, no telemetry; rendering happens locally via the OS print engine.
 - TypeScript, esbuild-bundled, no runtime dependencies, mobile-ready (`isDesktopOnly: false`), AGPL-3.0.
 
-## Quick Start
+## Requirements
+
+- **Obsidian 1.8.7 or newer** (desktop and mobile — the plugin is not desktop-only).
+- **Desktop:** macOS, Windows or Linux. Export goes through the operating system's print dialog.
+- **iPhone/iPad:** iOS/iPadOS. Export produces a vector PDF inside the plugin and hands it to the system share sheet.
+- **Nothing else.** No runtime dependencies, no network access, no Node or Electron APIs — the plugin works fully offline.
+- For building from source: **Node.js** and npm (see [Development](#development)).
+
+## Install
 
 Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead)
 (source mirror: [codeberg.org/jkaindl/obsidian-letterhead](https://codeberg.org/jkaindl/obsidian-letterhead))
 
-### Install from Obsidian (recommended)
+### From Obsidian (recommended)
 
 1. Open **Settings → Community plugins → Browse**.
 2. Search for **"Letterhead"** and select **Install**.
@@ -62,6 +70,36 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Letter
 3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** the system share sheet opens with the finished PDF — tap **Save to Files** (or send it anywhere). Prefer the classic route? Switch **Settings → Mobile export → Print / Quick Look**.
 
 The note body below the frontmatter is the letter text and is rendered as Markdown.
+
+## Configuration
+
+Everything is configured in **Settings → Letterhead**; nothing requires CSS. The essentials:
+
+| Group | What you set there |
+|-------|--------------------|
+| **Layout & style** | `DIN 5008` or `Modern`; one of three styles (matter-of-fact / classic / technical); full info block or plain date line; DIN form A (27 mm) or B (45 mm). |
+| **Sender profile** | Name, addition, street, postcode/city, phone, email, web — plus the return-address line for the envelope window. Every field is overridable per letter in the frontmatter. |
+| **Elements** | Fold marks, hole mark, print offset (shifts the content down if the address sits too high in the window), logo instead of the sender name. |
+| **Typography & language** | Font and font size overrides, date locale, **letter language** (German or English printed labels — separate from the plugin's UI language), default closing. |
+| **Advanced** | Mobile export route, output target, filename scheme, custom CSS. |
+
+Two settings decide where your PDF ends up and what it is called:
+
+- **Output target** — where the exported PDF is written: **next to the note**, into **Obsidian's attachment folder**, into a **folder of your choice**, or not saved at all and **shared directly**. An existing file is never overwritten; a `" (2)"` is appended instead. Applies to the vector PDF export, not to the desktop print dialog.
+- **Filename scheme** — the name of the exported PDF, and the one the print dialog proposes. Placeholders `{notiz}` `{datum}` `{datum_lang}` `{empfaenger}` `{betreff}` `{unserzeichen}`; anything else in the field is kept literally. `{datum}` yields **YYYY-MM-DD** so letters sort chronologically in a file manager, `{datum_lang}` prints the date as it appears in the letter.
+
+Existing installations keep their previous behaviour (share directly, `{notiz}`); only fresh installations start with the new defaults. Full reference: [docs/reference/settings.md](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/settings.md).
+
+## How it works
+
+A letter is an ordinary note. Its **frontmatter carries the metadata** (recipient, subject, salutation, closing, enclosures, …) and the **note body is the letter text**, rendered as Markdown. Field names exist as German and English aliases, so `subject:` and `betreff:` are the same field.
+
+Export then takes one of two deliberately different routes:
+
+- **Desktop** renders the letter as HTML/CSS into an isolated iframe and hands it to the **operating system's print dialog** — where you choose "Save as PDF". The OS does the rendering, so the result matches what any other application on your machine would print.
+- **iPhone/iPad** cannot print this way, so the plugin builds the PDF itself: a real, text-selectable **vector PDF** (PDF 1.7, standard PDF typefaces), generated on device and passed to the share sheet with one tap. Tables, embedded images, code blocks and multi-page pagination are rendered directly into the PDF. Anything the engine cannot represent is reported as a notice rather than silently dropped.
+
+Both routes share the same geometry. DIN 5008 positions — address field, fold marks at 105/210 mm (or 87/192 mm), hole mark at 148.5 mm — are placed as absolute paper coordinates so the recipient address lines up with a window envelope. Print margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, 20 mm bottom).
 
 ## Documentation
 

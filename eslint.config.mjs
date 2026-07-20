@@ -36,10 +36,23 @@ export default tseslint.config(
     },
   },
   {
-    // The settings tab keeps the classic display() API on purpose: manifest
-    // minAppVersion is 1.8.7, and the declarative getSettingDefinitions API the
-    // linter recommends requires 1.13.0 — adopting it would raise the floor for
-    // users with no functional gain. Established roof-wide pattern (vault-crews).
+    // The settings tab keeps the classic display() API on purpose — but NOT
+    // because the declarative getSettingDefinitions API (1.13.0) would raise
+    // minAppVersion. That was this file's earlier reasoning and it is WRONG:
+    // obsidian.d.ts:6630 states display() is to be kept precisely "as a
+    // fallback for plugins that need to support versions older than 1.13.0",
+    // i.e. coexistence is the documented migration path and 1.8.7 can stay.
+    // Conditional visibility (`visible: () => …`, needed for outputFolder) and
+    // a `type: 'folder'` picker both exist, so there is no technical blocker.
+    //
+    // The real reasons to defer, both open:
+    //   1. Dual-support means every settings change must be made twice or the
+    //      two implementations drift apart per Obsidian version.
+    //   2. getControlValue/setControlValue map flat onto plugin.settings, but
+    //      `sender` is nested (core/model.ts). Whether dotted paths resolve is
+    //      undocumented — an override may be required (obsidian.d.ts:6595).
+    // Adopt as its own cut, after clarifying (2). No neighbour plugin uses the
+    // API yet, so letterhead would be setting the roof-wide pattern.
     files: ["src/obsidian/settings.ts"],
     rules: {
       "@typescript-eslint/no-deprecated": "off",
