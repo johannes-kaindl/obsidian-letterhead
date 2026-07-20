@@ -7,6 +7,25 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Added
+- **Ausgabeziel** (Einstellungen → Erweitert): Wohin die exportierte PDF geschrieben wird —
+  **neben die Notiz**, in **Obsidians Anhang-Ordner**, in einen **eigenen Ordner** oder gar nicht
+  speichern und **direkt teilen**. Bisher landete jeder Export im versteckten Zwischenordner und
+  wurde extern geöffnet; das ist jetzt eine Option von vieren statt der einzige Weg. Eine
+  vorhandene Datei wird nicht überschrieben, sondern um `" (2)"` ergänzt.
+- **Dateinamen-Schema** (Einstellungen → Erweitert): Wie die PDF heißt, ist konfigurierbar.
+  Platzhalter `{notiz}` `{datum}` `{datum_lang}` `{empfaenger}` `{betreff}` `{unserzeichen}`,
+  alles andere im Feld bleibt wörtlich stehen. `{datum}` liefert **YYYY-MM-DD**, damit Briefe im
+  Dateimanager chronologisch sortieren; `{datum_lang}` gibt das Datum so aus, wie es im Brief
+  steht. Neuinstallationen starten mit `{datum} {empfaenger}`.
+- **Der Druckdialog schlägt jetzt den Briefnamen vor.** Bisher bot er den Fenstertitel an — etwa
+  `Beispielbrief - MeinVault - Obsidian 1.13.2.pdf`. Er nutzt dasselbe Schema wie der PDF-Export.
+
+### Changed
+- Bestehende Installationen behalten ihr bisheriges Verhalten und müssen nichts umstellen:
+  Ausgabeziel steht bei ihnen auf „direkt teilen", das Dateinamen-Schema auf `{notiz}`. Beides
+  lässt sich in den Einstellungen umstellen.
+
 ## [1.4.1] — 2026-07-20
 
 Behebt die vier Fehler, an denen der Community-Store-Review von 1.4.0 gescheitert
