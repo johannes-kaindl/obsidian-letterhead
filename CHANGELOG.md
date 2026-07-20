@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-07-20
+
 ### Added
 - **Ausgabeziel** (Einstellungen → Erweitert): Wohin die exportierte PDF geschrieben wird —
   **neben die Notiz**, in **Obsidians Anhang-Ordner**, in einen **eigenen Ordner** oder gar nicht
