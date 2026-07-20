@@ -109,7 +109,6 @@ export async function writePdf(
 ): Promise<void> {
   const safe = sanitizeBase(opts.baseName);
   const adapter = app.vault.adapter;
-  const openDefault = (app as unknown as { openWithDefaultApp?: (p: string) => Promise<void> }).openWithDefaultApp;
   try {
     if (opts.resolvedPath) {
       /* attachmentFolder paths come pre-deduplicated from Obsidian; everything
