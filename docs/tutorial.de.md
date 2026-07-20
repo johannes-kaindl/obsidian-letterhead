@@ -63,16 +63,13 @@ Befehlspalette oder Briefumschlag-Icon → **Export letter as PDF / print**.
 - **Desktop (macOS/Windows/Linux):** Es öffnet sich der Druckdialog des
   Betriebssystems. PDF-Dropdown bzw. Ziel → **„Als PDF sichern"**; Skalierung
   auf **100 %** lassen.
-- **iPhone/iPad:** Das Plugin schreibt den Brief als HTML-Datei (Name der
-  Notiz) in den Vault und übergibt sie an iOS. Der Export läuft dann so:
-
-  1. Ein kleiner Dialog erscheint — tippe **„Öffnen"**.
-  2. iOS zeigt eine Auswahl — tippe **„Schnellansicht"**.
-  3. In der Schnellansicht tippe das **Teilen-Symbol** (unten rechts).
-  4. Wähle **„Drucken"**.
-  5. **Vorschau mit zwei Fingern aufziehen** — sie wird zum fertigen PDF mit
-     korrekten Rändern und Seitenumbrüchen.
-  6. Tippe erneut das **Teilen-Symbol**, dann **„In Dateien sichern"**.
+- **iPhone/iPad:** Das Plugin baut die fertige PDF selbst — ein echtes,
+  textselektierbares Vektor-PDF — und schreibt sie dorthin, wo du das
+  **Ausgabeziel** eingestellt hast (Einstellungen → Erweitert). Steht es auf
+  *Nicht speichern, direkt teilen*, öffnet sich das System-Teilen-Menü mit der
+  fertigen Datei: **„In Dateien sichern"** tippen oder beliebig weiterleiten.
+  Das ist der ganze Export — ein Tipp, keine HTML-Zwischendatei, kein Umweg
+  über die Schnellansicht.
 
 Druckränder setzt das Plugin automatisch (Seite 1 oben 10 mm, Folgeseiten
 25 mm, unten 20 mm) — gelten auf beiden Wegen, also nichts anpassen.

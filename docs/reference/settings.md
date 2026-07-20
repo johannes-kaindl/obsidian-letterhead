@@ -69,4 +69,36 @@ overwriting existing values. Full reference: [frontmatter fields](frontmatter.md
 
 | Setting | Meaning |
 |---------|---------|
+| **Output target** | Where the exported PDF is written: **Next to the note** · **Obsidian's attachment folder** · **Custom folder** · **Do not save, share directly**. Applies to the vector PDF export, not to the desktop print dialog — there the OS decides where the file goes. An existing file is never overwritten: a `" (2)"` is appended instead. |
+| **Custom folder** | Vault-relative target folder, e.g. `Export/Letters`. Only shown when **Output target** is set to *Custom folder* — a field that is inert in the other three modes would be a trap. |
+| **Filename scheme** | Name of the exported PDF, and the name the print dialog proposes. See the placeholder table below. |
 | **Custom CSS (optional)** | Your own CSS for details beyond style + info line; loaded last and wins. The field is pre-filled with a **fully commented-out** (inactive) preset that documents all tokens — uncomment a line to activate it. **Reset preset** restores the initial state. See [theming](theming.md). |
+
+### Filename placeholders
+
+Anything in the field that is not a placeholder is kept literally, so
+`Letter {datum} — {empfaenger}` works as written. Characters a filesystem
+rejects are replaced; an empty result falls back to the note name.
+
+| Placeholder | Yields |
+|-------------|--------|
+| `{notiz}` | Name of the note the letter was generated from. |
+| `{datum}` | Date as **YYYY-MM-DD**, so letters sort chronologically in a file manager. This normalises the raw frontmatter value — it does not reformat the date printed in the letter. |
+| `{datum_lang}` | The date as it appears in the letter (per the **Date locale** setting). |
+| `{empfaenger}` | First line of the recipient address. |
+| `{betreff}` | Subject line. |
+| `{unserzeichen}` | The `unser zeichen` / `our ref.` field. |
+
+### Defaults for new and existing installations
+
+Fresh installations start with **Output target: Next to the note** and the
+filename scheme **`{datum} {empfaenger}`**. Existing installations keep the
+behaviour they had before these settings existed — output target **Do not save,
+share directly** and the scheme **`{notiz}`** — so an update never silently
+changes where your letters land.
+
+> **Gone in 1.4.0:** the **Mobile export** setting used to offer a choice between
+> the vector PDF and an HTML/Quick Look route. The fallback was dropped in favour
+> of the degradation model (mobile export always produces a PDF; anything the
+> engine cannot represent is reported as a notice). The dropdown was removed in a
+> later cleanup; the stored key is still accepted so old configurations load.

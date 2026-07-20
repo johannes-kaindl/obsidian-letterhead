@@ -18,7 +18,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 ## Funktionen
 
 - **Briefe aus deinen Notizen:** Das Frontmatter einer Notiz hält die Metadaten, der Notiztext (Markdown) wird zum Brieftext — ein Befehl macht daraus einen fertig formatierten Geschäftsbrief.
-- **PDF-Export & Druck, überall:** Desktop (macOS/Windows/Linux) → Druckdialog → „Als PDF sichern"; **iPhone/iPad** → ein echtes, textselektierbares **Vektor-PDF**, das im Plugin erzeugt und mit **einem Tipp** geteilt wird (System-Teilen-Menü → „In Dateien sichern" oder beliebig weiterleiten). Die eingebaute PDF-Engine hat keine Laufzeit-Abhängigkeiten und arbeitet vollständig offline — kein Netz, kein Electron, kein Node — und rendert reiche Briefinhalte (Tabellen, eingebettete Bilder, Code-Blöcke, mehrseitige Paginierung), nicht nur reinen Text. Der klassische Schnellansicht-Weg bleibt verfügbar (Einstellungen → Mobiler Export). Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau. Das mobile PDF nutzt die Standard-PDF-Schriften (Helvetica/Times/Courier), bleibt dadurch winzig und öffnet in jedem Viewer identisch.
+- **PDF-Export & Druck, überall:** Desktop (macOS/Windows/Linux) → Druckdialog → „Als PDF sichern"; **iPhone/iPad** → ein echtes, textselektierbares **Vektor-PDF**, das im Plugin erzeugt und mit **einem Tipp** geteilt wird (System-Teilen-Menü → „In Dateien sichern" oder beliebig weiterleiten). Die eingebaute PDF-Engine hat keine Laufzeit-Abhängigkeiten und arbeitet vollständig offline — kein Netz, kein Electron, kein Node — und rendert reiche Briefinhalte (Tabellen, eingebettete Bilder, Code-Blöcke, mehrseitige Paginierung), nicht nur reinen Text. Was die Engine nicht darstellen kann, wird als Hinweis gemeldet statt still verschluckt. Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau. Das mobile PDF nutzt die Standard-PDF-Schriften (Helvetica/Times/Courier), bleibt dadurch winzig und öffnet in jedem Viewer identisch.
 - **Zwei Layouts:** `DIN 5008` (deutscher Standard, fensterkuvert-tauglich) und `Modern` (international) — wählbar unter **Einstellungen → Layout**.
 - **Drei Stile per Dropdown:** Sachlich-modern, Klassisch-seriös, Technisch-präzise — plus Infozeile „Vollständig" (Infoblock) oder „Nur Datum"; beides pro Brief im Frontmatter überschreibbar.
 - **Zweisprachig:** Plugin-UI folgt der Obsidian-App-Sprache (Englisch/Deutsch); die Briefsprache ist separat einstellbar — deutsche oder englische Brief-Labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), pro Brief per Frontmatter `sprache` umschaltbar.
@@ -66,7 +66,7 @@ Dann: Obsidian → Einstellungen → Community-Plugins → neu laden → **Lette
 
 1. Notiz öffnen und mit dem Befehl **Insert letter frontmatter into note** die Felder anlegen (oder siehe [Beispiel](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/examples/example-letter.md)), dann ausfüllen.
 2. Befehl **Export letter as PDF / print** (Befehlspalette oder Briefumschlag-Icon). Mit **Open letter preview** vorab seitenecht prüfen.
-3. **Desktop:** Im Druckdialog **„Als PDF sichern"** wählen (macOS: PDF-Dropdown unten links), Skalierung auf 100 % lassen. **iPhone/iPad:** Das System-Teilen-Menü öffnet sich mit dem fertigen PDF — **„In Dateien sichern"** tippen (oder beliebig weiterleiten). Lieber den klassischen Weg? **Einstellungen → Mobiler Export → Drucken / Quick Look** umstellen.
+3. **Desktop:** Im Druckdialog **„Als PDF sichern"** wählen (macOS: PDF-Dropdown unten links), Skalierung auf 100 % lassen. **iPhone/iPad:** Die fertige PDF wird ins eingestellte **Ausgabeziel** geschrieben; steht dieses auf *direkt teilen*, öffnet sich das System-Teilen-Menü — **„In Dateien sichern"** tippen oder beliebig weiterleiten.
 
 Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gerendert.
 
@@ -80,7 +80,7 @@ Alles wird unter **Einstellungen → Letterhead** eingestellt; CSS ist für nich
 | **Absender-Profil** | Name, Zusatz, Straße, PLZ/Ort, Telefon, E-Mail, Web — dazu die Rücksendezeile für das Kuvertfenster. Jedes Feld ist pro Brief im Frontmatter überschreibbar. |
 | **Elemente** | Falzmarken, Lochmarke, Druckversatz (schiebt den Inhalt nach unten, wenn die Anschrift im Fenster zu hoch sitzt), Logo statt Absendername. |
 | **Typografie & Sprache** | Schrift- und Schriftgrößen-Override, Datums-Locale, **Briefsprache** (deutsche oder englische gedruckte Bezeichnungen — unabhängig von der Oberflächensprache), Standard-Grußformel. |
-| **Erweitert** | Mobiler Exportweg, Ausgabeziel, Dateinamen-Schema, eigenes CSS. |
+| **Erweitert** | Ausgabeziel, Dateinamen-Schema, eigenes CSS. |
 
 Zwei Einstellungen entscheiden, wo die PDF landet und wie sie heißt:
 

@@ -88,7 +88,9 @@ export const DEFAULT_SETTINGS: LetterheadSettings = {
   defaultGruss: '',          // empty => language default ("Mit freundlichen Grüßen" / "Kind regards")
   printOffsetTopMm: 0,       // shifts the letter content down (fold marks stay paper-true)
   customCss: '',
-  mobileExport: 'pdf',        // 'pdf' (vector PDF, one tap) | 'print' (HTML/Quick Look)
+  // Legacy key, kept so stored configs (incl. the old 'print' value) still load.
+  // No code branches on it: mobile export has been vector-PDF-only since 1.4.0.
+  mobileExport: 'pdf',
   filenameTemplate: DEFAULT_FILENAME_TEMPLATE,  // existing installs migrate to '{notiz}' (spec A3)
   outputMode: 'nextToNote',   // existing installs migrate to 'share' (their current behaviour)
   outputFolder: ''

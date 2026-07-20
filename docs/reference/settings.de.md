@@ -69,4 +69,37 @@ zu überschreiben. Vollständige Referenz: [Frontmatter-Felder](frontmatter.de.m
 
 | Einstellung | Bedeutung |
 |-------------|-----------|
+| **Ausgabeziel** | Wohin die exportierte PDF geschrieben wird: **Neben die Notiz** · **Obsidians Anhang-Ordner** · **Eigener Ordner** · **Nicht speichern, direkt teilen**. Gilt für den Vektor-PDF-Export, nicht für den Desktop-Druckdialog — dort entscheidet das Betriebssystem, wo die Datei landet. Eine vorhandene Datei wird nie überschrieben, sondern um `" (2)"` ergänzt. |
+| **Eigener Ordner** | Vault-relativer Zielordner, z.B. `Export/Briefe`. Wird nur angezeigt, wenn **Ausgabeziel** auf *Eigener Ordner* steht — ein Feld, das in den anderen drei Modi wirkungslos ist, wäre eine Falle. |
+| **Dateinamen-Schema** | Name der exportierten PDF und Vorschlag im Druckdialog. Siehe die Platzhalter-Tabelle unten. |
 | **Custom CSS (optional)** | Eigenes CSS für Feinheiten jenseits von Stil + Infozeile; wird zuletzt geladen und gewinnt. Das Feld ist mit einem **komplett auskommentierten** (wirkungslosen) Preset vorbefüllt, das alle Tokens dokumentiert — Zeile einkommentieren = aktivieren. **Reset preset** stellt den Ausgangszustand wieder her. Siehe [Theming](theming.de.md). |
+
+### Platzhalter für den Dateinamen
+
+Alles im Feld, was kein Platzhalter ist, bleibt wörtlich stehen — `Brief {datum} —
+{empfaenger}` funktioniert also genau so. Zeichen, die ein Dateisystem ablehnt,
+werden ersetzt; bleibt nichts übrig, greift der Notizname.
+
+| Platzhalter | Ergibt |
+|-------------|--------|
+| `{notiz}` | Name der Notiz, aus der der Brief erzeugt wurde. |
+| `{datum}` | Datum als **YYYY-MM-DD**, damit Briefe im Dateimanager chronologisch sortieren. Das **normalisiert** den Frontmatter-Rohwert — es formatiert nicht das Datum neu, das im Brief gedruckt wird. |
+| `{datum_lang}` | Das Datum so, wie es im Brief steht (gemäß Einstellung **Datums-Locale**). |
+| `{empfaenger}` | Erste Zeile der Empfängeranschrift. |
+| `{betreff}` | Betreffzeile. |
+| `{unserzeichen}` | Das Feld `unser zeichen` / `our ref.`. |
+
+### Vorgaben für neue und bestehende Installationen
+
+Neuinstallationen starten mit **Ausgabeziel: Neben die Notiz** und dem
+Dateinamen-Schema **`{datum} {empfaenger}`**. Bestehende Installationen behalten
+das Verhalten, das sie vor diesen Einstellungen hatten — Ausgabeziel **Nicht
+speichern, direkt teilen** und das Schema **`{notiz}`** — ein Update ändert also
+nie stillschweigend, wo deine Briefe landen.
+
+> **Seit 1.4.0 entfallen:** Die Einstellung **Mobiler Export** bot einmal die Wahl
+> zwischen dem Vektor-PDF und einem HTML-/Quick-Look-Weg. Der Fallback wurde
+> zugunsten des Degradations-Modells abgeschafft (der mobile Export erzeugt immer
+> eine PDF; was die Engine nicht darstellen kann, wird als Hinweis gemeldet). Das
+> Dropdown ist bei einer späteren Aufräumung entfernt worden; der gespeicherte
+> Schlüssel wird weiterhin akzeptiert, damit alte Konfigurationen laden.

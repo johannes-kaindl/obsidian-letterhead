@@ -19,7 +19,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 ## Features
 
 - **Letters from your notes:** a note's frontmatter holds the metadata, the note body (Markdown) becomes the letter text — one command turns it into a finished, formatted business letter.
-- **PDF export & printing, everywhere:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; **iPhone/iPad** → a real, text-selectable **vector PDF** generated inside the plugin and shared with **one tap** (system share sheet → “Save to Files” or send anywhere). The built-in PDF engine has no runtime dependencies and works fully offline — no network, no Electron, no Node — and renders rich letter bodies (tables, embedded images, code blocks, multi-page pagination), not just plain text. The classic Quick Look route stays available (Settings → Mobile export). Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact. The mobile PDF uses the standard PDF typefaces (Helvetica/Times/Courier), so files stay tiny and open identically in any viewer.
+- **PDF export & printing, everywhere:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; **iPhone/iPad** → a real, text-selectable **vector PDF** generated inside the plugin and shared with **one tap** (system share sheet → “Save to Files” or send anywhere). The built-in PDF engine has no runtime dependencies and works fully offline — no network, no Electron, no Node — and renders rich letter bodies (tables, embedded images, code blocks, multi-page pagination), not just plain text. Anything it cannot represent is reported as a notice rather than silently dropped. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact. The mobile PDF uses the standard PDF typefaces (Helvetica/Times/Courier), so files stay tiny and open identically in any viewer.
 - **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international) — choose in **Settings → Layout**.
 - **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
 - **Bilingual:** the plugin UI follows the Obsidian app language (English/German); the letter language is a separate setting — German or English letter labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), switchable per letter via the `sprache` frontmatter field.
@@ -67,7 +67,7 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Letter
 
 1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/examples/example-letter.md)), then fill them in.
 2. Run **Export letter as PDF / print** (command palette or the envelope ribbon icon). Use **Open letter preview** for a paginated preview first.
-3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** the system share sheet opens with the finished PDF — tap **Save to Files** (or send it anywhere). Prefer the classic route? Switch **Settings → Mobile export → Print / Quick Look**.
+3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** the finished PDF is saved to your **Output target** and, where that target is *share directly*, handed to the system share sheet — tap **Save to Files** or send it anywhere.
 
 The note body below the frontmatter is the letter text and is rendered as Markdown.
 
@@ -81,7 +81,7 @@ Everything is configured in **Settings → Letterhead**; nothing requires CSS. T
 | **Sender profile** | Name, addition, street, postcode/city, phone, email, web — plus the return-address line for the envelope window. Every field is overridable per letter in the frontmatter. |
 | **Elements** | Fold marks, hole mark, print offset (shifts the content down if the address sits too high in the window), logo instead of the sender name. |
 | **Typography & language** | Font and font size overrides, date locale, **letter language** (German or English printed labels — separate from the plugin's UI language), default closing. |
-| **Advanced** | Mobile export route, output target, filename scheme, custom CSS. |
+| **Advanced** | Output target, filename scheme, custom CSS. |
 
 Two settings decide where your PDF ends up and what it is called:
 

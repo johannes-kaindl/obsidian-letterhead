@@ -7,6 +7,24 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Removed
+- **Einstellung „Mobiler Export" entfernt.** Sie bot seit 1.4.0 nur noch eine einzige Option und
+  wurde von keinem Codepfad mehr gelesen — der HTML/Quick-Look-Weg war damals zugunsten des
+  Degradations-Modells abgeschafft worden, das Dropdown blieb als Attrappe stehen. Der
+  gespeicherte Schlüssel wird weiterhin akzeptiert, alte Konfigurationen laden also unverändert;
+  es ändert sich nichts am Verhalten, nur eine wirkungslose Zeile verschwindet aus den
+  Einstellungen.
+
+### Fixed
+- **Dokumentation beschrieb einen Exportweg, den es nicht mehr gibt.** README (beide Sprachen)
+  und das Tutorial führten weiterhin durch den alten iOS-Umweg (HTML-Datei → Quick Look →
+  Drucken → Vorschau aufziehen → sichern) und verwiesen auf die „Mobiler Export"-Einstellung.
+  Seit 1.3.0 ist der mobile Export ein Tipp. Auch `AGENTS.md` und ein Kommentar in `core/model.ts`
+  behaupteten den wählbaren Fallback.
+- **Referenz-Doku um die 1.5.0-Einstellungen ergänzt:** Ausgabeziel, eigener Ordner und
+  Dateinamen-Schema samt Platzhalter-Tabelle fehlten in `docs/reference/settings.md` vollständig,
+  obwohl sie bestimmen, wohin die PDF geschrieben wird und wie sie heißt.
+
 ### Changed
 - **Intern:** `core/body-ir.ts` nimmt das Briefmodell nicht mehr als `any`, sondern als
   typisierte Consumer-Shape `LetterBodyModel` (Muster von `LetterHeadModel`). Damit fallen die

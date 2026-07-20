@@ -52,8 +52,10 @@ nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
   AFM-Metriken via `metrics`), `ir` (Body-IR) — gefüttert aus `src/core/dom-to-ir.ts`
   (`domToIrSync`, Nachfolger von `walkBodyNodes`). Tabellen, eingebettete Bilder, Code-Blöcke und
   mehrseitige Paginierung werden seit 1.4.0 direkt im Vektor-PDF gerendert (Degradation
-  bei nicht unterstützten Elementen); Setting `mobileExport: 'print'` bleibt als
-  expliziter HTML/Quick-Look-Fallback wählbar. Die Engine selbst zieht keine
+  bei nicht unterstützten Elementen). **Kein HTML/Quick-Look-Fallback mehr:** das Setting
+  `mobileExport` wird von keinem Codepfad gelesen und ist als UI-Zeile entfernt; der
+  Schlüssel bleibt nur in `DEFAULT_SETTINGS` stehen, damit alte gespeicherte Werte
+  (inkl. `'print'`) ohne Migration laden. Die Engine selbst zieht keine
   Laufzeit-Dependency, aber das Bündeln erfolgt über den `esbuild`-Build — `main.js` ist
   Build-Output, nicht committete Quelle.
 

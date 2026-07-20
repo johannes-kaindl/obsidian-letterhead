@@ -62,16 +62,12 @@ Command palette or the envelope icon → **Export letter as PDF / print**.
 
 - **Desktop (macOS/Windows/Linux):** The operating system's print dialog opens.
   PDF dropdown or destination → **"Save as PDF"**; keep scaling at **100%**.
-- **iPhone/iPad:** The plugin writes the letter as an HTML file (named after the
-  note) into the vault and hands it to iOS. The export then goes like this:
-
-  1. A small dialog appears — tap **"Open"**.
-  2. iOS shows a chooser — tap **"Quick Look"**.
-  3. In Quick Look, tap the **Share** icon (bottom right).
-  4. Choose **"Print"**.
-  5. **Pinch the preview open with two fingers** — it becomes the finished PDF
-     with correct margins and page breaks.
-  6. Tap the **Share** icon again, then **"Save to Files"**.
+- **iPhone/iPad:** The plugin builds the finished PDF itself — a real,
+  text-selectable vector PDF — and writes it to whatever you set as
+  **Output target** (Settings → Advanced). Where that target is *Do not save,
+  share directly*, the system share sheet opens with the finished file: tap
+  **"Save to Files"** or send it anywhere. That is the whole export — one tap,
+  no intermediate HTML file, no Quick Look detour.
 
 The plugin sets the print margins automatically (page 1: 10 mm top, continuation
 pages: 25 mm, bottom: 20 mm) — this applies on both paths, so there's nothing to

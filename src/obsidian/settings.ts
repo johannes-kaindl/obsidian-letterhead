@@ -83,17 +83,13 @@ export class LetterheadSettingTab extends PluginSettingTab {
         .setValue(s.dinForm)
         .onChange(async (v) => { s.dinForm = v; await this.plugin.saveSettings(); }));
 
-    new Setting(containerEl)
-      .setName(t('set_mobileexport'))
-      .setDesc(t('set_mobileexport_desc'))
-      .addDropdown((d) => d
-        .addOption('pdf', t('opt_mobile_pdf'))
-        // NOTE: the reference also offered a 'print' option — the
-        // HTML/Quick-Look mobile fallback. Removed: mobile export is
-        // vector-PDF only now (Degradation model). The `mobileExport`
-        // setting key is preserved so old stored values still load.
-        .setValue(s.mobileExport || DEFAULT_SETTINGS.mobileExport)
-        .onChange(async (v) => { s.mobileExport = v; await this.plugin.saveSettings(); }));
+    /* NOTE: a "Mobile export" dropdown used to sit here, offering 'pdf' and
+       the reference's 'print' (HTML/Quick-Look fallback). 1.4.0 dropped the
+       fallback in favour of the Degradation model, which left a dropdown with
+       a single option that no code path reads — `mobileExport` is written by
+       nothing and branched on nowhere. Removed as UI, but the settings KEY is
+       deliberately kept in LetterheadSettings/DEFAULT_SETTINGS so stored
+       configurations (including 'print') still load without a migration. */
 
     new Setting(containerEl).setName(t('head_sender')).setHeading();
     containerEl.createEl('p', { text: t('sender_intro'), cls: 'setting-item-description' });
