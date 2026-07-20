@@ -25,6 +25,7 @@ import {
   hexToRgb01,
   PRINT_BOTTOM_MM,
   PRINT_TOP_N_MM,
+  type LetterModel,
   type LetterheadSettings
 } from './model';
 
@@ -32,8 +33,27 @@ import {
 const { hPt: PAGE_H_PT } = pageSizePt('A4');
 const ASCENT = 0.78;
 
+/** The printed-letter labels this pass needs (singular/plural Anlagen heading).
+ *  Deliberately narrow, mirroring LetterHeadLabels in head-layout.ts: each
+ *  consumer declares the shape it consumes, LetterModelResolved (main.ts) is
+ *  the superset. */
+export interface LetterBodyLabels {
+  anlage?: string;
+  anlagen?: string;
+}
+
+/** Consumer shape for the body/frame pass — see LetterHeadModel for the head's. */
+export interface LetterBodyModel extends LetterModel {
+  betreff?: string;
+  anrede?: string;
+  gruss?: string;
+  unterschrift?: string;
+  anlagen?: string[];
+  labels?: LetterBodyLabels;
+}
+
 export function layoutBody(
-  model: any,
+  model: LetterBodyModel,
   settings: LetterheadSettings,
   markdownBody: Block[],
   contentTopMm: number
@@ -85,7 +105,7 @@ export function layoutBody(
     const opts = bodyLayoutOptions(model, settings, y); // startY = current baseline; followTopMm=25
     // layoutDocument pages are 0-based; offset onto our page counter.
     const res = layoutDocument(markdownBody, opts);
-    for (const op of res.ops) ops.push({ ...op, page: op.page + page } as DrawOp);
+    for (const op of res.ops) ops.push({ ...op, page: op.page + page });
     page = page + res.endPage;
     y = res.endY;
   }

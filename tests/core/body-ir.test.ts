@@ -28,3 +28,47 @@ describe('layoutBody — cursor hand-off', () => {
     expect(pageCount).toBeGreaterThan(1);
   });
 });
+
+/* The Anlagen block carries the bulk of this file's type debt (singular/plural
+   label choice, label lookup, list iteration). These pin the CURRENT behaviour
+   so the typing pass cannot change it silently — no test covered it before. */
+describe('layoutBody — Anlagen block', () => {
+  const strs = (model: Record<string, unknown>): string[] =>
+    layoutBody(model, DEFAULT_SETTINGS, [], 98.46)
+      .ops.filter((o) => o.kind === 'text')
+      .map((o: any) => o.str);
+
+  it('uses the singular label for exactly one Anlage', () => {
+    const out = strs({ ...base, anlagen: ['Rechnung.pdf'], labels: { anlage: 'Anlage', anlagen: 'Anlagen' } });
+    expect(out).toContain('Anlage');
+    expect(out).not.toContain('Anlagen');
+    expect(out).toContain('Rechnung.pdf');
+  });
+
+  it('uses the plural label for more than one Anlage and lists every entry', () => {
+    const out = strs({ ...base, anlagen: ['A.pdf', 'B.pdf'], labels: { anlage: 'Anlage', anlagen: 'Anlagen' } });
+    expect(out).toContain('Anlagen');
+    expect(out).toContain('A.pdf');
+    expect(out).toContain('B.pdf');
+  });
+
+  it('falls back to "Anlagen" when no label set is supplied', () => {
+    expect(strs({ ...base, anlagen: ['A.pdf'], labels: undefined })).toContain('Anlagen');
+    expect(strs({ ...base, anlagen: ['A.pdf'], labels: {} })).toContain('Anlagen');
+  });
+
+  it('emits no Anlagen block for an empty or missing list', () => {
+    expect(strs({ ...base, anlagen: [] })).not.toContain('Anlagen');
+    expect(strs({ ...base })).not.toContain('Anlagen');
+  });
+
+  it('renders the Anlagen block below the signature', () => {
+    const ops = layoutBody(
+      { ...base, unterschrift: 'M. Muster', anlagen: ['A.pdf'] },
+      DEFAULT_SETTINGS, [], 98.46
+    ).ops.filter((o) => o.kind === 'text');
+    const yOf = (s: string) => (ops.find((o: any) => o.str === s) as any).y;
+    expect(yOf('M. Muster')).toBeGreaterThan(yOf('Anlagen'));
+    expect(yOf('Anlagen')).toBeGreaterThan(yOf('A.pdf'));
+  });
+});

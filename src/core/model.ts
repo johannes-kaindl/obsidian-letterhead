@@ -286,7 +286,10 @@ export interface StyleFonts {
   name: string;
 }
 
-export function styleFonts(stilKey: string): StyleFonts {
+/* stilKey is optional because callers may pass a raw, unvalidated frontmatter
+   value: normStil() handles null/undefined explicitly and falls through to the
+   sans default, which is the intended behaviour for an unset style. */
+export function styleFonts(stilKey: string | undefined): StyleFonts {
   const k = normStil(stilKey);
   if (k === 'klassisch') return { body: 'times', bold: 'timesB', italic: 'timesI', name: 'timesB' };
   if (k === 'technisch') return { body: 'helv', bold: 'helvB', italic: 'helvI', name: 'courB' };

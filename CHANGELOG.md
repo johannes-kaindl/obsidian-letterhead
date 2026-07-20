@@ -7,7 +7,13 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
-## [1.5.0] — 2026-07-20
+### Changed
+- **Intern:** `core/body-ir.ts` nimmt das Briefmodell nicht mehr als `any`, sondern als
+  typisierte Consumer-Shape `LetterBodyModel` (Muster von `LetterHeadModel`). Damit fallen die
+  letzten 32 Lint-Warnungen des Repos weg, die im Community-Store-Review als Warnings auftauchten.
+  Keine Verhaltensänderung: alle drei Änderungen sind Typkonstrukte, der Build-Output ist bis auf
+  die Bezeichner-Vergabe des Minifiers identisch (Zahlen-Literale byte-gleich). Der Anlagen-Block
+  ist dabei erstmals von Tests abgedeckt (Singular/Plural-Label, Fallback, Position).
 
 ### Added
 - **Ausgabeziel** (Einstellungen → Erweitert): Wohin die exportierte PDF geschrieben wird —

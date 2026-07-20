@@ -36,24 +36,6 @@ export default tseslint.config(
     },
   },
   {
-    // body-ir.ts takes the letter model as `any`. Typing it properly is real
-    // work, not a rename: switching to LetterModel surfaces ~9 genuine type
-    // errors in envelope-critical layout code (anlagen/.length/string
-    // assumptions). Deliberately deferred to its own cut rather than rushed
-    // into the store-compliance release — the 1.4.0 regression came out of
-    // exactly this layer. Kept at "warn" (not off) so the debt stays visible;
-    // no-explicit-any is off because its autofix (any → unknown) does not
-    // compile here.
-    files: ["src/core/body-ir.ts"],
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unsafe-member-access": "warn",
-      "@typescript-eslint/no-unsafe-assignment": "warn",
-      "@typescript-eslint/no-unsafe-argument": "warn",
-      "@typescript-eslint/no-unnecessary-type-assertion": "warn",
-    },
-  },
-  {
     // The settings tab keeps the classic display() API on purpose: manifest
     // minAppVersion is 1.8.7, and the declarative getSettingDefinitions API the
     // linter recommends requires 1.13.0 — adopting it would raise the floor for
