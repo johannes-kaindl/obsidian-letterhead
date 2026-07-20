@@ -36,23 +36,29 @@ export default tseslint.config(
     },
   },
   {
-    // The settings tab keeps the classic display() API on purpose — but NOT
-    // because the declarative getSettingDefinitions API (1.13.0) would raise
-    // minAppVersion. That was this file's earlier reasoning and it is WRONG:
-    // obsidian.d.ts:6630 states display() is to be kept precisely "as a
-    // fallback for plugins that need to support versions older than 1.13.0",
-    // i.e. coexistence is the documented migration path and 1.8.7 can stay.
-    // Conditional visibility (`visible: () => …`, needed for outputFolder) and
-    // a `type: 'folder'` picker both exist, so there is no technical blocker.
+    // TEMPORARY AND NOT COVERED BY THE RULE — this override is on borrowed time.
     //
-    // The real reasons to defer, both open:
-    //   1. Dual-support means every settings change must be made twice or the
-    //      two implementations drift apart per Obsidian version.
-    //   2. getControlValue/setControlValue map flat onto plugin.settings, but
-    //      `sender` is nested (core/model.ts). Whether dotted paths resolve is
-    //      undocumented — an override may be required (obsidian.d.ts:6595).
-    // Adopt as its own cut, after clarifying (2). No neighbour plugin uses the
-    // API yet, so letterhead would be setting the roof-wide pattern.
+    // PROF-OBS-06 (_docs/CONVENTIONS.md) governs this exact choice: the card
+    // layout of the declarative API and collapsible sections are mutually
+    // exclusive, because SettingDefinitionGroup has no collapse (verified
+    // against obsidian.d.ts 1.13.1: group/list/page/search/visible only).
+    // Plugins that deliberately use collapsibles keep display() and may switch
+    // this rule off. LETTERHEAD USES NO COLLAPSIBLES, so that exemption does
+    // not apply here and the override is unjustified until the migration lands.
+    //
+    // Note the earlier reasoning in this file was plain wrong ("adopting it
+    // would raise minAppVersion"): obsidian.d.ts:6630 says display() is to be
+    // kept precisely "as a fallback for plugins that need to support versions
+    // older than 1.13.0" — coexistence is the documented path and 1.8.7 stays.
+    // vault-crews/src/obsidian/settings.ts:82 carries the same wrong reasoning;
+    // do not restore it here.
+    //
+    // What the migration still needs to settle: getControlValue/setControlValue
+    // map flat onto plugin.settings, but `sender` is nested (core/model.ts).
+    // Whether dotted paths resolve is undocumented — an override on the
+    // subclass may be required (obsidian.d.ts:6595). Reference implementation
+    // to copy, including the <1.13 fallback:
+    //   ../markdown-presentation/src/settings.ts:45 (and :161)
     files: ["src/obsidian/settings.ts"],
     rules: {
       "@typescript-eslint/no-deprecated": "off",
