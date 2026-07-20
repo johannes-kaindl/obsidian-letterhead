@@ -16,6 +16,7 @@
 import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { t } from '../i18n/strings';
 import { DEFAULT_SETTINGS, STILE, type LetterheadSettings } from '../core/model';
+import { PLACEHOLDERS, DEFAULT_FILENAME_TEMPLATE } from '../core/filename';
 import { normStil, normSprache } from '../core/frontmatter';
 import { LETTER_LABELS } from '../core/model';
 import { PRESET_CSS } from './html-engine';
@@ -216,6 +217,37 @@ export class LetterheadSettingTab extends PluginSettingTab {
     fmRow('info', t('fm_info'));
 
     new Setting(containerEl).setName(t('head_advanced')).setHeading();
+
+    new Setting(containerEl).setName(t('set_output'))
+      .setDesc(t('set_output_desc'))
+      .addDropdown((d) => d
+        .addOption('nextToNote', t('opt_out_note'))
+        .addOption('attachmentFolder', t('opt_out_attach'))
+        .addOption('customFolder', t('opt_out_custom'))
+        .addOption('share', t('opt_out_share'))
+        .setValue(s.outputMode || DEFAULT_SETTINGS.outputMode)
+        // re-render so the folder field below appears/disappears with the mode
+        .onChange(async (v) => { s.outputMode = v; await this.plugin.saveSettings(); this.display(); }));
+
+    /* Only shown where it does something — a field that is inert in 3 of 4
+       modes but always visible is a trap (spec: deliberately unlike paperize). */
+    if (s.outputMode === 'customFolder') {
+      new Setting(containerEl).setName(t('set_outfolder'))
+        .setDesc(t('set_outfolder_desc'))
+        .addText((x) => x.setPlaceholder('Export/Briefe').setValue(s.outputFolder || '')
+          .onChange(async (v) => { s.outputFolder = v.trim(); await this.plugin.saveSettings(); }));
+    }
+
+    /* The placeholder list is generated from PLACEHOLDERS rather than written
+       out in the description string — yijing-oracle's hand-maintained list had
+       drifted from the values it actually substitutes. */
+    new Setting(containerEl).setName(t('set_filename'))
+      .setDesc(t('set_filename_desc') + PLACEHOLDERS.map((p) => `{${p}}`).join(' '))
+      .addText((x) => {
+        x.setPlaceholder(DEFAULT_FILENAME_TEMPLATE)
+          .setValue(s.filenameTemplate)
+          .onChange(async (v) => { s.filenameTemplate = v; await this.plugin.saveSettings(); });
+      });
 
     new Setting(containerEl).setName(t('set_css'))
       .setDesc(t('set_css_desc'))

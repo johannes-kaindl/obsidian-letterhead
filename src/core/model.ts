@@ -17,6 +17,7 @@
 import { mmToPt, hexToRgb01 } from '../vendor/kit/pdf/geometry';
 import { DEFAULT_OPTIONS, type LayoutOptions, type FontChoice } from '../vendor/kit/pdf';
 import { normStil, asText } from './frontmatter';
+import { DEFAULT_FILENAME_TEMPLATE } from './filename';
 
 export { hexToRgb01 };
 
@@ -53,6 +54,12 @@ export interface LetterheadSettings {
   printOffsetTopMm: number;
   customCss: string;
   mobileExport: string;
+  /** Filename scheme for exported/printed letters — see core/filename.ts. */
+  filenameTemplate: string;
+  /** Where an exported PDF goes — see obsidian/output.ts (OutputMode). */
+  outputMode: string;
+  /** Vault-relative folder, only used when outputMode === 'customFolder'. */
+  outputFolder: string;
 }
 
 export const DEFAULT_SETTINGS: LetterheadSettings = {
@@ -81,7 +88,10 @@ export const DEFAULT_SETTINGS: LetterheadSettings = {
   defaultGruss: '',          // empty => language default ("Mit freundlichen Grüßen" / "Kind regards")
   printOffsetTopMm: 0,       // shifts the letter content down (fold marks stay paper-true)
   customCss: '',
-  mobileExport: 'pdf'        // 'pdf' (vector PDF, one tap) | 'print' (HTML/Quick Look)
+  mobileExport: 'pdf',        // 'pdf' (vector PDF, one tap) | 'print' (HTML/Quick Look)
+  filenameTemplate: DEFAULT_FILENAME_TEMPLATE,  // existing installs migrate to '{notiz}' (spec A3)
+  outputMode: 'nextToNote',   // existing installs migrate to 'share' (their current behaviour)
+  outputFolder: ''
 };
 
 /* ------------------------------------------------------------------ *

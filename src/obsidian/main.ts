@@ -30,6 +30,7 @@ import { layoutBody } from '../core/body-ir';
 import { domToIrSync, resolveImages } from '../core/dom-to-ir';
 import { extractCodeBlocks } from '../core/code-blocks';
 import { imageToJpeg } from '../core/image';
+import { buildFilename, migrateFilenameTemplate, isoDate, type FilenameValues } from '../core/filename';
 import { dinGeometry, DEFAULT_SETTINGS, LETTER_LABELS, type LetterheadSettings } from '../core/model';
 import {
   buildFmIndex, getField, ALIASES, parseAbsenderLines, toLines,
@@ -42,7 +43,7 @@ import type { Block, DrawOp } from '../vendor/kit/pdf';
 
 import { buildLetterHtml, buildCss, doPrint, LetterheadPreviewModal, PRESET_CSS } from './html-engine';
 import { LetterheadSettingTab } from './settings';
-import { writePdf } from './output';
+import { writePdf, resolveOutputPath, type OutputMode } from './output';
 import { t } from '../i18n/strings';
 
 // DIN letters are always A4 (matches the reference PAGE_W_PT/PAGE_H_PT).
@@ -59,6 +60,8 @@ type LetterModelResolved = {
   unterschrift: string;
   ort: string;
   datum: string;
+  /** Raw frontmatter date normalised to YYYY-MM-DD, for the filename scheme. */
+  datumIso: string;
   anlagen: string[];
   stil: string;
   infozeile: string;
@@ -153,6 +156,18 @@ export default class LetterheadPlugin extends Plugin {
        Infozeile dropdown; font settings were always-on and now mean
        "override the style default" (old defaults => unset). */
     let migrated = false;
+    /* Filename scheme (1.4.2, spec A3): only FRESH installs get the new
+       '{datum} {empfaenger}' default. An existing install keeps naming files
+       after the note — letterhead has been in the community directory since
+       2026-06-13, and a silent default switch would rename files for people
+       who never touched the setting. */
+    const freshInstall = Object.keys(data).length === 0;
+    const tpl = migrateFilenameTemplate(data.filenameTemplate, freshInstall);
+    if (tpl !== this.settings.filenameTemplate) { this.settings.filenameTemplate = tpl; migrated = true; }
+    /* Output target (1.5.0), same reasoning: until now every export went through
+       the share/open-externally path. An existing install keeps exactly that;
+       only fresh installs start with 'nextToNote'. */
+    if (data.outputMode === undefined && !freshInstall) { this.settings.outputMode = 'share'; migrated = true; }
     if (data.infozeile === undefined && (data as { showBezugszeichen?: boolean }).showBezugszeichen === false) {
       this.settings.infozeile = 'nurdatum';
       migrated = true;
@@ -292,6 +307,8 @@ export default class LetterheadPlugin extends Plugin {
       unterschrift: (getField(idx, ALIASES.unterschrift) as string) || senderName || '',
       ort: (getField(idx, ALIASES.ort) as string) || '',
       datum: this.formatDate(getField(idx, ALIASES.datum)),
+      // Same source as `datum`; '' (no date in frontmatter) means today, matching formatDate.
+      datumIso: isoDate(getField(idx, ALIASES.datum)) || isoDate(new Date()),
       anlagen: toLines(getField(idx, ALIASES.anlagen)),
       stil: normStil(getField(idx, ALIASES.stil)) || normStil(s.stil) || 'sachlich',
       infozeile: normInfozeile(getField(idx, ALIASES.infozeile)) || normInfozeile(s.infozeile) || 'vollstaendig',
@@ -412,10 +429,36 @@ export default class LetterheadPlugin extends Plugin {
     return writer.build();
   }
 
+  /** Letter model → the values the filename template can substitute. */
+  filenameValues(model: LetterModelResolved): FilenameValues {
+    return {
+      notiz: model.baseName || '',
+      datum: model.datumIso || '',
+      datum_lang: model.datum || '',
+      empfaenger: (model.recipient && model.recipient[0]) || '',
+      betreff: model.betreff || '',
+      unserzeichen: model.unserZeichen || '',
+    };
+  }
+
+  /** Filename for this letter, per the configured scheme. */
+  letterFilename(model: LetterModelResolved): string {
+    return buildFilename(this.settings.filenameTemplate, this.filenameValues(model));
+  }
+
   async exportViaPdf(model: LetterModelResolved): Promise<void> {
     const bytes = await this.buildPdfBytes(model);
-    const sourceDir = model.sourceFile && model.sourceFile.parent ? model.sourceFile.parent.path : '';
-    await writePdf(this.app, bytes, 'share', { baseName: model.baseName || 'Brief', sourceDir });
+    const noteDir = model.sourceFile && model.sourceFile.parent ? model.sourceFile.parent.path : '';
+    const baseName = this.letterFilename(model);
+    const mode = (this.settings.outputMode || 'nextToNote') as OutputMode;
+    /* Resolved outside resolveOutputPath so that stays pure (paperize pattern). */
+    const attachmentPath = mode === 'attachmentFolder'
+      ? await this.app.fileManager.getAvailablePathForAttachment(`${baseName}.pdf`)
+      : '';
+    const resolvedPath = resolveOutputPath(mode, {
+      noteDir, baseName, customFolder: normalizePath(this.settings.outputFolder || ''), attachmentPath,
+    });
+    await writePdf(this.app, bytes, mode, { baseName, resolvedPath, isMobile: Platform.isMobile });
   }
 
   /* ---- export commands ---- */
@@ -426,7 +469,13 @@ export default class LetterheadPlugin extends Plugin {
     const m = await this.resolveLetter();
     if (!m) return;
     if (Platform.isDesktopApp) {
-      doPrint(buildLetterHtml(m, this.settings, m.bodyHtml), buildCss(this.settings, m.stil));
+      /* The third argument is the filename the OS print dialog proposes: it
+         takes the TOP-LEVEL window title, not the printed document's <title>
+         (verified on macOS 26.5 / Electron with 1.4.1, which offered
+         "<note> - <vault> - Obsidian <version>.pdf"). doPrint swaps it in and
+         restores it on cleanup. */
+      doPrint(buildLetterHtml(m, this.settings, m.bodyHtml), buildCss(this.settings, m.stil),
+        this.letterFilename(m));
       return;
     }
     await this.exportViaPdf(m);

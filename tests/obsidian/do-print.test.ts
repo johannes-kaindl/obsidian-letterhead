@@ -45,6 +45,44 @@ describe('doPrint — store compliance', () => {
     expect(document.querySelectorAll(`iframe.${PRINT_FRAME_CLASS}`).length).toBe(1);
   });
 
+  /* The OS print dialog proposes the TOP-LEVEL window title as the filename —
+     Obsidian's, e.g. "Beispielbrief - 10_Pallas - Obsidian 1.13.2". doPrint swaps
+     it so the user is offered the letter's own name instead. The app title must
+     never stay stuck: cleanup() restores it, and also runs from the safety net. */
+  it('swaps the document title so the print dialog proposes the letter name', () => {
+    document.title = 'Beispielbrief - 10_Pallas - Obsidian 1.13.2';
+    doPrint(LETTER, '', '9.6.2026 Mustermann GmbH');
+    expect(document.title).toBe('9.6.2026 Mustermann GmbH');
+  });
+
+  it('restores the app title once printing is done', () => {
+    const original = 'Beispielbrief - 10_Pallas - Obsidian 1.13.2';
+    document.title = original;
+    const cancel = doPrint(LETTER, '', '9.6.2026 Mustermann GmbH');
+    cancel();
+    expect(document.title).toBe(original);
+  });
+
+  /* Regression: a second print must finish the first one properly. Otherwise it
+     captures the FIRST run's filename as the title to restore, and the app title
+     never finds its way back to Obsidian's own. */
+  it('restores the ORIGINAL title after two prints in a row', () => {
+    const original = 'Beispielbrief - 10_Pallas - Obsidian 1.13.2';
+    document.title = original;
+    doPrint(LETTER, '', 'Erster Brief');
+    const cancel = doPrint(LETTER, '', 'Zweiter Brief');
+    expect(document.title).toBe('Zweiter Brief');
+    cancel();
+    expect(document.title).toBe(original);
+  });
+
+  it('leaves the title alone when no filename is given', () => {
+    const original = 'Beispielbrief - 10_Pallas - Obsidian 1.13.2';
+    document.title = original;
+    doPrint(LETTER, '');
+    expect(document.title).toBe(original);
+  });
+
   it('positions the frame via a css class, not inline styles', () => {
     doPrint(LETTER, '');
     const frame = document.querySelector<HTMLIFrameElement>(`iframe.${PRINT_FRAME_CLASS}`);

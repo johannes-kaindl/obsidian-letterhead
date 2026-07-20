@@ -25,20 +25,76 @@ export function sanitizeBase(base: string): string {
   return (base || '').replace(/[\\/:*?"<>|]/g, '_').trim() || 'Brief';
 }
 
-/** Vault-relative path a persistent 'save' mode would write to (next to the
- *  source note). Returns null for the transient 'share' mode, which uses the
- *  hidden export dir as scratch space rather than a saved output file. */
+/** Where an exported letter goes (spec A2, modelled on paperize). */
+export type OutputMode = 'nextToNote' | 'attachmentFolder' | 'customFolder' | 'share';
+
+function joinPath(dir: string, file: string): string {
+  const d = (dir || '').replace(/\/+$/, '');
+  return d ? `${d}/${file}` : file;
+}
+
+/** Vault-relative path to write to, or null for the transient 'share' mode,
+ *  which uses the hidden export dir as scratch space instead of a saved file. */
 export function resolveOutputPath(
-  mode: string,
-  opts: { baseName: string; sourceDir?: string },
+  mode: OutputMode,
+  opts: { noteDir: string; baseName: string; customFolder: string; attachmentPath: string },
 ): string | null {
-  const safe = sanitizeBase(opts.baseName);
-  if (mode === 'save') {
-    const dir = (opts.sourceDir || '').replace(/\/+$/, '');
-    return dir ? `${dir}/${safe}.pdf` : `${safe}.pdf`;
+  const file = `${sanitizeBase(opts.baseName)}.pdf`;
+  if (mode === 'share') return null;
+  if (mode === 'nextToNote') return joinPath(opts.noteDir, file);
+  if (mode === 'customFolder') return joinPath(opts.customFolder, file);
+  /* attachmentFolder: a resolved vault path from getAvailablePathForAttachment.
+     Obsidian has already handled collisions there — passing it through verbatim
+     (and skipping uniquePath) avoids a second counter producing "Brief 1 (2).pdf". */
+  return opts.attachmentPath;
+}
+
+/** After saving to the vault, mobile still needs the share sheet to get the PDF
+ *  out of Obsidian; on desktop the file is simply there. 'share' mode shares by
+ *  itself, so it must not be offered twice. */
+export function shouldShareAfterSave(mode: OutputMode, isMobile: boolean): boolean {
+  return isMobile && mode !== 'share';
+}
+
+/** Obsidian's " (2)", " (3)" … convention. Overwriting a letter PDF without a
+ *  word would be data loss — paperize overwrites, letterhead deliberately does
+ *  not. The cap keeps a lying `exists` from looping forever. */
+export async function uniquePath(
+  path: string,
+  exists: (p: string) => Promise<boolean>,
+): Promise<string> {
+  if (!(await exists(path))) return path;
+  const dot = path.lastIndexOf('.');
+  const stem = dot > path.lastIndexOf('/') ? path.slice(0, dot) : path;
+  const ext = dot > path.lastIndexOf('/') ? path.slice(dot) : '';
+  for (let n = 2; n <= 999; n++) {
+    const candidate = `${stem} (${n})${ext}`;
+    if (!(await exists(candidate))) return candidate;
   }
-  // 'share' (and any unknown mode) → transient hidden-dir export, no path.
-  return null;
+  return `${stem} (999)${ext}`;
+}
+
+/** Hands the PDF to the system: share sheet where available (the one-tap iOS
+ *  path), otherwise open with the default app. `File`/`navigator.share` may be
+ *  absent, hence the guards. */
+async function shareBytes(bytes: Uint8Array, safe: string, app: App, path: string): Promise<void> {
+  const fileObj = typeof File === 'function'
+    ? new File([bytes as unknown as BlobPart], `${safe}.pdf`, { type: 'application/pdf' })
+    : null;
+  const nav = navigator as unknown as {
+    canShare?: (d: { files: File[] }) => boolean;
+    share?: (d: { files: File[] }) => Promise<void>;
+  };
+  if (fileObj && nav.canShare && nav.canShare({ files: [fileObj] }) && nav.share) {
+    try {
+      await nav.share({ files: [fileObj] });
+      return;
+    } catch (e) {
+      if (e && (e as { name?: string }).name === 'AbortError') return; // user dismissed
+    }
+  }
+  const openDefault = (app as unknown as { openWithDefaultApp?: (p: string) => Promise<void> }).openWithDefaultApp;
+  if (typeof openDefault === 'function') await openDefault.call(app, path);
 }
 
 /** Writes `bytes` as a PDF and hands it to the user. For 'share' (mobile),
@@ -48,17 +104,25 @@ export function resolveOutputPath(
 export async function writePdf(
   app: App,
   bytes: Uint8Array,
-  mode: string,
-  opts: { baseName: string; sourceDir?: string },
+  mode: OutputMode,
+  opts: { baseName: string; resolvedPath: string | null; isMobile?: boolean },
 ): Promise<void> {
   const safe = sanitizeBase(opts.baseName);
-  const savePath = resolveOutputPath(mode, opts);
   const adapter = app.vault.adapter;
   const openDefault = (app as unknown as { openWithDefaultApp?: (p: string) => Promise<void> }).openWithDefaultApp;
   try {
-    if (savePath) {
-      await adapter.writeBinary(savePath, bytes.buffer as ArrayBuffer);
-      if (typeof openDefault === 'function') await openDefault.call(app, savePath);
+    if (opts.resolvedPath) {
+      /* attachmentFolder paths come pre-deduplicated from Obsidian; everything
+         else gets our own " (2)" pass rather than overwriting a letter. */
+      const target = mode === 'attachmentFolder'
+        ? opts.resolvedPath
+        : await uniquePath(opts.resolvedPath, (p) => adapter.exists(p));
+      const dir = target.slice(0, target.lastIndexOf('/'));
+      if (dir && !(await adapter.exists(dir))) await adapter.mkdir(dir);
+      await adapter.writeBinary(target, bytes.buffer as ArrayBuffer);
+      new Notice(t('notice_saved') + target);
+      // Mobile has no file manager to reveal it in — offer the share sheet.
+      if (shouldShareAfterSave(mode, opts.isMobile === true)) await shareBytes(bytes, safe, app, target);
       return;
     }
 
@@ -71,27 +135,7 @@ export async function writePdf(
       await adapter.mkdir(EXPORT_DIR);
     }
     await adapter.writeBinary(path, bytes.buffer as ArrayBuffer);
-
-    // Mobile: one-tap share sheet. `File`/`navigator.share` may be absent.
-    const fileObj = typeof File === 'function'
-      ? new File([bytes as unknown as BlobPart], `${safe}.pdf`, { type: 'application/pdf' })
-      : null;
-    const nav = navigator as unknown as {
-      canShare?: (d: { files: File[] }) => boolean;
-      share?: (d: { files: File[] }) => Promise<void>;
-    };
-    if (fileObj && nav.canShare && nav.canShare({ files: [fileObj] })) {
-      try {
-        await nav.share!({ files: [fileObj] });
-        return;
-      } catch (e) {
-        if (e && (e as { name?: string }).name === 'AbortError') return; // user dismissed
-      }
-    }
-    if (typeof openDefault === 'function') {
-      await openDefault.call(app, path);
-      return;
-    }
+    await shareBytes(bytes, safe, app, path);
   } catch (e) {
     console.error('Letterhead: PDF export failed', e);
     new Notice(t('notice_share_failed'));

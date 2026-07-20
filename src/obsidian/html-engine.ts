@@ -432,7 +432,17 @@ export const PRINT_FRAME_CLASS = 'letterhead-print-frame';
    DESKTOP ONLY. On iOS an iframe print() targets the parent document — mobile
    goes through exportViaPdf and must never reach doPrint. The single caller in
    main.ts is gated on Platform.isDesktopApp; keep it that way (see AGENTS.md). */
-export function doPrint(letterHtml: string, css: string): void {
+/* Cleanup of the print currently in flight. A second print must finish the
+   first one properly instead of just dropping its frame: otherwise the second
+   run captures the FIRST run's filename as the title to restore, and the first
+   run's 60 s safety net later resets the title in the middle of the second
+   print. */
+let activeCleanup: (() => void) | null = null;
+
+/** @returns a cancel function that restores the title and drops the frame. */
+export function doPrint(letterHtml: string, css: string, filename?: string): () => void {
+  if (activeCleanup) activeCleanup();
+  // safety net for frames left behind by a previous plugin load
   const stale = document.querySelector(`iframe.${PRINT_FRAME_CLASS}`);
   if (stale) stale.remove();
 
@@ -448,12 +458,23 @@ export function doPrint(letterHtml: string, css: string): void {
   frame.setAttribute('sandbox', 'allow-same-origin allow-modals');
   frame.srcdoc = buildStandaloneDoc(letterHtml, css);
 
+  /* The dialog's proposed filename is the TOP-LEVEL window title — not the
+     printed document's <title>, which is why buildStandaloneDoc's "Brief" never
+     showed up. Swapping Obsidian's title for the duration of the print is the
+     only lever the platform offers. Restored in cleanup(), which is idempotent
+     and also runs from the 60 s safety net, so the app title cannot stay stuck. */
+  const previousTitle = document.title;
+  if (filename) document.title = filename;
+
   let done = false;
   const cleanup = (): void => {
     if (done) return;
     done = true;
+    if (filename) document.title = previousTitle;
     frame.remove();
+    if (activeCleanup === cleanup) activeCleanup = null;
   };
+  activeCleanup = cleanup;
 
   frame.addEventListener('load', () => {
     try {
@@ -471,6 +492,7 @@ export function doPrint(letterHtml: string, css: string): void {
   document.body.appendChild(frame);
   // safety net for platforms that never fire 'afterprint' (some iOS cases)
   window.setTimeout(cleanup, 60000);
+  return cleanup;
 }
 
 /* ------------------------------------------------------------------ *
