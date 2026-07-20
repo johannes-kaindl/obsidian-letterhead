@@ -48,5 +48,14 @@
   color: var(--text-muted);
 }
 
-/* Keep the print root out of the normal app view; it only matters for printing. */
-#briefkopf-print-root { display: none; }
+/* The print frame holds the letter while the OS print dialog is open. It is
+   parked off-screen rather than hidden with display:none — a display:none frame
+   is not laid out, and some engines then print a blank page. */
+.letterhead-print-frame {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  border: 0;
+}

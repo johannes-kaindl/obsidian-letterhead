@@ -17,7 +17,7 @@ import { mmToPt, yTopMmToPt, pageSizePt, PT_PER_MM } from '../vendor/kit/pdf/geo
 import { textWidthPt } from '../vendor/kit/pdf/metrics';
 import type { DrawOp } from '../vendor/kit/pdf';
 import { dinGeometry, hexToRgb01, parseLenPt, styleFonts, STILE, type LetterModel, type LetterheadSettings } from './model';
-import { normStil } from './frontmatter';
+import { normStil, asText } from './frontmatter';
 
 // DIN letters are always A4 (matches main.js.reference's PAGE_W_PT=595.28 / PAGE_H_PT=841.89).
 const { wPt: PAGE_W_PT, hPt: PAGE_H_PT } = pageSizePt('A4');
@@ -87,7 +87,7 @@ export function layoutHead(model: LetterHeadModel, settings: LetterheadSettings)
   const mmDown = (pt: number) => pt / PT_PER_MM; // pt → mm (für Folgepositionen)
   const ops: DrawOp[] = [];
   const T = (page: number, x: number, y: number, str: unknown, fontKey: string, sz?: number, rgb?: [number, number, number]) => {
-    if (str !== '' && str != null) ops.push({ page, kind: 'text', x, y, str: String(str), fontKey, sizePt: sz || sizePt, rgb: rgb || TEXTCOL });
+    if (str !== '' && str != null) ops.push({ page, kind: 'text', x, y, str: asText(str), fontKey, sizePt: sz || sizePt, rgb: rgb || TEXTCOL });
   };
   const L = (page: number, x1: number, y1: number, x2: number, y2: number, w: number, rgb?: [number, number, number]) =>
     ops.push({ page, kind: 'line', x1, y1, x2, y2, wPt: w, rgb: rgb || RULE });

@@ -1,6 +1,6 @@
 {
   "name": "obsidian-letterhead",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Generate professionally formatted business letters (DIN 5008 and modern) from note frontmatter and export them to PDF — via the print dialog on desktop, or the system share sheet on iPhone and iPad.",
   "main": "main.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "check:pure": "sh -c \"! grep -rl \\\"from 'obsidian'\\\" src/core src/vendor 2>/dev/null\"",
-    "gate": "npm run typecheck && npm test && npm run check:pure && npm run build",
+    "lint": "node scripts/check-no-inline-disables.mjs && eslint src",
+    "gate": "npm run typecheck && npm test && npm run check:pure && npm run lint && npm run build",
     "deploy": "npm run build && cp main.js manifest.json styles.css \"${OBSIDIAN_PLUGIN_DIR:?set OBSIDIAN_PLUGIN_DIR}\"/",
     "version-bump": "node scripts/version-bump.mjs",
     "release": "node scripts/release.mjs"
@@ -18,9 +19,12 @@
   "devDependencies": {
     "@types/node": "^20",
     "esbuild": "^0.20.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-obsidianmd": "^0.4.1",
     "happy-dom": "^20.10.6",
     "obsidian": "latest",
     "typescript": "^5.4.0",
+    "typescript-eslint": "^8.64.0",
     "vitest": "^1.6.0"
   }
 }

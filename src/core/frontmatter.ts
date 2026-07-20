@@ -78,10 +78,25 @@ export function getField(idx: Record<string, unknown>, aliases: string[]): unkno
   return undefined;
 }
 
+/** Frontmatter value → letter text. YAML may legally hold a map, and a bare
+ *  String(value) would print the literal "[object Object]" into the letter.
+ *  Every other input keeps its historical rendering exactly. */
+export function asText(v: unknown): string {
+  if (v == null) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint') return String(v);
+  if (v instanceof Date) return String(v);
+  // Arrays keep String(array)'s comma joining, so existing letters render the same.
+  if (Array.isArray(v)) return v.map(asText).join(',');
+  // Objects, functions and symbols have no textual form in a business letter.
+  // (Listing primitives explicitly also avoids String(symbol), which throws.)
+  return '';
+}
+
 export function toLines(v: unknown): string[] {
   if (v == null) return [];
-  if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
-  return String(v).split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+  if (Array.isArray(v)) return v.map((x) => asText(x).trim()).filter(Boolean);
+  return asText(v).split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
 }
 
 export interface AbsenderLines {
@@ -104,7 +119,7 @@ export function parseAbsenderLines(lines: string[]): AbsenderLines {
   for (const line of lines.slice(1)) {
     if (!r.email && /@/.test(line)) r.email = line.replace(/^e-?mail\s*:?\s*/i, '');
     else if (!r.web && /^(www\.|https?:\/\/)/i.test(line)) r.web = line;
-    else if (!r.telefon && (/^(tel\.?|telefon|fon|mobil)\b/i.test(line) || /^[+0][\d\s\-\/().]{5,}$/.test(line)))
+    else if (!r.telefon && (/^(tel\.?|telefon|fon|mobil)\b/i.test(line) || /^[+0][\d\s\-/().]{5,}$/.test(line)))
       r.telefon = line.replace(/^(tel\.?|telefon|fon|mobil)\s*:?\s*/i, '');
     else if (!r.plzOrt && /^\d{4,5}\s+\S/.test(line)) r.plzOrt = line;
     else if (!r.strasse && /\d/.test(line)) r.strasse = line;
@@ -115,7 +130,7 @@ export function parseAbsenderLines(lines: string[]): AbsenderLines {
 }
 
 export function esc(s: unknown): string {
-  return String(s == null ? '' : s).replace(/[&<>"]/g, (c) =>
+  return asText(s).replace(/[&<>"]/g, (c) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as Record<string, string>)[c]);
 }
 

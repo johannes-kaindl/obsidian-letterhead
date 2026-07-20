@@ -16,7 +16,7 @@
 
 import { mmToPt, hexToRgb01 } from '../vendor/kit/pdf/geometry';
 import { DEFAULT_OPTIONS, type LayoutOptions, type FontChoice } from '../vendor/kit/pdf';
-import { normStil } from './frontmatter';
+import { normStil, asText } from './frontmatter';
 
 export { hexToRgb01 };
 
@@ -257,7 +257,7 @@ export function dinGeometry(dinForm: string): DinGeometry {
 
 /* Stil-Token-Länge ("18pt" | "6.5mm" | Zahl) → Punkte. */
 export function parseLenPt(v: unknown, fallbackPt: number): number {
-  const s = String(v == null ? '' : v).trim();
+  const s = asText(v).trim();
   let m: RegExpExecArray | null;
   if ((m = /^(-?[\d.]+)\s*mm$/.exec(s))) return mmToPt(parseFloat(m[1]));
   if ((m = /^(-?[\d.]+)\s*pt$/.exec(s))) return parseFloat(m[1]);

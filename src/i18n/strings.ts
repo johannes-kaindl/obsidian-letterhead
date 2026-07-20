@@ -224,7 +224,7 @@ export function detectUiLang(): UiLang {
       const l = getLanguage();
       if (l) return String(l).toLowerCase().startsWith('de') ? 'de' : 'en';
     }
-  } catch (e) {
+  } catch {
     /* fall through */
   }
   try {
@@ -233,7 +233,7 @@ export function detectUiLang(): UiLang {
       const m = w.moment && w.moment.locale && w.moment.locale();
       if (m && String(m).toLowerCase().startsWith('de')) return 'de';
     }
-  } catch (e) {
+  } catch {
     /* no window (tests) — default to English */
   }
   return 'en';

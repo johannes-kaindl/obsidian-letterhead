@@ -172,26 +172,14 @@ export function buildCss(s: LetterheadSettings, stilKey: string | null | undefin
   `;
 }
 
-/* ------------------------------------------------------------------ *
- *  PRINT_WRAPPER_CSS — main.js.reference:629-644
- * ------------------------------------------------------------------ */
+/* Wrapper for the self-contained letter document. Used by BOTH export paths
+   since 1.4.1: the iOS share file and the desktop print frame. The letter must
+   stay visible on screen (iOS opens the file in Safari before printing), which
+   is why there is no @media print gate — inside a frame that holds nothing but
+   the letter, the print rules apply either way.
 
-export const PRINT_WRAPPER_CSS = `
-  #briefkopf-print-root{ display:none; }
-  @media print{
-    @page{ size:A4; margin:${PRINT_MARGIN_TOP_FOLLOW_MM}mm 0 ${PRINT_MARGIN_BOTTOM_MM}mm 0; }
-    @page:first{ margin-top:${PRINT_MARGIN_TOP_MM}mm; }
-    html, body{ margin:0 !important; padding:0 !important; background:#fff !important; height:auto !important; }
-    body > *:not(#briefkopf-print-root){ display:none !important; }
-    #briefkopf-print-root{ display:block !important; position:static !important; }
-    .bk-body p{ orphans:2; widows:2; }
-    .bk-signature, .bk-enclosures, .bk-closing{ break-inside:avoid; }
-  }
-`;
-
-/* Wrapper for the standalone export file (iOS share path): unlike
-   PRINT_WRAPPER_CSS, the letter must be visible on screen too (the user opens
-   the file in Safari before printing), while keeping the same @page margins.
+   It replaces the former PRINT_WRAPPER_CSS, whose `body > *:not(...)` hiding
+   trick only existed because the letter used to share Obsidian's document.
    main.js.reference:645-655 */
 export const STANDALONE_WRAPPER_CSS = `
   @page{ size:A4; margin:${PRINT_MARGIN_TOP_FOLLOW_MM}mm 0 ${PRINT_MARGIN_BOTTOM_MM}mm 0; }
@@ -226,6 +214,12 @@ export const SCREEN_PREVIEW_CSS = `
     margin:0 auto 6mm; background:#fff; overflow:hidden;
     box-shadow:0 2px 14px rgba(0,0,0,.35); }
   .bk-sheet .bk-page-clip{ position:absolute; left:0; right:0; overflow:hidden; }
+  /* Fit-to-frame scaling. The factor is handed in as --bk-preview-scale so the
+     code sets a value, not a style (obsidianmd/no-static-styles-assignment);
+     the neutral 1 doubles as the pre-measurement reset. */
+  #bk-preview-stage{ transform-origin:top center; transform:scale(var(--bk-preview-scale, 1)); }
+  /* Probe used to convert mm to device px inside the frame. */
+  .bk-mm-probe{ position:absolute; visibility:hidden; height:100mm; width:10mm; }
 `;
 
 /* Inert (fully commented) starter that pre-fills the Custom CSS field.
@@ -416,45 +410,67 @@ export function buildLetterHtml(m: LetterHtmlModel, s: LetterheadSettings, bodyH
  *  doPrint — main.js.reference:1226-1258 (was a plugin method)
  * ------------------------------------------------------------------ */
 
+/** Class of the hidden print frame. Doubles as the styles.css hook that parks
+ *  the frame off-screen — the community store forbids inline style assignment. */
+export const PRINT_FRAME_CLASS = 'letterhead-print-frame';
+
+/* The letter is printed from inside its own iframe rather than from Obsidian's
+   document. The old approach — inject a <style> into document.head, write the
+   letter into document.body via innerHTML, then hide every sibling with
+   `body > *:not(#briefkopf-print-root){display:none}` — failed the 1.4.0 store
+   review on two counts (no-forbidden-elements, no-unsanitized/property).
+
+   The iframe is strictly better, not merely compliant: the user's free-form
+   `customCss` can no longer leak into the running app, no display:none hack is
+   needed because the frame contains nothing but the letter, and printing waits
+   for the frame's `load` event, so embedded images (the logo arrives as a data:
+   URL) are guaranteed to be laid out — the previous 150 ms timeout only hoped
+   for that. The document shape comes from `buildStandaloneDoc`, which iOS used
+   for its share export until 1.4.0 dropped that path; since then this is its
+   only caller.
+
+   DESKTOP ONLY. On iOS an iframe print() targets the parent document — mobile
+   goes through exportViaPdf and must never reach doPrint. The single caller in
+   main.ts is gated on Platform.isDesktopApp; keep it that way (see AGENTS.md). */
 export function doPrint(letterHtml: string, css: string): void {
-  const oldRoot = document.getElementById('briefkopf-print-root');
-  if (oldRoot) oldRoot.remove();
-  const oldStyle = document.getElementById('briefkopf-print-style');
-  if (oldStyle) oldStyle.remove();
+  const stale = document.querySelector(`iframe.${PRINT_FRAME_CLASS}`);
+  if (stale) stale.remove();
 
-  const style = document.createElement('style');
-  style.id = 'briefkopf-print-style';
-  style.textContent = css + PRINT_WRAPPER_CSS;
-  document.head.appendChild(style);
-
-  const root = document.createElement('div');
-  root.id = 'briefkopf-print-root';
-  /* innerHTML is safe here: letterHtml is generated by buildLetterHtml from
-     esc()-escaped frontmatter strings plus Obsidian's own MarkdownRenderer
-     output — no raw user HTML is ever interpolated. */
-  root.innerHTML = letterHtml;
-  document.body.appendChild(root);
+  /* document.createElement, not Obsidian's createEl(): this path is covered by
+     tests/obsidian/do-print.test.ts, and createEl is a global that only exists
+     inside a running Obsidian. Shimming it in the test would mean asserting
+     against our own stub instead of the real thing — the exact failure mode the
+     1.4.0 code-block bug taught us. obsidianmd/prefer-create-el stays a warning
+     here on purpose; it is not a store blocker. */
+  const frame = document.createElement('iframe');
+  frame.className = PRINT_FRAME_CLASS;
+  // allow-same-origin: we need contentWindow to print. allow-modals: print() is modal.
+  frame.setAttribute('sandbox', 'allow-same-origin allow-modals');
+  frame.srcdoc = buildStandaloneDoc(letterHtml, css);
 
   let done = false;
   const cleanup = (): void => {
     if (done) return;
     done = true;
-    root.remove();
-    style.remove();
-    window.removeEventListener('afterprint', cleanup);
+    frame.remove();
   };
-  window.addEventListener('afterprint', cleanup);
-  // give layout + embedded images a tick, then open the print/save-as-PDF dialog
-  setTimeout(() => {
+
+  frame.addEventListener('load', () => {
     try {
-      window.print();
-    } catch (e) {
+      const win = frame.contentWindow;
+      if (!win) throw new Error('print frame has no content window');
+      win.addEventListener('afterprint', cleanup);
+      win.focus();
+      win.print();
+    } catch {
       new Notice(t('notice_print_failed'));
       cleanup();
     }
-  }, 150);
+  });
+
+  document.body.appendChild(frame);
   // safety net for platforms that never fire 'afterprint' (some iOS cases)
-  setTimeout(cleanup, 60000);
+  window.setTimeout(cleanup, 60000);
 }
 
 /* ------------------------------------------------------------------ *
@@ -491,8 +507,14 @@ export class LetterheadPreviewModal extends Modal {
 
     const frame = contentEl.createEl('iframe', { cls: 'briefkopf-preview-frame' });
     frame.setAttribute('sandbox', 'allow-same-origin');
+    /* The empty #bk-fit sheet is filled by fitPreview() with the scale factor.
+       Writing the factor into a stylesheet (rather than onto the element) keeps
+       obsidianmd/no-static-styles-assignment satisfied WITHOUT reaching for
+       setCssProps — that helper lives on Obsidian's HTMLElement.prototype and
+       does not exist inside the frame's own realm, so calling it here would
+       throw at runtime and be swallowed by the catch below. */
     frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8">
-      <style>${this.css}${SCREEN_PREVIEW_CSS}</style></head>
+      <style>${this.css}${SCREEN_PREVIEW_CSS}</style><style id="bk-fit"></style></head>
       <body><div id="bk-preview-stage">${this.html}</div></body></html>`;
 
     /* Slice the flowing letter into A4 sheets — same cut positions as the
@@ -504,7 +526,7 @@ export class LetterheadPreviewModal extends Modal {
         const letter = stage && stage.querySelector('.bk-letter');
         if (!letter || !doc || stage.dataset.paginated) return;
         const probe = doc.createElement('div');
-        probe.style.cssText = 'position:absolute;visibility:hidden;height:100mm;width:10mm;';
+        probe.className = 'bk-mm-probe';
         doc.body.appendChild(probe);
         const mm = probe.offsetHeight / 100;
         probe.remove();
@@ -529,7 +551,7 @@ export class LetterheadPreviewModal extends Modal {
         stage.textContent = '';
         stage.appendChild(frag);
         stage.dataset.paginated = '1';
-      } catch (e) { /* leave the un-paginated letter visible */ }
+      } catch { /* leave the un-paginated letter visible */ }
     };
 
     /* Fit a whole A4 sheet into the frame. CSS `zoom` is ignored by iOS
@@ -539,15 +561,16 @@ export class LetterheadPreviewModal extends Modal {
       try {
         const doc = frame.contentDocument;
         const stage = doc && doc.getElementById('bk-preview-stage');
-        const sheet = stage && (doc!.querySelector('.bk-sheet') || doc!.querySelector('.bk-letter'));
+        const sheet = stage && (doc.querySelector('.bk-sheet') || doc.querySelector('.bk-letter'));
         if (!stage || !sheet || !doc) return;
-        stage.style.transformOrigin = 'top center';
-        stage.style.transform = 'none';
+        const fit = doc.getElementById('bk-fit');
+        // reset to neutral scale before measuring the unscaled sheet width
+        if (fit) fit.textContent = '';
         const pageW = (sheet as HTMLElement).offsetWidth || 794;
         const z = Math.min(1, (frame.clientWidth - 20) / pageW);
-        stage.style.transform = `scale(${z})`;
+        if (fit) fit.textContent = `#bk-preview-stage{ --bk-preview-scale:${z}; }`;
         doc.body.style.height = Math.ceil(stage.getBoundingClientRect().height + 28) + 'px';
-      } catch (e) { /* cross-origin or detached frame — leave unscaled */ }
+      } catch { /* cross-origin or detached frame — leave unscaled */ }
     };
     frame.addEventListener('load', () => { paginate(); fitPreview(); });
     this.resizeObserver = new ResizeObserver(fitPreview);

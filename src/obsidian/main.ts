@@ -33,7 +33,7 @@ import { imageToJpeg } from '../core/image';
 import { dinGeometry, DEFAULT_SETTINGS, LETTER_LABELS, type LetterheadSettings } from '../core/model';
 import {
   buildFmIndex, getField, ALIASES, parseAbsenderLines, toLines,
-  normStil, normInfozeile, normSprache, arrayBufferToBase64,
+  normStil, normInfozeile, normSprache, arrayBufferToBase64, asText,
 } from '../core/frontmatter';
 
 import { PdfWriter, type PdfPage } from '../vendor/kit/pdf/writer';
@@ -195,7 +195,7 @@ export default class LetterheadPlugin extends Plugin {
 
   async renderMarkdownToHtml(markdown: string, sourcePath: string): Promise<string> {
     const comp = new Component();
-    const tmp = document.createElement('div');
+    const tmp = createDiv();
     try {
       await MarkdownRenderer.render(this.app, markdown, tmp, sourcePath, comp);
     } catch (e) {
@@ -210,9 +210,9 @@ export default class LetterheadPlugin extends Plugin {
     let d: Date;
     if (value == null || value === '') d = new Date();
     else if (value instanceof Date) d = value;
-    else { d = new Date(value as string); if (isNaN(d.getTime())) return String(value); }
+    else { d = new Date(value as string); if (isNaN(d.getTime())) return asText(value); }
     try { return d.toLocaleDateString(this.settings.locale || 'de-DE'); }
-    catch (e) { return d.toLocaleDateString('de-DE'); }
+    catch { return d.toLocaleDateString('de-DE'); }
   }
 
   async loadLogo(): Promise<string> {
@@ -227,7 +227,7 @@ export default class LetterheadPlugin extends Plugin {
         : ext === 'webp' ? 'image/webp'
         : 'image/jpeg';
       return `data:${mime};base64,${arrayBufferToBase64(ab)}`;
-    } catch (e) {
+    } catch {
       new Notice(t('notice_logo_failed') + p);
       return '';
     }
@@ -265,17 +265,17 @@ export default class LetterheadPlugin extends Plugin {
     for (let i = 1; i <= 4; i++) {
       const raw = getField(idx, ['info_' + i]);
       if (raw === undefined || raw === null || raw === '') continue;
-      const sv = raw instanceof Date ? this.formatDate(raw) : String(raw);
+      const sv = raw instanceof Date ? this.formatDate(raw) : asText(raw);
       const ci = sv.indexOf(':');
       if (ci > 0) infoExtra.push([sv.slice(0, ci).trim(), sv.slice(ci + 1).trim()]);
       else infoExtra.push(['Info', sv.trim()]);
     }
     const infoRaw = getField(idx, ALIASES.info);
     if (infoRaw && typeof infoRaw === 'object' && !Array.isArray(infoRaw)) {
-      for (const k of Object.keys(infoRaw as Record<string, unknown>)) {
+      for (const k of Object.keys(infoRaw)) {
         const v = (infoRaw as Record<string, unknown>)[k];
         if (v === undefined || v === null || v === '') continue;
-        infoExtra.push([String(k), v instanceof Date ? this.formatDate(v) : String(v)]);
+        infoExtra.push([k, v instanceof Date ? this.formatDate(v) : asText(v)]);
       }
     }
 

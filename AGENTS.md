@@ -97,8 +97,15 @@ dem getaggten Commit, nicht eine committete Kopie.
 
 ## Gotchas
 
-- Export hängt an `@media print` + Ausblenden der Obsidian-DOM. **Nicht** auf
-  iframe-`print()` umbauen — iOS druckt dann das Eltern-Dokument.
+- Der Desktop-Druck läuft seit 1.4.1 über ein **eigenes iframe** (`doPrint`,
+  `srcdoc` = `buildStandaloneDoc`) statt über `@media print` + Ausblenden der
+  Obsidian-DOM. Grund: der Store-Review von 1.4.0 verbot beides (`<style>` in
+  `document.head`, `innerHTML` auf der App-DOM).
+  **Bedingung, an der das hängt:** `doPrint` darf ausschließlich hinter
+  `Platform.isDesktopApp` aufgerufen werden (aktuell genau eine Stelle,
+  `main.ts` in `exportLetter`). Auf iOS druckt iframe-`print()` das
+  Eltern-Dokument — dort geht der Export über `exportViaPdf`, nie über `doPrint`.
+  Wer einen zweiten `doPrint`-Aufrufer ergänzt, muss dieses Gate mitziehen.
 - `MarkdownRenderer.render(app, …)` vs. ältere `renderMarkdown` — Feature-Detection
   beibehalten (siehe `renderMarkdownToHtml`).
 - DIN-Maße (Kopf 45/27 mm, Falz 105/210 bzw. 87/192 mm, Loch 148,5 mm) sind

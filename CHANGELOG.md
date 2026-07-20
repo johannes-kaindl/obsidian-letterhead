@@ -7,6 +7,38 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+Behebt die vier Fehler, an denen der Community-Store-Review von 1.4.0 gescheitert
+ist. Der gedruckte Brief ist unverändert — die Änderungen betreffen, **wie** er
+erzeugt wird.
+
+### Changed
+- **Desktop-Druck läuft über ein eigenes iframe.** Bisher hängte der Export ein
+  `<style>` in Obsidians `document.head`, schrieb den Brief per `innerHTML` in die
+  App-DOM und blendete alle Geschwister-Elemente per `display:none` aus. Beides ist
+  im Community-Store verboten. Der Brief wird jetzt als eigenständiges Dokument in
+  einem versteckten iframe gedruckt. Nebeneffekt: eigenes Custom-CSS kann nicht mehr
+  in die laufende App durchschlagen, und der Druck wartet auf das `load`-Ereignis
+  des Rahmens statt auf einen 150-ms-Timer — eingebettete Logos sind dadurch
+  zuverlässig gesetzt, bevor der Druckdialog aufgeht.
+- **`minAppVersion` 1.4.0 → 1.8.7.** Das Plugin nutzt `getLanguage` (ab 1.8.7) und
+  `processFrontMatter` (ab 1.4.4); die bisherige Angabe war schlicht zu niedrig.
+
+### Fixed
+- Objekte im Frontmatter erzeugten die wörtliche Zeichenkette `[object Object]` im
+  fertigen Brief (etwa bei versehentlich verschachteltem YAML unter `betreff:` oder
+  `info_1:`). Solche Werte bleiben jetzt leer. Alle bisher funktionierenden
+  Frontmatter-Werte — Text, Zahlen, Listen, Datumsangaben — werden unverändert
+  dargestellt.
+
+### Internal
+- `eslint` + `eslint-plugin-obsidianmd` als Gate (`npm run lint`, Teil von
+  `npm run gate`), inklusive Verbot von Inline-`eslint-disable` (der Store wertet
+  die als Fehler). Damit sind Store-Findings vor dem Release lokal sichtbar — genau
+  die Lücke, durch die 1.4.0 durchgefallen ist.
+- Ausstehend als eigener Schnitt: `src/core/body-ir.ts` nimmt das Briefmodell als
+  `any` (32 Lint-Warnungen). Eine saubere Typisierung legt ~9 echte Typfehler in
+  kuvert-kritischem Layout-Code frei und gehört nicht in ein Compliance-Release.
+
 ## [1.4.0] — 2026-07-12
 
 Umbau der Build- und Provenance-Basis — die Brief-Funktionalität ist unverändert,
