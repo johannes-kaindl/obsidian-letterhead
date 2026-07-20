@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.4.1] — 2026-07-20
+
 Behebt die vier Fehler, an denen der Community-Store-Review von 1.4.0 gescheitert
 ist. Der gedruckte Brief ist unverändert — die Änderungen betreffen, **wie** er
 erzeugt wird.
