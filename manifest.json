@@ -1,7 +1,7 @@
 {
   "id": "letterhead",
   "name": "Letterhead",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "minAppVersion": "1.8.7",
   "description": "Generate professionally formatted business letters (DIN 5008 and modern) from note frontmatter and export them to PDF — via the print dialog on desktop, or the system share sheet on iPhone and iPad.",
   "author": "Johannes Kaindl",

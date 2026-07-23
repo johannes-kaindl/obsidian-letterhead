@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-07-23
+
 ### Removed
 - **Einstellung „Mobiler Export" entfernt.** Sie bot seit 1.4.0 nur noch eine einzige Option und
   wurde von keinem Codepfad mehr gelesen — der HTML/Quick-Look-Weg war damals zugunsten des
@@ -32,6 +34,13 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   Keine Verhaltensänderung: alle drei Änderungen sind Typkonstrukte, der Build-Output ist bis auf
   die Bezeichner-Vergabe des Minifiers identisch (Zahlen-Literale byte-gleich). Der Anlagen-Block
   ist dabei erstmals von Tests abgedeckt (Singular/Plural-Label, Fallback, Position).
+- **Einstellungen-Tab auf die deklarative API (`getSettingDefinitions`) umgestellt.** Auf Obsidian
+  ab 1.13 rendern die Einstellungen im nativen Karten-Layout inklusive Einstellungs-Suche; auf
+  älteren Versionen greift unverändert der bisherige Aufbau (`display()`), der dieselben
+  Definitionen durchläuft — es gibt keine zweite Quelle. `minAppVersion` bleibt 1.8.7, Felder und
+  Verhalten sind identisch. Damit entfällt der letzte begründungslose Lint-Override des Repos.
+
+## [1.5.0] — 2026-07-20
 
 ### Added
 - **Ausgabeziel** (Einstellungen → Erweitert): Wohin die exportierte PDF geschrieben wird —
