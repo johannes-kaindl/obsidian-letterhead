@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.6.1] — 2026-07-23
+
 ### Changed
 - **Store-Warnung `obsidianmd/prefer-create-el` im Code aufgelöst statt abgeschaltet.** Der
   frühere `eslint`-Override (`prefer-create-el: off`) ist entfernt; der Linter meldet jetzt
