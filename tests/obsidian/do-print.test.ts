@@ -9,6 +9,7 @@
 // Diese Tests pruefen die KAPSELUNG, nicht das Drucken selbst: window.print() ist in happy-dom
 // nicht sinnvoll ausloesbar, und die Druckausgabe bleibt Jays Geraete-Abnahme.
 import { describe, it, expect, beforeEach } from 'vitest';
+import '../setup/dom-shim'; // stellt createEl (Obsidian-Global) unter happy-dom bereit
 import { doPrint, PRINT_FRAME_CLASS } from '../../src/obsidian/html-engine';
 
 const LETTER = '<div class="bk-letter">Sehr geehrte Frau Muster</div>';

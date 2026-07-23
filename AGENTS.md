@@ -120,6 +120,18 @@ dem getaggten Commit, nicht eine committete Kopie.
   Ändern von Positionen immer dieses Schema beibehalten.
 - `main.js`/`main.js.map` sind Build-Output (gitignored) — **nicht** committen; Quelle
   ist `src/`.
+- **`createEl` im iframe-Realm gibt es nicht.** Die Vorschau-Paginierung (`html-engine.ts`
+  `paginate()`) arbeitet auf `frame.contentDocument` — einer eigenen Realm, in der Obsidian
+  weder `createEl`/`createDiv` noch `doc.win`/`setCssProps` augmentiert (dieselbe Grenze wie beim
+  `<style id="bk-fit">`-Trick). `obsidianmd/prefer-create-el` schlägt dort `doc.win.createDiv()`
+  vor — das wäre ein stiller `TypeError` im `catch`. Korrekt: in der Hauptseite mit `createDiv()`
+  erzeugen und per `doc.adoptNode()` übernehmen. In `core/` gilt zusätzlich das Verbot von
+  Obsidian-Globals (PROF-OBS-04) → dort Elemente injizieren (Canvas-Factory in `imageToJpeg`),
+  nicht `createEl` aufrufen.
+- **SVG-Bilder werden auf iOS nicht ins Vektor-PDF gerastert** (bekannter Bug, vorbestehend seit
+  1.4.0): WebKit taintet das Canvas beim `drawImage` eines SVG → `toDataURL()` wirft `SecurityError`
+  → `imageToJpeg` gibt `null` → `[Bild: …]`-Platzhalter. Betrifft SVG-Logos/-Body-Bilder nur auf
+  iOS; PNG/JPEG sind unbetroffen. Desktop (Chromium) rastert SVG korrekt.
 
 ## Memory
 

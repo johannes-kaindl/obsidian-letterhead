@@ -341,10 +341,10 @@ export default class LetterheadPlugin extends Plugin {
     if (!src) return null;
     try {
       // Already a loadable URL — hand straight to the rasterizer.
-      if (/^(data:|app:|blob:|https?:)/i.test(src)) return await imageToJpeg(src, 1600);
+      if (/^(data:|app:|blob:|https?:)/i.test(src)) return await imageToJpeg(src, () => createEl('canvas'), 1600);
       // Vault-relative wikilink/path → resolve to a resource URL.
       const dest = this.app.metadataCache.getFirstLinkpathDest(src, sourceFile ? sourceFile.path : '');
-      if (dest) return await imageToJpeg(this.app.vault.getResourcePath(dest), 1600);
+      if (dest) return await imageToJpeg(this.app.vault.getResourcePath(dest), () => createEl('canvas'), 1600);
       return null;
     } catch (e) {
       console.error('Letterhead: image decode failed', e);
@@ -364,7 +364,7 @@ export default class LetterheadPlugin extends Plugin {
     // 2. Logo image op (page 0) — scaling/position VERBATIM from
     //    main.js.reference:1119-1130 (logoToJpeg is now imageToJpeg).
     if (model.logo) {
-      const jp = await imageToJpeg(model.logo, 1200);
+      const jp = await imageToJpeg(model.logo, () => createEl('canvas'), 1200);
       if (jp) {
         const g = dinGeometry(settings.dinForm);
         const off = Number(settings.printOffsetTopMm) || 0;

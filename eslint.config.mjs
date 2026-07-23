@@ -20,19 +20,9 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    rules: {
-      // Off, not warn — `--fix` rewrites warnings too, and this rule's autofix
-      // BREAKS this repo in two ways, both observed while setting the gate up:
-      //   src/core/image.ts   → `activeWindow.createEl('canvas')`, which is not
-      //                         on the Window type at all (tsc TS2339), and
-      //                         core/ must stay free of Obsidian globals.
-      //   src/obsidian/*.ts   → bare `createEl()`, a global that only exists
-      //                         inside a running Obsidian; the do-print tests
-      //                         then die with "createEl is not defined".
-      // Shimming createEl in the tests would mean asserting against our own
-      // stub rather than Obsidian — the exact trap behind the 1.4.0 code-block
-      // bug. The store reports this rule as a warning, never as a blocker.
-      "obsidianmd/prefer-create-el": "off",
-    },
+    // Keine Regel-Overrides mehr: obsidianmd/prefer-create-el ist seit 1.6.1 im Code
+    // aufgeloest statt abgeschaltet — canvas via Factory-Injektion in core/image.ts,
+    // createEl/createDiv in src/obsidian/*.ts (iframe-Realm ueber doc.adoptNode). Der
+    // frueher noetige `--fix`-Schutz entfaellt damit; der Store meldet 0 Warnings.
   },
 );

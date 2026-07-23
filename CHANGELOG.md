@@ -7,6 +7,16 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Changed
+- **Store-Warnung `obsidianmd/prefer-create-el` im Code aufgelöst statt abgeschaltet.** Der
+  frühere `eslint`-Override (`prefer-create-el: off`) ist entfernt; der Linter meldet jetzt
+  0 Warnungen. `core/image.ts` erzeugt das Raster-`<canvas>` nicht mehr selbst über
+  `activeDocument.createElement`, sondern bekommt es als Factory injiziert (`() => createEl('canvas')`)
+  — die reine Kernschicht bleibt so frei von Obsidian-Globals. Der Druck-`iframe` (`doPrint`) nutzt
+  `createEl`; die Vorschau-Paginierung erzeugt ihre Blätter mit `createDiv()` und übernimmt sie per
+  `doc.adoptNode()` in den iframe-Realm (Obsidians Helfer existieren dort nicht). Rein intern, kein
+  sichtbares Verhalten geändert (Desktop-Druck, Vektor-PDF und Vorschau verifiziert).
+
 ## [1.6.0] — 2026-07-23
 
 ### Removed

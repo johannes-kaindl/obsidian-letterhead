@@ -446,14 +446,11 @@ export function doPrint(letterHtml: string, css: string, filename?: string): () 
   const stale = document.querySelector(`iframe.${PRINT_FRAME_CLASS}`);
   if (stale) stale.remove();
 
-  /* document.createElement, not Obsidian's createEl(): this path is covered by
-     tests/obsidian/do-print.test.ts, and createEl is a global that only exists
-     inside a running Obsidian. Shimming it in the test would mean asserting
-     against our own stub instead of the real thing — the exact failure mode the
-     1.4.0 code-block bug taught us. obsidianmd/prefer-create-el stays a warning
-     here on purpose; it is not a store blocker. */
-  const frame = document.createElement('iframe');
-  frame.className = PRINT_FRAME_CLASS;
+  /* createEl (Obsidian-Global) statt document.createElement — obsidianmd/prefer-create-el.
+     do-print.test.ts läuft unter happy-dom, wo dieses Global fehlt; es wird dort über den
+     Referenz-Shim tests/setup/dom-shim.ts bereitgestellt (echte createElement-Semantik, die
+     Tests prüfen weiterhin das reale DOM, nicht den Shim). */
+  const frame = createEl('iframe', { cls: PRINT_FRAME_CLASS });
   // allow-same-origin: we need contentWindow to print. allow-modals: print() is modal.
   frame.setAttribute('sandbox', 'allow-same-origin allow-modals');
   frame.srcdoc = buildStandaloneDoc(letterHtml, css);
@@ -547,8 +544,15 @@ export class LetterheadPreviewModal extends Modal {
         const stage = doc && doc.getElementById('bk-preview-stage');
         const letter = stage && stage.querySelector('.bk-letter');
         if (!letter || !doc || stage.dataset.paginated) return;
-        const probe = doc.createElement('div');
-        probe.className = 'bk-mm-probe';
+        /* createDiv/createFragment sind Obsidian-Globals (obsidianmd/prefer-create-el statt
+           doc.createElement). Sie erzeugen in der HAUPT-Realm — NICHT `doc.win.createDiv()`,
+           wie der Linter vorschlägt: `doc` ist das iframe-contentDocument, dessen `.win`
+           Obsidian dort NICHT augmentiert (dieselbe Realm-Grenze wie bei setCssProps, s.o.),
+           ein Aufruf wäre ein stiller TypeError im catch. Stattdessen adoptiert `doc.adoptNode`
+           das Element in die iframe-Realm — die offsetHeight-Messung und das iframe-CSS
+           (.bk-mm-probe/.bk-sheet/.bk-page-clip) greifen erst nach der Adoption. */
+        const mkDiv = (cls: string): HTMLDivElement => doc.adoptNode(createDiv({ cls }));
+        const probe = mkDiv('bk-mm-probe');
         doc.body.appendChild(probe);
         const mm = probe.offsetHeight / 100;
         probe.remove();
@@ -556,12 +560,10 @@ export class LetterheadPreviewModal extends Modal {
         const hN = Math.round((297 - PRINT_MARGIN_TOP_FOLLOW_MM - PRINT_MARGIN_BOTTOM_MM) * mm);
         const total = (letter as HTMLElement).offsetHeight;
         const pages = total <= h1 ? 1 : 1 + Math.ceil((total - h1) / hN);
-        const frag = doc.createDocumentFragment();
+        const frag = doc.adoptNode(createFragment());
         for (let i = 0; i < pages; i++) {
-          const sheet = doc.createElement('div');
-          sheet.className = 'bk-sheet';
-          const clip = doc.createElement('div');
-          clip.className = 'bk-page-clip';
+          const sheet = mkDiv('bk-sheet');
+          const clip = mkDiv('bk-page-clip');
           clip.style.top = (i === 0 ? PRINT_MARGIN_TOP_MM : PRINT_MARGIN_TOP_FOLLOW_MM) + 'mm';
           clip.style.height = (i === 0 ? h1 : hN) + 'px';
           const copy = letter.cloneNode(true) as HTMLElement;
