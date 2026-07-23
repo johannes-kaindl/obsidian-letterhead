@@ -25,6 +25,15 @@
   font-family: var(--font-monospace);
 }
 
+/* A settings row repurposed as a plain block container (intro paragraph,
+   frontmatter table): the "setting-item" flex class is stripped so children
+   stack top-to-bottom instead of becoming flex children. */
+.bk-settings-host {
+  display: block;
+  padding: 0;
+  border: none;
+}
+
 /* compact frontmatter field reference in the settings tab */
 .briefkopf-fm-table {
   margin: 0.4em 0 0.8em;
