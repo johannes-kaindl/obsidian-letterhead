@@ -33,11 +33,11 @@ describe('imageToJpeg — canvas injected, not created via document', () => {
     expect(factory).not.toHaveBeenCalled();
   });
 
-  it('uses the injected factory and returns null when the 2d context is unavailable', async () => {
+  it('uses the injected factory and reports an error when the 2d context is unavailable', async () => {
     const factory = vi.fn(() => makeFakeCanvas(null)); // getContext → null
     const out = await imageToJpeg(PX, factory);
     expect(factory).toHaveBeenCalledTimes(1);
-    expect(out).toBeNull();
+    expect(out).toEqual({ error: 'no-2d-context' });
   });
 
   it('rasterizes through the injected canvas and decodes the jpeg bytes', async () => {
@@ -50,7 +50,7 @@ describe('imageToJpeg — canvas injected, not created via document', () => {
     expect(canvas.height).toBeGreaterThan(0);
   });
 
-  it('reports a tainted-canvas error distinctly when toDataURL throws a SecurityError (WebKit + SVG)', async () => {
+  it('reports the real error name/message when toDataURL throws a SecurityError (WebKit + SVG)', async () => {
     const canvas = {
       width: 0,
       height: 0,
@@ -61,10 +61,10 @@ describe('imageToJpeg — canvas injected, not created via document', () => {
     };
     const factory = vi.fn(() => canvas as unknown as HTMLCanvasElement);
     const out = await imageToJpeg(PX, factory);
-    expect(out).toEqual({ error: 'tainted-canvas' });
+    expect(out).toEqual({ error: 'readback-failed: SecurityError: The operation is insecure.' });
   });
 
-  it('falls back to null for a non-SecurityError toDataURL failure', async () => {
+  it('reports the real error name/message for a non-SecurityError toDataURL failure', async () => {
     const canvas = {
       width: 0,
       height: 0,
@@ -75,6 +75,22 @@ describe('imageToJpeg — canvas injected, not created via document', () => {
     };
     const factory = vi.fn(() => canvas as unknown as HTMLCanvasElement);
     const out = await imageToJpeg(PX, factory);
-    expect(out).toBeNull();
+    expect(out).toEqual({ error: 'readback-failed: Error: boom' });
+  });
+
+  it('reports a load-failed error when the image fails to load', async () => {
+    class FailingImage {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_v: string) {
+        queueMicrotask(() => this.onerror && this.onerror());
+      }
+    }
+    vi.stubGlobal('Image', FailingImage);
+    const factory = vi.fn(() => makeFakeCanvas('data:image/jpeg;base64,QUJD'));
+    const out = await imageToJpeg(PX, factory);
+    expect(out).toEqual({ error: expect.stringContaining('load-failed') });
+    expect(factory).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
   });
 });

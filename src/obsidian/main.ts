@@ -340,7 +340,7 @@ export default class LetterheadPlugin extends Plugin {
   async decodeImage(
     src: string,
     sourceFile: TFile | null
-  ): Promise<{ data: Uint8Array; wPx: number; hPx: number } | { error: 'tainted-canvas' } | null> {
+  ): Promise<{ data: Uint8Array; wPx: number; hPx: number } | { error: string } | null> {
     if (!src) return null;
     try {
       // Already a loadable URL — hand straight to the rasterizer.
@@ -366,10 +366,13 @@ export default class LetterheadPlugin extends Plugin {
 
     // 2. Logo image op (page 0) — scaling/position VERBATIM from
     //    main.js.reference:1119-1130 (logoToJpeg is now imageToJpeg).
-    let svgTainted = false;
+    // DIAGNOSTIC (unresolved iOS-SVG-Bug): imageDecodeErrors collects the raw
+    // failure reason so it can be shown on-device without cable debugging —
+    // TODO remove/simplify once the real cause is confirmed on iPhone.
+    const imageDecodeErrors: string[] = [];
     if (model.logo) {
       const jp = await imageToJpeg(model.logo, () => createEl('canvas'), 1200);
-      if (jp && 'error' in jp) svgTainted = true;
+      if (jp && 'error' in jp) imageDecodeErrors.push(jp.error);
       else if (jp) {
         const g = dinGeometry(settings.dinForm);
         const off = Number(settings.printOffsetTopMm) || 0;
@@ -403,7 +406,7 @@ export default class LetterheadPlugin extends Plugin {
       simplified = ex.unsupportedCount;
       const res = await resolveImages(ex.blocks, ex.imageEls, async (src) => {
         const out = await this.decodeImage(src, model.sourceFile);
-        if (out && 'error' in out) { svgTainted = true; return null; }
+        if (out && 'error' in out) { imageDecodeErrors.push(out.error); return null; }
         return out;
       });
       bodyBlocks = res.blocks;
@@ -417,7 +420,12 @@ export default class LetterheadPlugin extends Plugin {
 
     // Degradation surfaces as a Notice (replaces the old HTML/print fallback).
     if (simplified > 0) new Notice(t('notice_simplified').replace('{n}', String(simplified)));
-    if (svgTainted) new Notice(t('notice_svg_tainted'));
+    if (imageDecodeErrors.length > 0) {
+      // DIAGNOSTIC: duration 0 (stays until dismissed) so the raw reason can
+      // be read/screenshotted on iOS without cable debugging.
+      const reasons = [...new Set(imageDecodeErrors)].join(' | ');
+      new Notice(`Letterhead (Diagnose): Bild-Rasterung fehlgeschlagen — ${reasons}`, 0);
+    }
 
     // 5. Merge head + body ops into one writer.
     const pageCount = Math.max(1, body.pageCount);
