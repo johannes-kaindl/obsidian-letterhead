@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { resolveOutputPath, shouldShareAfterSave, uniquePath } from '../../src/obsidian/output';
+import { describe, it, expect, vi } from 'vitest';
+import { resolveOutputPath, shouldShareAfterSave, uniquePath, writePdf } from '../../src/obsidian/output';
+import type { App } from 'obsidian';
 
 /* Output target, spec A2. The decision logic is pure and fully covered here;
    only the actual I/O in writePdf stays untested. */
@@ -88,5 +89,47 @@ describe('uniquePath', () => {
   it('gives up rather than looping forever', async () => {
     const alwaysTaken = () => Promise.resolve(true);
     await expect(uniquePath('B/x.pdf', alwaysTaken)).resolves.toMatch(/^B\/x \(\d+\)\.pdf$/);
+  });
+});
+
+describe('writePdf — mkdir on a vault-root target', () => {
+  /* Regression: `target.slice(0, target.lastIndexOf('/'))` on a target with
+     no '/' (vault root, e.g. outputFolder "/") used to compute lastIndexOf
+     → -1 → slice(0, -1), which drops the file's last character instead of
+     yielding an empty dir — creating a phantom "Name.pd" folder next to
+     every export. Caught via a real-device report (2026-07-24). */
+  it('does not create a directory when the resolved path has no slash', async () => {
+    const mkdir = vi.fn(async () => {});
+    const adapter = {
+      exists: vi.fn(async () => false),
+      mkdir,
+      writeBinary: vi.fn(async () => {}),
+    };
+    const app = { vault: { adapter } } as unknown as App;
+
+    await writePdf(app, new Uint8Array([1, 2, 3]), 'customFolder', {
+      baseName: 'Muster GmbH',
+      resolvedPath: 'Muster GmbH.pdf',
+    });
+
+    expect(mkdir).not.toHaveBeenCalled();
+    expect(adapter.writeBinary).toHaveBeenCalledWith('Muster GmbH.pdf', expect.anything());
+  });
+
+  it('still creates the parent directory for a nested target', async () => {
+    const mkdir = vi.fn(async () => {});
+    const adapter = {
+      exists: vi.fn(async (p: string) => p !== 'Export/PDF'),
+      mkdir,
+      writeBinary: vi.fn(async () => {}),
+    };
+    const app = { vault: { adapter } } as unknown as App;
+
+    await writePdf(app, new Uint8Array([1, 2, 3]), 'customFolder', {
+      baseName: 'Muster GmbH',
+      resolvedPath: 'Export/PDF/Muster GmbH.pdf',
+    });
+
+    expect(mkdir).toHaveBeenCalledWith('Export/PDF');
   });
 });

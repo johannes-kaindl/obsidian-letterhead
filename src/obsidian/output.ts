@@ -116,7 +116,11 @@ export async function writePdf(
       const target = mode === 'attachmentFolder'
         ? opts.resolvedPath
         : await uniquePath(opts.resolvedPath, (p) => adapter.exists(p));
-      const dir = target.slice(0, target.lastIndexOf('/'));
+      /* -1 (no '/' — target sits at the vault root, e.g. outputFolder "/")
+         must yield an empty dir, not slice(0, -1) chopping the last
+         character off the filename into a phantom "Name.pd/" folder. */
+      const slashIdx = target.lastIndexOf('/');
+      const dir = slashIdx >= 0 ? target.slice(0, slashIdx) : '';
       if (dir && !(await adapter.exists(dir))) await adapter.mkdir(dir);
       await adapter.writeBinary(target, bytes.buffer as ArrayBuffer);
       new Notice(t('notice_saved') + target);
