@@ -45,8 +45,36 @@ describe('imageToJpeg — canvas injected, not created via document', () => {
     const factory = vi.fn(() => canvas);
     const out = await imageToJpeg(PX, factory);
     expect(out).not.toBeNull();
-    expect(Array.from(out!.data)).toEqual([65, 66, 67]); // "ABC"
+    expect(Array.from((out as { data: Uint8Array }).data)).toEqual([65, 66, 67]); // "ABC"
     expect(canvas.width).toBeGreaterThan(0);
     expect(canvas.height).toBeGreaterThan(0);
+  });
+
+  it('reports a tainted-canvas error distinctly when toDataURL throws a SecurityError (WebKit + SVG)', async () => {
+    const canvas = {
+      width: 0,
+      height: 0,
+      getContext: vi.fn(() => ({ fillStyle: '', fillRect: vi.fn(), drawImage: vi.fn() })),
+      toDataURL: vi.fn(() => {
+        throw new DOMException('The operation is insecure.', 'SecurityError');
+      }),
+    };
+    const factory = vi.fn(() => canvas as unknown as HTMLCanvasElement);
+    const out = await imageToJpeg(PX, factory);
+    expect(out).toEqual({ error: 'tainted-canvas' });
+  });
+
+  it('falls back to null for a non-SecurityError toDataURL failure', async () => {
+    const canvas = {
+      width: 0,
+      height: 0,
+      getContext: vi.fn(() => ({ fillStyle: '', fillRect: vi.fn(), drawImage: vi.fn() })),
+      toDataURL: vi.fn(() => {
+        throw new Error('boom');
+      }),
+    };
+    const factory = vi.fn(() => canvas as unknown as HTMLCanvasElement);
+    const out = await imageToJpeg(PX, factory);
+    expect(out).toBeNull();
   });
 });

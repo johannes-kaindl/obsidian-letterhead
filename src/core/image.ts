@@ -16,7 +16,7 @@ export async function imageToJpeg(
   src: string,
   makeCanvas: () => HTMLCanvasElement,
   maxWpx?: number
-): Promise<{ data: Uint8Array; wPx: number; hPx: number } | null> {
+): Promise<{ data: Uint8Array; wPx: number; hPx: number } | { error: 'tainted-canvas' } | null> {
   if (!src) return null;
   try {
     const img = await new Promise<HTMLImageElement>((res, rej) => {
@@ -44,6 +44,14 @@ export async function imageToJpeg(
     for (let i = 0; i < bin.length; i++) data[i] = bin.charCodeAt(i);
     return { data, wPx, hPx };
   } catch (e) {
+    // WebKit (iOS/iPadOS) makes the canvas write-only after drawing an SVG,
+    // regardless of same-origin/data-URI — a security restriction, not a bug,
+    // and not reliably bypassable. Surface it distinctly so the caller can
+    // tell the user instead of silently degrading like any other failure.
+    if (e instanceof DOMException && e.name === 'SecurityError') {
+      console.error('Letterhead: canvas tainted by SVG rasterization (WebKit)', e);
+      return { error: 'tainted-canvas' };
+    }
     console.error('Letterhead: image rasterization failed', e);
     return null;
   }
