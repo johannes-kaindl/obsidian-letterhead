@@ -7,6 +7,18 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Fixed
+- **Eingebettete Bilder erschienen auf iOS nicht im Vektor-PDF.** Obsidians iOS-App (Capacitor)
+  liefert für eingebettete Bild-Elemente `src="capacitor://localhost/_capacitor_file_/…"` statt
+  `app://` wie auf Desktop. Die Bild-Erkennung kannte dieses Schema nicht und behandelte den vollen
+  Capacitor-URL fälschlich als vault-relativen Wikilink — dessen Auflösung scheiterte, das Bild
+  wurde nie gerastert und erschien im PDF nur als Platzhaltertext. Betraf jedes eingebettete
+  Bildformat auf iOS/iPadOS, nicht nur SVG. Auf iPhone verifiziert.
+- **Phantom-Ordner bei jedem Export in den Vault-Root.** Beim Export-Ziel „Custom-Ordner" mit
+  Vault-Root (`/`) oder direkt neben der Notiz im Root berechnete die Verzeichnis-Ermittlung beim
+  Schreiben der PDF einen um ein Zeichen verkürzten Ordnernamen und legte ihn als leeres
+  Verzeichnis an. Betraf jeden Export ohne Unterordner im Zielpfad. Auf iPhone verifiziert.
+
 ## [1.6.1] — 2026-07-23
 
 ### Changed
