@@ -337,30 +337,22 @@ export default class LetterheadPlugin extends Plugin {
 
   /* ---- image decode for body <img> (data: / app: / vault-relative) ---- */
 
-  // DIAGNOSTIC (unresolved iOS-SVG-Bug): every null-producing branch below
-  // now returns a distinct { error } instead, so buildPdfBytes can surface
-  // exactly which step fails on-device — TODO collapse back to plain null
-  // once the real cause is confirmed on iPhone.
-  async decodeImage(
-    src: string,
-    sourceFile: TFile | null
-  ): Promise<{ data: Uint8Array; wPx: number; hPx: number } | { error: string } | null> {
-    if (!src) return { error: 'decode: empty src attribute' };
+  async decodeImage(src: string, sourceFile: TFile | null): Promise<{ data: Uint8Array; wPx: number; hPx: number } | null> {
+    if (!src) return null;
     try {
       // Already a loadable URL — hand straight to the rasterizer. `capacitor:`
       // is iOS/Capacitor's scheme for resolved local-file image srcs (the
-      // mobile counterpart to desktop's `app:`) — real device diagnosis
-      // (2026-07-25) found embedded images falling through to the vault-link
-      // branch below on iPhone because it was missing here.
+      // mobile counterpart to desktop's `app:`) — without it, embedded images
+      // fell through to the vault-link branch below and failed to resolve on
+      // iPhone (confirmed via on-device diagnosis, 2026-07-25).
       if (/^(data:|app:|capacitor:|blob:|https?:)/i.test(src)) return await imageToJpeg(src, () => createEl('canvas'), 1600);
       // Vault-relative wikilink/path → resolve to a resource URL.
       const dest = this.app.metadataCache.getFirstLinkpathDest(src, sourceFile ? sourceFile.path : '');
       if (dest) return await imageToJpeg(this.app.vault.getResourcePath(dest), () => createEl('canvas'), 1600);
-      return { error: `decode: link resolution failed for "${src}"` };
+      return null;
     } catch (e) {
-      const msg = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
       console.error('Letterhead: image decode failed', e);
-      return { error: `decode: ${msg}` };
+      return null;
     }
   }
 
@@ -375,14 +367,9 @@ export default class LetterheadPlugin extends Plugin {
 
     // 2. Logo image op (page 0) — scaling/position VERBATIM from
     //    main.js.reference:1119-1130 (logoToJpeg is now imageToJpeg).
-    // DIAGNOSTIC (unresolved iOS-SVG-Bug): imageDecodeErrors collects the raw
-    // failure reason so it can be shown on-device without cable debugging —
-    // TODO remove/simplify once the real cause is confirmed on iPhone.
-    const imageDecodeErrors: string[] = [];
     if (model.logo) {
       const jp = await imageToJpeg(model.logo, () => createEl('canvas'), 1200);
-      if (jp && 'error' in jp) imageDecodeErrors.push(jp.error);
-      else if (jp) {
+      if (jp) {
         const g = dinGeometry(settings.dinForm);
         const off = Number(settings.printOffsetTopMm) || 0;
         const maxHmm = Math.max(8, g.addrTopMm - g.headTopMm - 8);
@@ -413,11 +400,7 @@ export default class LetterheadPlugin extends Plugin {
       await MarkdownRenderer.render(this.app, markdown, holder, model.sourcePath || '', comp);
       const ex = domToIrSync(holder, { codes });
       simplified = ex.unsupportedCount;
-      const res = await resolveImages(ex.blocks, ex.imageEls, async (src) => {
-        const out = await this.decodeImage(src, model.sourceFile);
-        if (out && 'error' in out) { imageDecodeErrors.push(out.error); return null; }
-        return out;
-      });
+      const res = await resolveImages(ex.blocks, ex.imageEls, (src) => this.decodeImage(src, model.sourceFile));
       bodyBlocks = res.blocks;
       simplified += res.unsupportedAdded;
     } finally {
@@ -429,12 +412,6 @@ export default class LetterheadPlugin extends Plugin {
 
     // Degradation surfaces as a Notice (replaces the old HTML/print fallback).
     if (simplified > 0) new Notice(t('notice_simplified').replace('{n}', String(simplified)));
-    if (imageDecodeErrors.length > 0) {
-      // DIAGNOSTIC: duration 0 (stays until dismissed) so the raw reason can
-      // be read/screenshotted on iOS without cable debugging.
-      const reasons = [...new Set(imageDecodeErrors)].join(' | ');
-      new Notice(`Letterhead (Diagnose): Bild-Rasterung fehlgeschlagen — ${reasons}`, 0);
-    }
 
     // 5. Merge head + body ops into one writer.
     const pageCount = Math.max(1, body.pageCount);

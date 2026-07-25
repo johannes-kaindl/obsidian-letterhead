@@ -21,8 +21,6 @@ const en = {
   notice_no_recipient: 'Letterhead: No recipient in the frontmatter (field "empfaenger").',
   notice_print_failed: 'Letterhead: Printing is not possible.',
   notice_simplified: 'Letterhead: {n} element(s) were simplified for the PDF.',
-  notice_svg_tainted:
-    'Letterhead: SVG image(s) could not be rasterized for the PDF (a WebKit/iOS security restriction) – please use PNG or JPEG instead.',
   modal_title: 'Letter preview',
   modal_export: 'Export PDF',
   modal_close: 'Close',
@@ -125,8 +123,6 @@ const de: Record<keyof typeof en, string> = {
   notice_no_recipient: 'Letterhead: Kein Empfänger im Frontmatter (Feld „empfaenger").',
   notice_print_failed: 'Letterhead: Druck nicht möglich.',
   notice_simplified: 'Letterhead: {n} Element(e) wurden für das PDF vereinfacht.',
-  notice_svg_tainted:
-    'Letterhead: SVG-Bild(er) konnten nicht ins PDF gerastert werden (WebKit/iOS-Sicherheitsbeschränkung) – bitte PNG oder JPEG verwenden.',
   modal_title: 'Brief-Vorschau',
   modal_export: 'PDF-Export',
   modal_close: 'Schließen',
