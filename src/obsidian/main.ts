@@ -347,8 +347,12 @@ export default class LetterheadPlugin extends Plugin {
   ): Promise<{ data: Uint8Array; wPx: number; hPx: number } | { error: string } | null> {
     if (!src) return { error: 'decode: empty src attribute' };
     try {
-      // Already a loadable URL — hand straight to the rasterizer.
-      if (/^(data:|app:|blob:|https?:)/i.test(src)) return await imageToJpeg(src, () => createEl('canvas'), 1600);
+      // Already a loadable URL — hand straight to the rasterizer. `capacitor:`
+      // is iOS/Capacitor's scheme for resolved local-file image srcs (the
+      // mobile counterpart to desktop's `app:`) — real device diagnosis
+      // (2026-07-25) found embedded images falling through to the vault-link
+      // branch below on iPhone because it was missing here.
+      if (/^(data:|app:|capacitor:|blob:|https?:)/i.test(src)) return await imageToJpeg(src, () => createEl('canvas'), 1600);
       // Vault-relative wikilink/path → resolve to a resource URL.
       const dest = this.app.metadataCache.getFirstLinkpathDest(src, sourceFile ? sourceFile.path : '');
       if (dest) return await imageToJpeg(this.app.vault.getResourcePath(dest), () => createEl('canvas'), 1600);
