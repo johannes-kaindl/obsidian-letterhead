@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.6.2] — 2026-07-25
+
 ### Fixed
 - **Eingebettete Bilder erschienen auf iOS nicht im Vektor-PDF.** Obsidians iOS-App (Capacitor)
   liefert für eingebettete Bild-Elemente `src="capacitor://localhost/_capacitor_file_/…"` statt
