@@ -337,21 +337,26 @@ export default class LetterheadPlugin extends Plugin {
 
   /* ---- image decode for body <img> (data: / app: / vault-relative) ---- */
 
+  // DIAGNOSTIC (unresolved iOS-SVG-Bug): every null-producing branch below
+  // now returns a distinct { error } instead, so buildPdfBytes can surface
+  // exactly which step fails on-device — TODO collapse back to plain null
+  // once the real cause is confirmed on iPhone.
   async decodeImage(
     src: string,
     sourceFile: TFile | null
   ): Promise<{ data: Uint8Array; wPx: number; hPx: number } | { error: string } | null> {
-    if (!src) return null;
+    if (!src) return { error: 'decode: empty src attribute' };
     try {
       // Already a loadable URL — hand straight to the rasterizer.
       if (/^(data:|app:|blob:|https?:)/i.test(src)) return await imageToJpeg(src, () => createEl('canvas'), 1600);
       // Vault-relative wikilink/path → resolve to a resource URL.
       const dest = this.app.metadataCache.getFirstLinkpathDest(src, sourceFile ? sourceFile.path : '');
       if (dest) return await imageToJpeg(this.app.vault.getResourcePath(dest), () => createEl('canvas'), 1600);
-      return null;
+      return { error: `decode: link resolution failed for "${src}"` };
     } catch (e) {
+      const msg = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
       console.error('Letterhead: image decode failed', e);
-      return null;
+      return { error: `decode: ${msg}` };
     }
   }
 
