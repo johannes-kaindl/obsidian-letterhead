@@ -1,0 +1,7 @@
+{
+  "source": "obsidian-kit",
+  "version": "0.16.0",
+  "sha": "92c60d5",
+  "vendored": "pdf/wrap.ts, pdf/writer.ts, pdf/geometry.ts, pdf/ir.ts, pdf/layout.ts, pdf/index.ts, pdf/encoding.ts, pdf/metrics.ts, pdf/options.ts",
+  "note": "Verbatim snapshot. Never hand-edit. Re-copy from obsidian-kit to update."
+}
