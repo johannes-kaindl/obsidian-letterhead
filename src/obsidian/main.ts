@@ -27,9 +27,9 @@ import { Plugin, Notice, Component, MarkdownRenderer, Platform, normalizePath, t
 
 import { layoutHead } from '../core/head-layout';
 import { layoutBody } from '../core/body-ir';
-import { domToIrSync, resolveImages } from '../core/dom-to-ir';
-import { extractCodeBlocks } from '../core/code-blocks';
-import { imageToJpeg } from '../core/image';
+import { domToIrSync, resolveImages } from '../vendor/kit/pdf/dom-to-ir';
+import { extractCodeBlocks, parseCodePlaceholder } from '../vendor/kit/pdf/code-blocks';
+import { imageToJpeg } from '../vendor/kit/pdf/image';
 import { buildFilename, migrateFilenameTemplate, isoDate, type FilenameValues } from '../core/filename';
 import { dinGeometry, DEFAULT_SETTINGS, LETTER_LABELS, type LetterheadSettings } from '../core/model';
 import {
@@ -396,9 +396,9 @@ export default class LetterheadPlugin extends Plugin {
       // json-editor on ```json) replaces the <pre> with its own widget DOM, and the original
       // code would be unrecoverable from it. The HTML/print path (renderMarkdownToHtml) is
       // unaffected and must keep the widget: a browser renders it correctly.
-      const { markdown, codes } = extractCodeBlocks(model.bodyMarkdown || '');
+      const { markdown, codes } = extractCodeBlocks(model.bodyMarkdown || '', 'LETTERHEADCODE');
       await MarkdownRenderer.render(this.app, markdown, holder, model.sourcePath || '', comp);
-      const ex = domToIrSync(holder, { codes });
+      const ex = domToIrSync(holder, { codes, resolvePlaceholder: (t) => parseCodePlaceholder(t, 'LETTERHEADCODE') });
       simplified = ex.unsupportedCount;
       const res = await resolveImages(ex.blocks, ex.imageEls, (src) => this.decodeImage(src, model.sourceFile));
       bodyBlocks = res.blocks;

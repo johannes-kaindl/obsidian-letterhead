@@ -1,17 +1,17 @@
+// vendored from obsidian-kit@0.17.0, src/pure/pdf/image.ts — do not hand-edit
 /* ------------------------------------------------------------------ *
  *  Image · Rasterung (Runtime: Image/canvas) → JPEG-Bytes
  * ------------------------------------------------------------------ */
 /* Rastert ein (ggf. SVG-)Bild aus seiner data:/resource-URL auf weißem
    Grund zu JPEG-Bytes für die PDF-Einbettung. Transparenz wird auf Weiß
    geflacht (Brief). Gibt null zurück, wenn keine Quelle oder ein Fehler
-   — dann ohne Bild. Generalisierte Portierung von letterhead's
-   `logoToJpeg` (main.js:1849-1877).
+   — dann ohne Bild.
 
    Das <canvas> wird als Factory injiziert, nicht hier erzeugt: `createEl`/
-   `activeDocument` sind Obsidian-Globals, die in core/ nichts verloren haben
-   (PROF-OBS-04) — der Aufrufer in src/obsidian/main.ts liefert
-   `() => createEl('canvas')`. So bleibt core/ frei von Obsidian-Globals und von
-   rohem `document.createElement` (obsidianmd/prefer-create-el). */
+   `activeDocument` sind Obsidian-Globals, die in pure/ nichts verloren haben
+   — der Aufrufer im jeweiligen Plugin liefert `() => createEl('canvas')`. So
+   bleibt dieses Modul frei von Obsidian-Globals und von rohem
+   `document.createElement` (obsidianmd/prefer-create-el). */
 export async function imageToJpeg(
   src: string,
   makeCanvas: () => HTMLCanvasElement,
@@ -44,7 +44,7 @@ export async function imageToJpeg(
     for (let i = 0; i < bin.length; i++) data[i] = bin.charCodeAt(i);
     return { data, wPx, hPx };
   } catch (e) {
-    console.error('Letterhead: image rasterization failed', e);
+    console.error('obsidian-kit: image rasterization failed', e);
     return null;
   }
 }

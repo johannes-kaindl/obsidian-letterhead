@@ -1,6 +1,6 @@
-// src/core/dom-to-ir.ts
-import { Block, Inline, ListItem, Cell, Align } from '../vendor/kit/pdf';
-import { parseCodePlaceholder, type ExtractedCode } from './code-blocks';
+// vendored from obsidian-kit@0.17.0, src/pure/pdf/dom-to-ir.ts — do not hand-edit
+import { Block, Inline, ListItem, Cell, Align } from './ir';
+import type { ExtractedCode } from './code-blocks';
 
 const EMPTY = new Uint8Array(0);
 const nameOf = (n: Node) => (n.nodeName || '').toUpperCase();
@@ -56,20 +56,21 @@ function cellAlign(td: Element): Align | undefined {
 
 export function domToIrSync(
   root: HTMLElement,
-  opts?: { pageBreakMarker?: string; codes?: ExtractedCode[] },
+  opts?: { pageBreakMarker?: string; codes?: ExtractedCode[]; resolvePlaceholder?: (text: string) => number | null },
 ): { blocks: Block[]; imageEls: HTMLImageElement[]; unsupportedCount: number } {
   const blocks: Block[] = [];
   const imageEls: HTMLImageElement[] = [];
   let unsupportedCount = 0;
   const marker = opts?.pageBreakMarker;
   const codes = opts?.codes;
+  const resolvePlaceholder = opts?.resolvePlaceholder;
 
   // A placeholder paragraph stands for a fenced block that was pulled out of the Markdown
   // before rendering (see extractCodeBlocks) — Obsidian post-processors from other plugins
   // never saw it, so the original code is still intact here.
   const codeFor = (txt: string): ExtractedCode | null => {
-    if (!codes || !codes.length) return null;
-    const i = parseCodePlaceholder(txt);
+    if (!codes || !codes.length || !resolvePlaceholder) return null;
+    const i = resolvePlaceholder(txt);
     return i === null ? null : (codes[i] ?? null);
   };
 

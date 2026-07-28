@@ -10,7 +10,7 @@
 // leisten (getContext('2d') → null, kein Canvas-Backend) — das bleibt Geraete-Abnahme,
 // genau wie window.print() in do-print.test.ts.
 import { describe, it, expect, vi } from 'vitest';
-import { imageToJpeg } from '../../src/core/image';
+import { imageToJpeg } from '../../src/vendor/kit/pdf/image';
 
 const PX =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';

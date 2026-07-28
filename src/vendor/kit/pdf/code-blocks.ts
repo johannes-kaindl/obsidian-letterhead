@@ -1,25 +1,24 @@
-// src/core/code-blocks.ts
+// vendored from obsidian-kit@0.17.0, src/pure/pdf/code-blocks.ts — do not hand-edit
 export interface ExtractedCode {
   lang?: string;
   text: string;
 }
 
-export function codePlaceholder(i: number): string {
-  return `LETTERHEADCODE${i}`;
+export function codePlaceholder(prefix: string, i: number): string {
+  return `${prefix}${i}`;
 }
 
-const PLACEHOLDER_RE = /^LETTERHEADCODE(\d+)$/;
-
 /** Index of the placeholder this text is, or null. Counterpart to codePlaceholder(). */
-export function parseCodePlaceholder(text: string): number | null {
-  const m = PLACEHOLDER_RE.exec(text.trim());
+export function parseCodePlaceholder(text: string, prefix: string): number | null {
+  const re = new RegExp(`^${prefix}(\\d+)$`);
+  const m = re.exec(text.trim());
   return m ? Number(m[1]) : null;
 }
 
 // Opening fence: optional indent, 3+ backticks or tildes, optional language.
 const OPEN_RE = /^(\s*)(`{3,}|~{3,})(\S*)\s*$/;
 
-export function extractCodeBlocks(md: string): { markdown: string; codes: ExtractedCode[] } {
+export function extractCodeBlocks(md: string, prefix: string): { markdown: string; codes: ExtractedCode[] } {
   const lines = md.split('\n');
   const out: string[] = [];
   const codes: ExtractedCode[] = [];
@@ -41,7 +40,7 @@ export function extractCodeBlocks(md: string): { markdown: string; codes: Extrac
 
     const body = lines.slice(i + 1, j).map((l) => (l.startsWith(indent) ? l.slice(indent.length) : l));
     codes.push({ lang: lang || undefined, text: body.join('\n') });
-    out.push(indent + codePlaceholder(codes.length - 1));
+    out.push(indent + codePlaceholder(prefix, codes.length - 1));
     i = j + 1;
   }
 
