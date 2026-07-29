@@ -1,7 +1,8 @@
 # AGENTS.md — obsidian-letterhead
 
-> **Workspace-Standards:** Die verbindliche Leitkonvention steht in
-> `../_docs/CONVENTIONS.md` (Modell comply-or-explain). Begründete Abweichungen
+> **Workspace-Standards (maintainer-lokal):** Die verbindliche Leitkonvention steht in `_docs/CONVENTIONS.md`
+> im Multi-Projekt-Workspace des Maintainers, `../../_docs` relativ zu diesem Repo — nicht Teil dieses Repos,
+> ignorieren falls im Klon nicht vorhanden. Modell comply-or-explain. Begründete Abweichungen
 > stehen unten unter „Abweichungen von der Leitkonvention".
 
 Conventions for AI agents (Claude Code, Codex, …) working on this repository.
@@ -15,7 +16,7 @@ OS-Druckdialog als PDF — Desktop **und iOS**. TypeScript + `esbuild`-Build (`s
 nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
 
 - **Plugin-ID:** `letterhead` (deployed unter `.obsidian/plugins/letterhead/`).
-- **Test-Vault:** `/Users/Shared/10_ObsidianVaults/10_Pallas/`.
+- **Test-Vault:** `$VAULT/` (Obsidian-Vault des Maintainers, CORE-META-14-Platzhalter).
 
 ## Architecture principles
 
@@ -95,7 +96,7 @@ dem getaggten Commit, nicht eine committete Kopie.
 - Frontmatter-Felder deutsch-first mit Aliassen (`docs/reference/frontmatter.md`).
 - Doku ist zweisprachig: Änderungen immer in **beiden** Sprachen pflegen
   (EN `*.md` + DE `*.de.md`), sonst driften die Versionen auseinander.
-- Workspace-weite Standards: `../_docs/CONVENTIONS.md`.
+- Workspace-weite Standards: `_docs/CONVENTIONS.md` im Maintainer-Workspace (`../../_docs`, siehe Kopf dieser Datei).
 
 ## Gotchas
 
@@ -138,6 +139,15 @@ dem getaggten Commit, nicht eine committete Kopie.
 Projekt-Memory unter `~/.claude/projects/<slug>/memory/` (Index: `MEMORY.md`).
 Session-Handoff unter `.remember/` (gitignored).
 
+- **SDD-Artefakte (seit 2026-07-16): Cockpit, nicht Repo** — Specs/Plans/Task-Reports leben im
+  Coding-Cockpit des Maintainers (`$VAULT/25_Coding/obsidian-letterhead/_SDD/`, CORE-META-14, maintainer-lokal).
+  Sie tragen Arbeitskontext (Vault-Pfade, Schwester-Repo-Interna), der in einem public Repo niemandem nützt.
+  Das Repo behält die Design-Essenz in dieser Datei + `CHANGELOG.md`.
+- **Alt-Bestand:** `docs/superpowers/{specs,plans}/` (falls vorhanden) ist eingefroren — nichts Neues dort ablegen.
+- **Nie im Repo:** absolute Pfade außerhalb des Repos (`/Users/…`, Vault-Pfade) — Platzhalter nutzen
+  (`$VAULT/…`, `~/…`, repo-relativ). Herkunftsnachweise als Repo-Name + `Datei:Zeile` sind dagegen erwünscht.
+  Gate: `scripts/check-no-abs-paths.mjs` (Teil von `npm test`).
+
 ## Abweichungen von der Leitkonvention
 
 - **PROF-TS-01..04** — entfällt seit dem Umbau auf TypeScript + `esbuild` + `vitest`
@@ -151,7 +161,7 @@ Session-Handoff unter `.remember/` (gitignored).
 
 ## Dach-Kontext (obsidian-plugins)
 
-Dieses Repo liegt unter dem Koordinations-Dach `/Users/Shared/code/obsidian-plugins/`.
+Dieses Repo liegt unter dem Koordinations-Dach `obsidian-plugins/` (`..` vom Repo-Root).
 **Vor dem Lösen eines Problems:** `../AGENTS.md` (Kit-first-Regel) und `../REGISTRY.md`
 (Lösungs-Registry) prüfen — viele Probleme sind in Nachbar-Plugins oder im
 `obsidian-kit` bereits gelöst.
