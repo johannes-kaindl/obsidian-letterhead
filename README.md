@@ -42,7 +42,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 ## Install
 
 Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead)
-(source mirror: [codeberg.org/jkaindl/obsidian-letterhead](https://codeberg.org/jkaindl/obsidian-letterhead))
+(source mirror: [git.jkaindl.de/jkaindl/obsidian-letterhead](https://git.jkaindl.de/jkaindl/obsidian-letterhead))
 
 ### From Obsidian (recommended)
 

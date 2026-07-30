@@ -15,7 +15,7 @@ Danke fürs Mitwirken! Dieses Repo folgt der Workspace-Leitkonvention
 
 ## Tags & Remotes (CORE-GIT-01/03)
 - SemVer **ohne** v-Präfix (`1.2.3`).
-- Primär-Remote ist Codeberg (`origin`); GitHub nur Mirror (Obsidian-Verzeichnis/BRAT).
+- Primär-Remote ist Forgejo (`origin`); GitHub nur Mirror (Obsidian-Verzeichnis/BRAT).
 
 ## Qualität vor dem Commit
 - `npm run check` (node --check) muss sauber sein.

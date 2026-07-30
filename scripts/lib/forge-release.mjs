@@ -1,15 +1,15 @@
-// scripts/lib/codeberg-release.mjs
-// Reiner Helfer: erzeugt/aktualisiert ein Codeberg-(Forgejo-)Release + Assets über die Forgejo-API.
+// scripts/lib/forge-release.mjs
+// Reiner Helfer: erzeugt/aktualisiert ein Forgejo-Release + Assets über die Forgejo-API.
 // `fetch` wird injiziert → ohne Netz testbar. Kein Prozess-/Datei-Zugriff hier; der Orchestrator
 // (release.mjs) liest Token/Assets und reicht sie herein.
 //
-//   createCodebergRelease({ fetch, token, repo, tag, notes, assets }) → { id, htmlUrl }
+//   createForgeRelease({ fetch, token, repo, tag, notes, assets }) → { id, htmlUrl }
 //   repo   = "owner/name" (z.B. "jkaindl/obsidian-letterhead")
 //   assets = [{ name, body }]   body = Uint8Array/Buffer des Datei-Inhalts
 
-const API = "https://codeberg.org/api/v1";
+const API = "https://git.jkaindl.de/api/v1";
 
-export async function createCodebergRelease({ fetch, token, repo, tag, notes, assets }) {
+export async function createForgeRelease({ fetch, token, repo, tag, notes, assets }) {
   const auth = { Authorization: `token ${token}` };
   const jsonHeaders = { ...auth, "Content-Type": "application/json" };
 

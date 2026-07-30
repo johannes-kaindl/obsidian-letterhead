@@ -86,13 +86,13 @@ dem getaggten Commit, nicht eine committete Kopie.
 - **Nicht mehr** manuell `gh release create` aufrufen: Die Attestation kann nur der
   Actions-Lauf signieren (OIDC-Identität = Workflow, nicht Laptop); ein manuelles
   Release für denselben Tag hätte keine Provenance und kollidiert mit dem Workflow.
-- `origin` bleibt Codeberg; nur der Tag muss zusätzlich auf den `github`-Remote, damit
+- `origin` bleibt Forgejo; nur der Tag muss zusätzlich auf den `github`-Remote, damit
   der Workflow feuert. Voraussetzung: Actions sind im Mirror-Repo aktiviert.
 
 ## Conventions
 
 - Conventional Commits; SemVer-Tags **ohne** v-Präfix; nur berührte Dateien stagen.
-- Remotes: Codeberg `origin`, GitHub-Mirror für Obsidian-Verzeichnis/BRAT.
+- Remotes: Forgejo `origin`, GitHub-Mirror für Obsidian-Verzeichnis/BRAT.
 - Frontmatter-Felder deutsch-first mit Aliassen (`docs/reference/frontmatter.md`).
 - Doku ist zweisprachig: Änderungen immer in **beiden** Sprachen pflegen
   (EN `*.md` + DE `*.de.md`), sonst driften die Versionen auseinander.

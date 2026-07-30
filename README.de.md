@@ -41,7 +41,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch√
 ## Installation
 
 Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead)
-(Quell-Mirror: [codeberg.org/jkaindl/obsidian-letterhead](https://codeberg.org/jkaindl/obsidian-letterhead))
+(Quell-Mirror: [git.jkaindl.de/jkaindl/obsidian-letterhead](https://git.jkaindl.de/jkaindl/obsidian-letterhead))
 
 ### Aus Obsidian (empfohlen)
 
