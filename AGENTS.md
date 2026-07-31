@@ -50,7 +50,7 @@ nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
   teilt `exportViaPdf()` es per `navigator.share()` (ein Tipp), sonst
   `openWithDefaultApp()`. Reine, Obsidian-freie Schichten unter `src/vendor/kit/pdf/`:
   `writer`/`encoding` (Byte-Writer), `layout`/`geometry` (DIN-Geometrie → Draw-Ops,
-  AFM-Metriken via `metrics`), `ir` (Body-IR) — gefüttert aus `src/core/dom-to-ir.ts`
+  AFM-Metriken via `metrics`), `ir` (Body-IR) — gefüttert aus `src/vendor/kit/pdf/dom-to-ir.ts`
   (`domToIrSync`, Nachfolger von `walkBodyNodes`). Tabellen, eingebettete Bilder, Code-Blöcke und
   mehrseitige Paginierung werden seit 1.4.0 direkt im Vektor-PDF gerendert (Degradation
   bei nicht unterstützten Elementen). **Kein HTML/Quick-Look-Fallback mehr:** das Setting
