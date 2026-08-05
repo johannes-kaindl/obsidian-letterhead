@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.6.3] — 2026-08-05
+
 ### Fixed
 - **Grafisch gerenderte Elemente verschwanden spurlos aus dem PDF.** MathJax-Formeln, Mermaid-
   Diagramme und nacktes SVG tragen keinen Textknoten; die DOM→IR-Umwandlung prüfte nur
