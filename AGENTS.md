@@ -24,8 +24,13 @@ nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
   Browser-APIs im gebauten `main.js`.
 - Reine Funktionen (`src/core/*`, `src/vendor/kit/pdf/*`) sind frei von
   Obsidian-Imports und damit isoliert mit `vitest` testbar (PROF-OBS-04). Die Grenze
-  wird von `npm run check:pure` erzwungen (kein `from 'obsidian'`-Import in
-  `src/core` oder `src/vendor`).
+  wird von `npm run check:pure` erzwungen (kein `obsidian`-Import in `src/core` oder
+  `src/vendor`). **Das ist ein Script (`scripts/check-pure.mjs`), kein grep-Einzeiler:**
+  der frühere Einzeiler matchte nur `from 'obsidian'` mit einfachen Anführungszeichen —
+  dem Repo-Stil. Das vendored Kit schreibt teils doppelte, womit das Gate blind war für
+  genau den Fremdcode, den es prüft (gemessen im drift-audit 2026-08-05: Verstoß mit
+  doppelten Quotes lief grün durch). Wer es anfasst: gegen einen echten Verstoß in
+  **beiden** Quote-Stilen laufen lassen und den Exit-Code prüfen.
 - Styling ausschließlich über CSS Custom Properties (Design-Tokens): Geometrie ist
   DIN-kritisch (Fensterkuvert), Typo/Farbe/Spacing frei. Token-Referenz:
   `docs/reference/theming.md`.
