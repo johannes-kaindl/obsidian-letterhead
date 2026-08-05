@@ -1,7 +1,7 @@
 {
   "source": "obsidian-kit",
-  "version": "0.17.0",
-  "sha": "2959d9f",
-  "vendored": "pdf/wrap.ts, pdf/writer.ts, pdf/geometry.ts, pdf/ir.ts, pdf/layout.ts, pdf/index.ts, pdf/encoding.ts, pdf/metrics.ts, pdf/options.ts, pdf/code-blocks.ts, pdf/dom-to-ir.ts, pdf/image.ts",
-  "note": "Verbatim snapshot. Never hand-edit. Re-copy from obsidian-kit to update."
+  "version": "0.22.0",
+  "sha": "e96f7c1",
+  "vendored": "pdf/*.ts",
+  "note": "Verbatim snapshot. Never hand-edit. Re-vendor via tools/sync-kit.sh."
 }

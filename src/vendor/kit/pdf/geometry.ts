@@ -1,3 +1,4 @@
+// vendored from obsidian-kit@0.22.0, src/pure/pdf/geometry.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/geometry.ts
 // Pure PDF geometry helpers. No Obsidian, no DOM.
 export const PT_PER_MM = 2.8346456693;

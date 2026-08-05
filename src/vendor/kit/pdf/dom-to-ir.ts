@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.17.0, src/pure/pdf/dom-to-ir.ts — do not hand-edit
+// vendored from obsidian-kit@0.22.0, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { Block, Inline, ListItem, Cell, Align } from './ir';
 import type { ExtractedCode } from './code-blocks';
 
@@ -7,8 +7,47 @@ const nameOf = (n: Node) => (n.nodeName || '').toUpperCase();
 const isText = (n: Node) => n.nodeType === 3;
 const isElem = (n: Node) => n.nodeType === 1;
 
+const hasClass = (el: Element, c: string) => ` ${el.getAttribute('class') || ''} `.includes(` ${c} `);
+const isMathEl = (el: Element) => {
+  const nm = nameOf(el);
+  return nm === 'MJX-CONTAINER' || nm === 'MATH' || hasClass(el, 'math');
+};
+
+// Chrome, not content: a callout's Lucide icon is decoration and reporting it as a lost
+// graphic is noise where nothing is missing. Two markers carry across renderers — `aria-hidden`
+// (the W3C way to say "purely decorative") and `icon` in the class name.
+const isDecorative = (el: Element): boolean =>
+  el.getAttribute('aria-hidden') === 'true' || /(^|[\s-])icon([\s-]|$)/.test(el.getAttribute('class') || '');
+
+// Graphically rendered elements — MathJax, Mermaid, bare SVG — carry no text node at all.
+// Checking only `textContent` let them vanish without a trace *and* without incrementing the
+// counter, so the host's summary notice stayed silent too. Silent loss is worse than visible
+// simplification: the PDF gave no hint that anything was missing. Returns the placeholder to
+// show in the PDF, or null when the element is just an empty layout wrapper or decoration.
+function graphicPlaceholder(el: Element): string | null {
+  if ((el.textContent || '').trim()) return null;
+  if (isDecorative(el)) return null;
+  const nm = nameOf(el);
+  const self = nm === 'SVG' || nm === 'CANVAS' || isMathEl(el);
+  const inner = el.querySelector('svg, canvas, mjx-container, math');
+  if (!self && !inner) return null;
+  // A wrapper whose only graphic is a decorative icon is decorative itself.
+  if (!self && inner && isDecorative(inner)) return null;
+  return isMathEl(el) || el.querySelector('mjx-container, math') ? '[Formel]' : '[Grafik]';
+}
+
+// A rendered task list item keeps its state only in the checkbox element; without a marker
+// `- [ ]` and `- [x]` become visually identical bullets in the PDF.
+function taskMarker(li: Element): string | null {
+  const box = li.querySelector('input[type="checkbox"]');
+  if (!box) return null;
+  const checked = (box as HTMLInputElement).checked || box.hasAttribute('checked')
+    || hasClass(li, 'is-checked') || (li.getAttribute('data-task') || '').toLowerCase() === 'x';
+  return checked ? '[x] ' : '[ ] ';
+}
+
 // Inline runs (bold/italic/code/link) from an element's descendants.
-function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boolean; link?: string }, acc: Inline[]): Inline[] {
+function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boolean; link?: string }, acc: Inline[], stats?: { graphics: number }): Inline[] {
   for (const c of Array.from(node.childNodes || [])) {
     if (isText(c)) {
       const txt = c.textContent || '';
@@ -18,13 +57,16 @@ function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boole
       if (nm === 'BR') { acc.push({ text: '\n' }); continue; }
       if (nm === 'IMG') continue; // inline images are ignored inside text runs
       if (nm === 'UL' || nm === 'OL') continue; // nested lists are handled as separate child blocks
+      if (nm === 'INPUT') continue; // the task checkbox is surfaced via taskMarker, not as a run
+      const ph = graphicPlaceholder(c as Element);
+      if (ph) { acc.push({ text: ph }); if (stats) stats.graphics++; continue; }
       const next = {
         bold: ctx.bold || nm === 'STRONG' || nm === 'B',
         italic: ctx.italic || nm === 'EM' || nm === 'I',
         code: ctx.code || nm === 'CODE',
         link: nm === 'A' ? ((c as HTMLAnchorElement).getAttribute('href') || ctx.link) : ctx.link,
       };
-      runsFrom(c, next, acc);
+      runsFrom(c, next, acc, stats);
     }
   }
   return acc;
@@ -41,8 +83,8 @@ function mergeRuns(runs: Inline[]): Inline[] {
   return out.filter((r) => r.text !== '');
 }
 
-function inlinesOf(el: Element): Inline[] {
-  return mergeRuns(runsFrom(el, { bold: false, italic: false, code: false }, []));
+function inlinesOf(el: Element, stats?: { graphics: number }): Inline[] {
+  return mergeRuns(runsFrom(el, { bold: false, italic: false, code: false }, [], stats));
 }
 
 function cellAlign(td: Element): Align | undefined {
@@ -61,6 +103,9 @@ export function domToIrSync(
   const blocks: Block[] = [];
   const imageEls: HTMLImageElement[] = [];
   let unsupportedCount = 0;
+  // Inline graphics (a formula inside a paragraph) are counted while collecting runs and
+  // folded into unsupportedCount at the end.
+  const gstats = { graphics: 0 };
   const marker = opts?.pageBreakMarker;
   const codes = opts?.codes;
   const resolvePlaceholder = opts?.resolvePlaceholder;
@@ -85,7 +130,13 @@ export function domToIrSync(
         if (nm === 'UL' || nm === 'OL') childBlocks.push({ type: 'list', ordered: nm === 'OL', items: parseList(sub) });
       }
       if (li.querySelector('img')) unsupportedCount++;
-      items.push({ inlines: inlinesOf(li), children: childBlocks.length ? childBlocks : undefined });
+      const inl = inlinesOf(li, gstats);
+      const mark = taskMarker(li);
+      if (mark) {
+        if (inl[0]) inl[0].text = inl[0].text.replace(/^\s+/, '');
+        inl.unshift({ text: mark });
+      }
+      items.push({ inlines: inl, children: childBlocks.length ? childBlocks : undefined });
     }
     return items;
   };
@@ -99,14 +150,14 @@ export function domToIrSync(
       const tr = thead.querySelector('tr');
       if (tr) header = Array.from(tr.children).map((td) => {
         if (td.querySelector('img')) unsupportedCount++;
-        return { inlines: inlinesOf(td), align: cellAlign(td) };
+        return { inlines: inlinesOf(td, gstats), align: cellAlign(td) };
       });
     }
     for (const tr of Array.from(tbody.querySelectorAll('tr'))) {
       if (thead && tr.parentElement && tr.parentElement.nodeName.toUpperCase() === 'THEAD') continue;
       const cells = Array.from(tr.children).map((td) => {
         if (td.querySelector('img')) unsupportedCount++;
-        return { inlines: inlinesOf(td), align: cellAlign(td) };
+        return { inlines: inlinesOf(td, gstats), align: cellAlign(td) };
       });
       if (cells.length) rows.push(cells);
     }
@@ -118,14 +169,20 @@ export function domToIrSync(
       if (isText(c)) { const t = (c.textContent || '').trim(); if (t) blocks.push({ type: 'paragraph', inlines: [{ text: t }] }); continue; }
       if (!isElem(c)) continue;
       const el = c as Element;
+      // Skip decorative chrome wholesale rather than descending into it. Obsidian's export
+      // path renders a callout icon as a bare `<svg width="16" height="16">` with no class
+      // and no aria-hidden — only its *container* is recognisable, so checking the element
+      // alone let the naked SVG through one level down. The text guard keeps an element that
+      // merely happens to be called "icon-legend" from swallowing its own content.
+      if (isDecorative(el) && !(el.textContent || '').trim()) continue;
       const nm = nameOf(el);
-      if (/^H[1-6]$/.test(nm)) blocks.push({ type: 'heading', level: Number(nm[1]) as 1, inlines: inlinesOf(el) });
+      if (/^H[1-6]$/.test(nm)) blocks.push({ type: 'heading', level: Number(nm[1]) as 1, inlines: inlinesOf(el, gstats) });
       else if (nm === 'P') {
         const txt = (el.textContent || '').trim();
         if (marker && txt === marker) { blocks.push({ type: 'pagebreak' }); continue; }
         const code = codeFor(txt);
         if (code) { blocks.push({ type: 'code', lang: code.lang, text: code.text }); continue; }
-        const inl = inlinesOf(el);
+        const inl = inlinesOf(el, gstats);
         if (inl.length) blocks.push({ type: 'paragraph', inlines: inl });
         for (const img of Array.from(el.querySelectorAll('img'))) {
           blocks.push({ type: 'image', data: EMPTY, wPx: 0, hPx: 0, alt: img.getAttribute('alt') || undefined });
@@ -138,13 +195,22 @@ export function domToIrSync(
       else if (nm === 'TABLE') blocks.push(parseTable(el));
       else if (nm === 'IMG') { blocks.push({ type: 'image', data: EMPTY, wPx: 0, hPx: 0, alt: (el as HTMLImageElement).getAttribute('alt') || undefined }); imageEls.push(el as HTMLImageElement); }
       else if (nm === 'HR') blocks.push({ type: 'hr' });
-      else if (nm === 'DIV' || nm === 'SECTION' || nm === 'ARTICLE') walk(el);
-      else { const t = (el.textContent || '').trim(); if (t) { blocks.push({ type: 'unsupported', text: t }); unsupportedCount++; } }
+      else if (nm === 'DIV' || nm === 'SECTION' || nm === 'ARTICLE') {
+        const ph = graphicPlaceholder(el);
+        if (ph) { blocks.push({ type: 'unsupported', text: ph }); unsupportedCount++; }
+        else walk(el);
+      }
+      else {
+        const t = (el.textContent || '').trim();
+        if (t) { blocks.push({ type: 'unsupported', text: t }); unsupportedCount++; continue; }
+        const ph = graphicPlaceholder(el);
+        if (ph) { blocks.push({ type: 'unsupported', text: ph }); unsupportedCount++; }
+      }
     }
   };
 
   walk(root);
-  return { blocks, imageEls, unsupportedCount };
+  return { blocks, imageEls, unsupportedCount: unsupportedCount + gstats.graphics };
 }
 
 export async function resolveImages(

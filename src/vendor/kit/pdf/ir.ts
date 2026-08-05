@@ -1,3 +1,4 @@
+// vendored from obsidian-kit@0.22.0, src/pure/pdf/ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/ir.ts
 // Platform-free intermediate representation — the kit contract.
 export type Align = 'left' | 'center' | 'right';

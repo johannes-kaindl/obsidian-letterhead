@@ -7,6 +7,20 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Fixed
+- **Grafisch gerenderte Elemente verschwanden spurlos aus dem PDF.** MathJax-Formeln, Mermaid-
+  Diagramme und nacktes SVG tragen keinen Textknoten; die DOM→IR-Umwandlung prüfte nur
+  `textContent` und ließ sie ungezählt fallen — auch die Zusammenfassungs-Notice blieb dadurch
+  stumm, das PDF gab keinen Hinweis, dass etwas fehlte. Jetzt erscheinen `[Formel]`/`[Grafik]`
+  als sichtbare Vereinfachung. Dekoratives (Callout-Icons, `aria-hidden`) wird weiterhin
+  übergangen, statt fälschlich als verlorene Grafik gemeldet zu werden.
+- **Aufgabenlisten verloren ihren Zustand.** `- [ ]` und `- [x]` wurden zu optisch gleichen
+  Aufzählungspunkten; der Zustand steht jetzt wieder als `[ ]`/`[x]` voran.
+- **Überschrift blieb über einer fast leeren Seite zurück.** Der Waisenschutz maß Textzeilen des
+  Folgeblocks — bei einem Bild sinnlos, weil es atomar umbricht. Jetzt zählt die volle Bildhöhe.
+
+Alle drei stammen aus `obsidian-kit` 0.18.0–0.22.0 und waren seit 1.4.0 (Kit 0.17.0) vorhanden.
+
 ## [1.6.2] — 2026-07-25
 
 ### Fixed

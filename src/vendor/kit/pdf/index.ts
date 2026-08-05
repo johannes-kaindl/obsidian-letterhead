@@ -1,3 +1,4 @@
+// vendored from obsidian-kit@0.22.0, src/pure/pdf/index.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/index.ts
 import { pageSizePt } from './geometry';
 import { PdfWriter } from './writer';
@@ -7,6 +8,9 @@ import { LayoutOptions } from './options';
 
 export * from './ir';
 export * from './options';
+export * from './dom-to-ir';
+export * from './code-blocks';
+export { imageToJpeg } from './image';
 export { layoutDocument } from './layout';
 export type { DrawOp } from './layout';
 

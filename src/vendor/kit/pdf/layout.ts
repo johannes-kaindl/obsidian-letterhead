@@ -1,3 +1,4 @@
+// vendored from obsidian-kit@0.22.0, src/pure/pdf/layout.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/layout.ts
 import { mmToPt, pageSizePt, hexToRgb01 } from './geometry';
 import { textWidthPt } from './metrics';
@@ -170,12 +171,33 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
     return natural.map((w) => (w / sum) * contentWidthPt);
   };
 
+  // Placed size of an image — single source for the renderer and the orphan lookahead, so the
+  // two cannot drift apart. Returns both dimensions rather than deriving width from height
+  // afterwards: a degenerate image (hPx 0) has ratio 0, and dividing by it yields NaN.
+  const imageSizePt = (b: Extract<Block, { type: 'image' }>): { wPt: number; hPt: number } => {
+    const maxW = contentWidthPt * (options.image.maxWidthPct / 100);
+    const ratio = b.hPx / Math.max(1, b.wPx);
+    let wPt = Math.min(maxW, mmToPt(b.wPx * 0.264583)); // px→mm at 96dpi as a natural cap
+    if (wPt < mmToPt(10)) wPt = maxW; // tiny natural size → fill available width
+    let hPt = wPt * ratio;
+    const maxH = (topYFirst - bottomY) * 0.9;
+    if (hPt > maxH) { hPt = maxH; wPt = hPt / ratio; }
+    return { wPt, hPt };
+  };
+
   // Height of the first n wrapped lines of a block — a lookahead heuristic used to decide
   // whether a heading would be orphaned at the bottom of a page. For text-bearing blocks
-  // (paragraph/heading) this wraps exactly like the renderer does; other block types use a
-  // simple `n * baseSize*lineH` proxy since splitting them mid-block is a separate concern.
+  // (paragraph/heading) this wraps exactly like the renderer does.
+  //
+  // An image is **atomic**: it never splits, so "the first n lines of it" is meaningless. Using
+  // the line proxy here stranded the heading — it fit alongside two notional text lines, then
+  // the whole image moved to the next page and left the heading behind above a third of a blank
+  // page (Paperize acceptance run, 2026-08-04). Its full height is the only honest measure.
+  // Tables and code blocks keep the proxy on purpose: they *can* split (with header repetition),
+  // so a partial fit is a real fit.
   const measureFirstLines = (b: Block, n: number): number => {
     if (n <= 0) return 0;
+    if (b.type === 'image') return imageSizePt(b).hPt + baseSize * 0.6;
     if (b.type === 'paragraph' || b.type === 'heading') {
       const sz = b.type === 'heading' ? baseSize * (HEADING_MUL[b.level] || 1) * hScale : baseSize;
       const runs: WrapRun[] = (b.inlines.length ? b.inlines : [{ text: '' }]).map((r) => ({ text: r.text, fontKey: runFont(r) }));
@@ -339,13 +361,7 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
         emitInlines([{ text: b.text }], baseSize, () => F.italic, MUTED, paraGap, 0);
         break;
       case 'image': {
-        const maxW = contentWidthPt * (options.image.maxWidthPct / 100);
-        const ratio = b.hPx / Math.max(1, b.wPx);
-        let wPt = Math.min(maxW, mmToPt(b.wPx * 0.264583)); // px→mm at 96dpi as a natural cap
-        if (wPt < mmToPt(10)) wPt = maxW; // tiny natural size → fill available width
-        let hPt = wPt * ratio;
-        const maxH = (topYFirst - bottomY) * 0.9;
-        if (hPt > maxH) { hPt = maxH; wPt = hPt / ratio; }
+        const { wPt, hPt } = imageSizePt(b); // same maths the orphan lookahead uses
         if (PAG.keepImagesTogether) breakBeforeIfNeeded(hPt + baseSize * 0.6);
         // Reserve the image height (page-break if needed) and place from the top of the slot.
         const yTop = advance(hPt + baseSize * 0.6);

@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.17.0, src/pure/pdf/image.ts — do not hand-edit
+// vendored from obsidian-kit@0.22.0, src/pure/pdf/image.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 /* ------------------------------------------------------------------ *
  *  Image · Rasterung (Runtime: Image/canvas) → JPEG-Bytes
  * ------------------------------------------------------------------ */
