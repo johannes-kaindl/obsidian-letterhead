@@ -14,7 +14,10 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOTS = ["src/core", "src/vendor"];
-const EXCLUDED = [];
+// kit-obsidian vendors Kit code from obsidian-kit's src/obsidian/ tree (not
+// src/pure/) — it is Obsidian-dependent by design, same as this repo's own
+// src/obsidian/ (which sits outside ROOTS and is exempt for the same reason).
+const EXCLUDED = ["src/vendor/kit-obsidian"];
 const FORBIDDEN = /(?:from|import)\s*\(?\s*["']obsidian(\/[^"']*)?["']/;
 
 function walk(dir) {

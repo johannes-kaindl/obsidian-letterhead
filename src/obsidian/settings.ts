@@ -35,6 +35,7 @@ import {
 import { PLACEHOLDERS, DEFAULT_FILENAME_TEMPLATE } from '../core/filename';
 import { normStil, normSprache } from '../core/frontmatter';
 import { PRESET_CSS } from './html-engine';
+import { renderSettingDefinitions, settingBodyHost, refreshSettingsTab } from '../vendor/kit-obsidian/settings_walker';
 
 /** Minimal shape the settings tab needs from the plugin instance. The
  *  full plugin class (LetterheadPlugin) is ported in Task D4; this local
@@ -43,20 +44,6 @@ export interface LetterheadSettingTabHost {
   settings: LetterheadSettings;
   saveSettings(): Promise<void>;
   insertFrontmatterTemplate(): void | Promise<void>;
-}
-
-/** Structural view of a walked definition item — the imperative fallback
- *  needs just these fields (see renderImperative). */
-type WalkItem = {
-  name?: string;
-  desc?: string | DocumentFragment;
-  visible?: boolean | (() => boolean);
-  render?: (setting: Setting) => unknown;
-  control?: { type: string; key: string; options?: Record<string, string>; placeholder?: string };
-};
-
-function isVisible(v: WalkItem['visible']): boolean {
-  return v === undefined || (typeof v === 'function' ? v() : v);
 }
 
 export class LetterheadSettingTab extends PluginSettingTab {
@@ -180,9 +167,7 @@ export class LetterheadSettingTab extends PluginSettingTab {
 
   /** Frontmatter field reference — the live list of recognised `key: desc` rows. */
   private renderFmTable(setting: Setting): void {
-    const el = setting.settingEl;
-    el.empty();
-    el.removeClass('setting-item');
+    const el = settingBodyHost(setting);
     el.addClass('bk-settings-host');
     const table = el.createDiv({ cls: 'briefkopf-fm-table' });
     const row = (key: string, desc: string) => {
@@ -294,48 +279,23 @@ export class LetterheadSettingTab extends PluginSettingTab {
    *  walks the same definitions, so behaviour matches without a second source. */
   display(): void { this.renderImperative(); }
 
+  private cleanupPrevious: () => void = () => {};
+
   private renderImperative(): void {
     const { containerEl } = this;
+    this.cleanupPrevious();
     containerEl.empty();
-    for (const def of this.getSettingDefinitions()) {
-      const group = def as { type?: string; heading?: string; items?: unknown[] };
-      if (group.type !== 'group' && group.type !== 'list') continue;
-      if (group.heading) new Setting(containerEl).setName(group.heading).setHeading();
-      for (const raw of group.items ?? []) {
-        const item = raw as WalkItem;
-        if (!isVisible(item.visible)) continue;
-        const setting = new Setting(containerEl);
-        if (item.name) setting.setName(item.name);
-        if (item.desc) setting.setDesc(item.desc);
-        if (item.render) { item.render(setting); continue; }
-        const c = item.control;
-        if (!c) continue;
-        const cur = this.getControlValue(c.key) as string | number | boolean | undefined;
-        switch (c.type) {
-          case 'dropdown':
-            setting.addDropdown((d) => {
-              for (const [k, v] of Object.entries(c.options ?? {})) d.addOption(k, v);
-              d.setValue(String(cur ?? '')).onChange((v) => void this.setControlValue(c.key, v));
-            });
-            break;
-          case 'toggle':
-            setting.addToggle((x) => x.setValue(Boolean(cur)).onChange((v) => void this.setControlValue(c.key, v)));
-            break;
-          case 'textarea':
-            setting.addTextArea((x) => { x.setValue(String(cur ?? '')); if (c.placeholder) x.setPlaceholder(c.placeholder); x.onChange((v) => void this.setControlValue(c.key, v)); });
-            break;
-          default: // 'text'
-            setting.addText((x) => { x.setValue(String(cur ?? '')); if (c.placeholder) x.setPlaceholder(c.placeholder); x.onChange((v) => void this.setControlValue(c.key, v)); });
-        }
-      }
-    }
+    this.cleanupPrevious = renderSettingDefinitions(
+      containerEl,
+      this.getSettingDefinitions(),
+      this,
+      this.app,
+    );
   }
 
   /** Re-render the tab. On ≥ 1.13 the declarative framework exposes update();
    *  on the < 1.13 fallback that method does not exist, so re-run display(). */
   private refreshUi(): void {
-    const self = this as unknown as { update?: () => void };
-    if (typeof self.update === 'function') self.update();
-    else this.renderImperative();
+    refreshSettingsTab(this, () => this.renderImperative());
   }
 }

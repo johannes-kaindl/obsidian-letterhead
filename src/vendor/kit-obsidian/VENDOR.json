@@ -1,0 +1,7 @@
+{
+  "source": "obsidian-kit",
+  "version": "0.25.0",
+  "sha": "1ca38610b0fb457ea868739d2d835fb373174784",
+  "vendored": "settings_walker.ts, folder-suggest.ts (static import dependency)",
+  "note": "Verbatim snapshot. Never hand-edit. Re-vendor via tools/sync-kit.sh."
+}
