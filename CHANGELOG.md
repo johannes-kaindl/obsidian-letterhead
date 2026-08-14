@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.6.4] — 2026-08-14
+
 ### Fixed
 - **Codeblock verschwand aus dem PDF, wenn ein Fence direkt an einer Textzeile klebte.** Ein
   Fenced Code darf in CommonMark/Obsidian einen Absatz unterbrechen — steht er ohne Leerzeile
