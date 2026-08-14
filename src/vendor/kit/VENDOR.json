@@ -1,7 +1,7 @@
 {
   "source": "obsidian-kit",
-  "version": "0.22.0",
-  "sha": "e96f7c1",
+  "version": "0.26.1",
+  "sha": "c10f6f4",
   "vendored": "pdf/*.ts",
   "note": "Verbatim snapshot. Never hand-edit. Re-vendor via tools/sync-kit.sh."
 }

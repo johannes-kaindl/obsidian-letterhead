@@ -14,4 +14,29 @@ describe('vendored dom-to-ir + code-blocks', () => {
     });
     expect(blocks).toEqual([{ type: 'code', lang: 'js', text: 'x=1' }]);
   });
+
+  // Grobe Nachbildung der Absatzbildung eines Markdown-Renderers: eine Leerzeile trennt Bloecke,
+  // ein einfacher Zeilenumbruch bleibt Soft Break im selben Absatz. Genau daran haengt der Fall:
+  // klebt der Fence an der Textzeile, muss extractCodeBlocks den Platzhalter in einen eigenen
+  // Absatz polstern, sonst findet ihn resolvePlaceholder nicht mehr.
+  const renderParagraphs = (md: string) =>
+    md
+      .split(/\n{2,}/)
+      .filter((b) => b.trim())
+      .map((b) => `<p>${b.split('\n').join('<br>')}</p>`)
+      .join('');
+
+  it('resolves a fence that hugs the preceding text', () => {
+    const { markdown, codes } = extractCodeBlocks('Text:\n```js\nx=1\n```', 'LETTERHEADCODE');
+    const div = document.createElement('div');
+    div.innerHTML = renderParagraphs(markdown);
+    const { blocks } = domToIrSync(div, {
+      codes,
+      resolvePlaceholder: (t) => parseCodePlaceholder(t, 'LETTERHEADCODE'),
+    });
+    expect(blocks).toEqual([
+      { type: 'paragraph', inlines: [{ text: 'Text:' }] },
+      { type: 'code', lang: 'js', text: 'x=1' },
+    ]);
+  });
 });

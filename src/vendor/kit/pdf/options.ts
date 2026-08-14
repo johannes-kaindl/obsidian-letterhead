@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.22.0, src/pure/pdf/options.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.26.1, src/pure/pdf/options.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/options.ts
 export type FontChoice = 'sans' | 'serif' | 'mono';
 

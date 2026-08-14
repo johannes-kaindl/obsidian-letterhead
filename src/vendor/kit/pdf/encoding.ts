@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.22.0, src/pure/pdf/encoding.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.26.1, src/pure/pdf/encoding.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/encoding.ts
 // Pure PDF encoding helpers. No Obsidian, no DOM.
 // Ported from obsidian-letterhead/main.js

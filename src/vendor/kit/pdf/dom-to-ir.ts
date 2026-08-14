@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.22.0, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.26.1, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { Block, Inline, ListItem, Cell, Align } from './ir';
 import type { ExtractedCode } from './code-blocks';
 
