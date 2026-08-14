@@ -7,6 +7,23 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Fixed
+- **Codeblock verschwand aus dem PDF, wenn ein Fence direkt an einer Textzeile klebte.** Ein
+  Fenced Code darf in CommonMark/Obsidian einen Absatz unterbrechen — steht er ohne Leerzeile
+  unter einer Textzeile, landete der interne Platzhalter per Zeilenumbruch im selben Absatz.
+  Aufgelöst wird aber nur ein alleinstehender Platzhalter, also fiel der Codeblock aus dem PDF
+  und der rohe Platzhaltertext (`LETTERHEADCODE0`) wurde stattdessen als Fließtext gedruckt.
+  Bestand seit 1.4.0. Behoben stromaufwärts in `obsidian-kit` 0.26.1, hier re-vendored.
+
+### Changed
+- PDF-Engine von `obsidian-kit` 0.22.0 auf 0.26.1 nachgezogen (außer der Codeblock-Korrektur
+  keine inhaltliche Änderung — die übrigen Kit-Releases betrafen andere Module).
+- Settings-Fallback-Walker kommt aus `obsidian-kit` 0.25.0 statt aus einer lokalen Kopie.
+- ESLint-Kern und der lokale Spiegel des Store-Scanners stammen jetzt aus der zentralen
+  Release-Vorlage — was `npm run lint` prüft, entspricht damit dem, was der Store prüft.
+- Release-Tooling zentralisiert (`../tools/release/`) statt einer repo-eigenen Kopie;
+  `check-no-nul-bytes.mjs` ist Teil der Test-Kette, CI nutzt `checkout`/`setup-node` v5.
+
 ## [1.6.3] — 2026-08-05
 
 ### Fixed
