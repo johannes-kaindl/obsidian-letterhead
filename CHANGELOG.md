@@ -7,6 +7,31 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Changed
+- Dateiname-Schema und Vault-Pfad-Rechnung kommen aus `obsidian-kit` 0.27.0
+  (`src/vendor/kit/filename-template.ts`, `src/vendor/kit/vault-path.ts`) statt aus lokalen
+  Kopien. Beide Module wurden aus letterhead, obsidian-paperize und yijing-oracle
+  zusammengeführt; letterhead hat den `Object.hasOwn`-Guard und den Nullguard in
+  `sanitizeFilename` beigesteuert.
+
+### Fixed
+- **Ein führender Slash im Zielordner wird jetzt entfernt.** Die lokale Pfad-Fügung strippte
+  nur *schließende* Slashes (`Export/PDF/` → `Export/PDF`), führende blieben stehen und hätten
+  einen nicht normalisierten Vault-Pfad (`/Export/Brief.pdf`) an `adapter.mkdir`/`writeBinary`
+  weitergereicht. Kein bestehendes Ergebnis ändert sich dadurch — der eigene Zielordner läuft
+  vorher durch Obsidians `normalizePath`, und der Ordner der Notiz kommt von Obsidian selbst.
+  Es fällt eine Falle im Modul weg, kein sichtbarer Fehler: die Zusage gilt jetzt im Modul
+  statt nur an der einen Aufrufstelle. Der Kit-Baustein wandelt zusätzlich Backslashes zu `/`
+  und kollabiert interne Mehrfach-Slashes — beides konnte die lokale Fassung nicht.
+
+### Removed
+- Die Null-Prototyp-Map in `buildFilename` (`Object.create(null)`) ist **absichtlich**
+  entfallen. Sie war die zweite von zwei Schichten gegen dasselbe Leck; die erste, der
+  `Object.hasOwn`-Guard, sitzt jetzt im Kit-Modul und schützt dort alle drei Plugins.
+  `{toString}`, `{constructor}` & Co. bleiben unverändert wörtlich stehen (per Test
+  festgenagelt) — wer die Map vermisst, sieht keine Regression, sondern die entfallene
+  Redundanz.
+
 ## [1.6.4] — 2026-08-14
 
 ### Fixed

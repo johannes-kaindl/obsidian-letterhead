@@ -14,6 +14,7 @@
 
 import { Notice, type App } from 'obsidian';
 import { t } from '../i18n/strings';
+import { joinVaultPath, vaultDirname } from '../vendor/kit/vault-path';
 
 /* Hidden scratch dir for the transient share export. Adapter API (not the
    Vault API): this is scratch space, not a tracked vault file. */
@@ -28,11 +29,6 @@ export function sanitizeBase(base: string): string {
 /** Where an exported letter goes (spec A2, modelled on paperize). */
 export type OutputMode = 'nextToNote' | 'attachmentFolder' | 'customFolder' | 'share';
 
-function joinPath(dir: string, file: string): string {
-  const d = (dir || '').replace(/\/+$/, '');
-  return d ? `${d}/${file}` : file;
-}
-
 /** Vault-relative path to write to, or null for the transient 'share' mode,
  *  which uses the hidden export dir as scratch space instead of a saved file. */
 export function resolveOutputPath(
@@ -41,8 +37,8 @@ export function resolveOutputPath(
 ): string | null {
   const file = `${sanitizeBase(opts.baseName)}.pdf`;
   if (mode === 'share') return null;
-  if (mode === 'nextToNote') return joinPath(opts.noteDir, file);
-  if (mode === 'customFolder') return joinPath(opts.customFolder, file);
+  if (mode === 'nextToNote') return joinVaultPath(opts.noteDir, file);
+  if (mode === 'customFolder') return joinVaultPath(opts.customFolder, file);
   /* attachmentFolder: a resolved vault path from getAvailablePathForAttachment.
      Obsidian has already handled collisions there — passing it through verbatim
      (and skipping uniquePath) avoids a second counter producing "Brief 1 (2).pdf". */
@@ -116,11 +112,9 @@ export async function writePdf(
       const target = mode === 'attachmentFolder'
         ? opts.resolvedPath
         : await uniquePath(opts.resolvedPath, (p) => adapter.exists(p));
-      /* -1 (no '/' — target sits at the vault root, e.g. outputFolder "/")
-         must yield an empty dir, not slice(0, -1) chopping the last
-         character off the filename into a phantom "Name.pd/" folder. */
-      const slashIdx = target.lastIndexOf('/');
-      const dir = slashIdx >= 0 ? target.slice(0, slashIdx) : '';
+      /* Vault root ('' — no '/' in the target) is a valid answer here; the
+         phantom-folder case is documented in the kit module. */
+      const dir = vaultDirname(target);
       if (dir && !(await adapter.exists(dir))) await adapter.mkdir(dir);
       await adapter.writeBinary(target, bytes.buffer as ArrayBuffer);
       new Notice(t('notice_saved') + target);

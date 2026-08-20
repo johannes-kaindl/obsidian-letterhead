@@ -9,12 +9,22 @@
  *
  *  Modelled on obsidian-paperize's filename.ts (which names a PDF, like we
  *  do) rather than yijing-oracle's (which names a note) — spec decision A1b.
+ *
+ *  Since 2026-08-20 the substitution engine itself lives in the kit
+ *  (`src/vendor/kit/filename-template.ts`, obsidian-kit 0.27.0): the invalid-char
+ *  class, the sanitizing, the `Object.hasOwn` guard and the fallback chain are
+ *  shared with yijing-oracle and paperize. What stays here is what the kit
+ *  deliberately leaves to the caller (kit module header, § "Nicht im Kit"):
+ *  letterhead's placeholder set, the two template constants, the migration, the
+ *  per-field cap (it acts BEFORE substitution) and the overall cap (n=1).
  * ------------------------------------------------------------------ */
 
-/** Windows-reserved plus Obsidian-significant characters (`#` tag, `^` block
- *  ref, `[]` wikilink). Replaced, not dropped — matches paperize and the
- *  previous `sanitizeBase` in output.ts. */
-const INVALID = /[\\/:*?"<>|#^[\]]/g;
+import { buildFilename as fillTemplate, sanitizeFilename } from '../vendor/kit/filename-template';
+
+/** Kit-side sanitizer, re-exported so callers and tests keep one import. Its
+ *  `INVALID` class is byte-identical to the one that used to live here, and the
+ *  kit default `onInvalid: 'replace'` is letterhead's behavior. */
+export { sanitizeFilename };
 
 /** Per-field cap for free-text placeholders. */
 const FIELD_MAX = 48;
@@ -81,35 +91,31 @@ export function migrateFilenameTemplate(stored: unknown, isFreshInstall: boolean
   return isFreshInstall ? DEFAULT_FILENAME_TEMPLATE : LEGACY_FILENAME_TEMPLATE;
 }
 
-export function sanitizeFilename(s: string): string {
-  return (s || '').replace(INVALID, '_').replace(/\s+/g, ' ').trim();
-}
-
 function clip(s: string, max: number): string {
   return s.length > max ? s.slice(0, max).trim() : s;
 }
 
 export function buildFilename(template: string, v: FilenameValues): string {
-  /* Null-prototype map on purpose: with a plain object literal, subs['toString']
-     resolves to Function.prototype.toString, the `?? ` fallback never fires, and
-     `{toString}` writes the function source into the filename. That bug is live
-     in both yijing-oracle and paperize; it must not be inherited here. */
-  const subs: Record<string, string> = Object.create(null) as Record<string, string>;
-  subs.notiz = v.notiz;
-  subs.datum = v.datum;
-  subs.datum_lang = v.datum_lang;
-  subs.empfaenger = clip(v.empfaenger, FIELD_MAX);
-  subs.betreff = clip(v.betreff, FIELD_MAX);
-  subs.unserzeichen = v.unserzeichen;
+  /* A plain object literal is safe here: the kit resolves placeholders through
+     Object.hasOwn, so `{toString}` & co. stay literal instead of writing the
+     function source into the filename. The local Object.create(null) map that
+     used to guard this is gone — the guard sits in the kit module now, one
+     layer down, for all three plugins that share it. */
+  const subs: Record<string, string> = {
+    notiz: v.notiz,
+    datum: v.datum,
+    datum_lang: v.datum_lang,
+    // Field cap acts BEFORE substitution, which is why it cannot live in the kit.
+    empfaenger: clip(v.empfaenger, FIELD_MAX),
+    betreff: clip(v.betreff, FIELD_MAX),
+    unserzeichen: v.unserzeichen,
+  };
 
-  const fill = (tpl: string): string =>
-    sanitizeFilename(
-      tpl.replace(/\{(\w+)\}/g, (whole, key: string) =>
-        Object.hasOwn(subs, key) ? subs[key] : whole,
-      ),
-    );
-
-  // Fallback chain — never return a nameless export.
-  const out = fill(template) || fill(LEGACY_FILENAME_TEMPLATE) || 'Brief';
+  // Fallback chain — never return a nameless export; `lastResort` is what keeps
+  // the kit from returning '' here.
+  const out = fillTemplate(template, subs, {
+    fallbacks: [LEGACY_FILENAME_TEMPLATE],
+    lastResort: 'Brief',
+  });
   return clip(out, TOTAL_MAX);
 }
