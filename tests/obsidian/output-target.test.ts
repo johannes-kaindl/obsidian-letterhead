@@ -43,6 +43,32 @@ describe('resolveOutputPath', () => {
     expect(resolveOutputPath('customFolder', { ...CTX, customFolder: '' }))
       .toBe('2026-06-09 Mustermann GmbH.pdf');
   });
+
+  /* Kit hookup 0.27.0: joinVaultPath strips LEADING slashes too and normalises backslashes
+     and doubled slashes — the local joinPath could only strip trailing ones. The change is
+     named in the CHANGELOG but was covered by no test, which is exactly how a documented
+     behavior change turns back into an accident. These four expectations are the difference
+     between the old local rule and the kit one; the plugin reaches them through the
+     "custom folder" text field. */
+  it('strips a leading slash from the custom folder', () => {
+    expect(resolveOutputPath('customFolder', { ...CTX, customFolder: '/Export/PDF' }))
+      .toBe('Export/PDF/2026-06-09 Mustermann GmbH.pdf');
+  });
+
+  it('treats a lone slash as the vault root', () => {
+    expect(resolveOutputPath('customFolder', { ...CTX, customFolder: '/' }))
+      .toBe('2026-06-09 Mustermann GmbH.pdf');
+  });
+
+  it('normalises backslashes in the custom folder', () => {
+    expect(resolveOutputPath('customFolder', { ...CTX, customFolder: 'Export\\PDF' }))
+      .toBe('Export/PDF/2026-06-09 Mustermann GmbH.pdf');
+  });
+
+  it('collapses doubled slashes in the custom folder', () => {
+    expect(resolveOutputPath('customFolder', { ...CTX, customFolder: 'Export//PDF' }))
+      .toBe('Export/PDF/2026-06-09 Mustermann GmbH.pdf');
+  });
 });
 
 describe('shouldShareAfterSave', () => {

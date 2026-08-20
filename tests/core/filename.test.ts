@@ -84,10 +84,16 @@ describe('buildFilename', () => {
     expect(buildFilename('{Datum}', V)).toBe('{Datum}');
   });
 
-  /* The bug this helper exists to NOT inherit: yijing-oracle and paperize both build their
-     substitution map as an object literal, so subs['toString'] is Function.prototype.toString
-     rather than undefined — the `?? {key}` fallback never fires and the template writes the
-     function's source code into the filename. Fixed here via a null-prototype map. */
+  /* The bug this pins: with an object literal as the substitution map, subs['toString'] is
+     Function.prototype.toString rather than undefined — the `?? {key}` fallback never fires
+     and the template writes the function's source code into the filename. It was live in
+     yijing-oracle and paperize.
+
+     Since the kit hookup (0.27.0) the guard is `Object.hasOwn` INSIDE the kit module
+     (src/vendor/kit/filename-template.ts), where all three plugins get it. letterhead's local
+     null-prototype map was the second, redundant layer against the same leak and is gone on
+     purpose. So: if this test ever fails, the kit guard broke — it does NOT mean the map has
+     to come back. */
   it('does not leak Object.prototype members into the filename', () => {
     for (const evil of ['{toString}', '{constructor}', '{hasOwnProperty}', '{__proto__}']) {
       const out = buildFilename(evil, V);
