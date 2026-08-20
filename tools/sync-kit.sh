@@ -1,5 +1,6 @@
 #!/bin/sh
-# Re-vendor the pure PDF engine from obsidian-kit. Run after kit updates.
+# Re-vendor the pure kit code this plugin consumes (PDF engine + flat pure modules)
+# from obsidian-kit. Run after kit updates.
 #
 # Added 2026-08-05 (drift-audit). Before this, the vendor tree was copied by hand — and
 # `pdf/index.ts` silently stayed at the 0.16.1 state while VENDOR.json claimed 0.17.0, so
@@ -27,13 +28,30 @@ for f in "$KIT"/src/pure/pdf/*.ts; do
 done
 echo "vendored obsidian-kit@$VER/pure/pdf → src/vendor/kit/pdf"
 
-# VENDOR.json answers "which kit is this?" without diffing the sources.
+# Flat modules from the kit's pure layer (kit/src/pure/*.ts → src/vendor/kit/*.ts), so the
+# vendor tree mirrors the kit tree — which is what the stamp line has always claimed.
+# Deliberately an explicit list, not a `src/pure/*.ts` glob: only what this plugin actually
+# imports gets vendored. A glob would drag in modules no test and no bundle ever touches,
+# and every one of them would still have to pass typecheck, check:pure and lint here.
+# All modules listed here must be import-free — the kit's cross-layer import rewrite
+# (`../pure/` → `../kit/`) is NOT implemented in this script.
+PURE_FLAT="filename-template vault-path"
+for m in $PURE_FLAT; do
+  cp "$KIT/src/pure/$m.ts" "src/vendor/kit/$m.ts"
+  stamp "src/vendor/kit/$m.ts" "src/pure/$m.ts"
+done
+echo "vendored obsidian-kit@$VER/pure/{$(echo "$PURE_FLAT" | tr ' ' ',')} → src/vendor/kit"
+
+# VENDOR.json answers "which kit is this?" without diffing the sources. The `vendored`
+# field is built from the same list the loop above runs on, so it cannot drift from it.
+VENDORED="pdf/*.ts"
+for m in $PURE_FLAT; do VENDORED="$VENDORED, $m.ts"; done
 cat > src/vendor/kit/VENDOR.json <<JSON
 {
   "source": "obsidian-kit",
   "version": "$VER",
   "sha": "$SHA",
-  "vendored": "pdf/*.ts",
+  "vendored": "$VENDORED",
   "note": "Verbatim snapshot. Never hand-edit. Re-vendor via tools/sync-kit.sh."
 }
 JSON
