@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.6.5] — 2026-09-02
+
 ### Changed
 - Dateiname-Schema und Vault-Pfad-Rechnung kommen aus `obsidian-kit` 0.27.0
   (`src/vendor/kit/filename-template.ts`, `src/vendor/kit/vault-path.ts`) statt aus lokalen
