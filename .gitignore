@@ -20,3 +20,6 @@ main.js
 main.js.map
 data.json
 node_modules/
+
+# GUI-Smoke-Bundle (esbuild-Ausgabe von scripts/gui-smoke.ts)
+.gui-smoke.mjs
