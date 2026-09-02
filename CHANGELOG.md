@@ -13,6 +13,12 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   Kopien. Beide Module wurden aus letterhead, obsidian-paperize und yijing-oracle
   zusammengeführt; letterhead hat den `Object.hasOwn`-Guard und den Nullguard in
   `sanitizeFilename` beigesteuert.
+- `tools/sync-kit.sh` liest den Kit-Code aus einer festen Tag-Ref (`git show 0.27.0:<pfad>`)
+  statt aus dem Arbeitsstand des Nachbar-Repos und stempelt den mit `^{commit}` gepeelten
+  Tag-Commit. Vorher hing das Ergebnis am HEAD von `../obsidian-kit`, und `VENDOR.json` nannte
+  eine SHA, die kein Release trägt. Kein vendorierter Inhalt ändert sich dadurch.
+- `authorUrl` im Manifest zeigt auf das GitHub-Profil, unter dem der Code liegt, statt auf die
+  selbst gehostete Domain — der Store-Review prüft das Feld auf Erreichbarkeit.
 
 ### Fixed
 - **Ein führender Slash im Zielordner wird jetzt entfernt.** Die lokale Pfad-Fügung strippte
@@ -23,6 +29,11 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   Es fällt eine Falle im Modul weg, kein sichtbarer Fehler: die Zusage gilt jetzt im Modul
   statt nur an der einen Aufrufstelle. Der Kit-Baustein wandelt zusätzlich Backslashes zu `/`
   und kollabiert interne Mehrfach-Slashes — beides konnte die lokale Fassung nicht.
+
+### Security
+- Die Ausdrücke im Release-Workflow stehen jetzt in `env:` statt direkt in `run:`-Skripten.
+  In `run:` interpoliert GitHub den Wert vor dem Shell-Start, ein Tag-Name kann dort also
+  Shell-Syntax einschleusen; über `env:` erreicht er das Skript als Variable.
 
 ### Removed
 - Die Null-Prototyp-Map in `buildFilename` (`Object.create(null)`) ist **absichtlich**
