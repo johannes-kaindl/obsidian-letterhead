@@ -45,9 +45,13 @@ nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
   nur als `data:`-URL (Logo).
   > **Historisch:** Bis 1.3.0 schrieb `exportViaShare()` hier ein eigenständiges HTML
   > (`buildStandaloneDoc`) für den Quick-Look-Umweg. Die Methode **existiert seit 1.4.0
-  > nicht mehr**; `buildStandaloneDoc` lebt noch in `html-engine.ts`, wird aber von keinem
-  > Export-Pfad mehr aufgerufen (Löschkandidat). Mobile ist seither immer Vektor-PDF
-  > (Degradation statt Fallback).
+  > nicht mehr**; Mobile ist seither immer Vektor-PDF (Degradation statt Fallback).
+  > ⚠️ `buildStandaloneDoc` ist deshalb **kein Löschkandidat** — hier stand bis 2026-09-02
+  > das Gegenteil („wird von keinem Export-Pfad mehr aufgerufen"). Der Satz stimmte für
+  > genau eine Version: 1.4.1 hat den **Desktop**-Druck darauf umgestellt
+  > (`html-engine.ts:456`, `frame.srcdoc = buildStandaloneDoc(...)`, plus zwei Tests) —
+  > der Gotcha zum iframe-Druck weiter unten beschreibt denselben Aufruf. Eine
+  > Herkunftsnotiz altert mit dem Code, den sie beschreibt.
 - **Vektor-PDF-Export (ab 1.3.0, seit 1.4.0 mit reichen Bodies):** Die Engine ist das
   vendorte, geteilte Kit `src/vendor/kit/pdf/` (nicht mehr ein In-`main.js`-Writer) —
   erzeugt ein echtes, textselektierbares Vektor-PDF (PDF 1.7, Adobe-Core-14-
