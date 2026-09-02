@@ -88,7 +88,7 @@ instanzgebunden. Dann warten.
 | **A · Grundlage** | Plugin geladen · alle vier Befehle registriert · Ribbon-Knopf |
 | **B · Vektor-PDF** | PDF entsteht neben der Notiz · Datei ist ein PDF · Notice nennt den Pfad · Core-14-Schriften ohne `/FontFile` |
 | **C · Briefinhalt** | Empfängeranschrift (3 Zeilen) · Betreff/Anrede/Gruß/Unterschrift · Infoblock-Bezugszeichen · Anlagenvermerk · Absender aus den Einstellungen · Umlaute und € als WinAnsi · Fließtext samt Auszeichnungen |
-| **D · Frontmatter** | englische Aliasse · Schlüssel case-insensitiv, Trennzeichen egal · `language: en` schaltet die Brief-Etiketten |
+| **D · Frontmatter** | englische Aliasse · Schlüssel case-insensitiv, Trennzeichen egal · `language: en` schaltet die Brief-Etiketten · Degradations-Platzhalter folgt der Briefsprache |
 | **E · Reiche Inhalte** | Tabelle · Task-Zustände unterscheidbar · Codeblock · **klebender Fence** · rohes SVG → `[Grafik]` · PNG als `/DCTDecode` eingebettet · Notice zählt die vereinfachten Elemente |
 | **F · Mehrseitigkeit** | Umbruch auf mehrere Seiten · erster, mittlerer und letzter Absatz sind da |
 | **G · Ablage** | `nextToNote` im Unterordner · zweiter Export zählt hoch statt zu überschreiben · Dateiname folgt `{datum} {empfaenger}` · `customFolder` legt den Zielordner an |
@@ -103,6 +103,7 @@ Blick aufs Papier (siehe `tools/render-hero.sh`).
 | Datum | Obsidian | Ergebnis | Gegenprobe |
 |---|---|---|---|
 | 2026-09-02 | 1.13.7 | **33/33 grün**, 3 begründet übersprungen | **32/33 — genau E4 rot** |
+| 2026-09-02 (Kit 0.30.0) | 1.13.7 | **34/34 grün** | **33/34 — genau D4 rot** |
 
 **Zur Gegenprobe vom 2026-09-02:** ausgebaut wurde die Leerzeilen-Polsterung in
 `extractCodeBlocks` (`src/vendor/kit/pdf/code-blocks.ts`) — der Fix, der den
@@ -130,3 +131,21 @@ steht). Zwei Gründe: an der regulären Instanz hingen acht fremde Vault-Fenster
 `obsidian://open?path=` hat den frisch gebauten Vault **nicht** registriert (gemessen
 17:03 — `obsidian.json` blieb unverändert). Der CDP-Lock wird trotzdem genommen: der
 macOS-Fokus ist systemweit, eine Zweitinstanz ändert daran nichts.
+
+## Was der zweite Durchlauf gelehrt hat (2026-09-02, Kit 0.30.0)
+
+**D4 ist der einzige Punkt, der die Platzhalter-Verdrahtung überhaupt messen kann.** Im
+deutschen Brief liefert der Kit-Default denselben Text (`[Grafik]`) — ein weggefallenes
+`placeholders` bliebe dort unsichtbar. Deshalb trägt `Smoke-Englisch.md` ein rohes SVG, und
+deshalb stehen die beiden erwarteten Texte dort **absichtlich nicht im Fließtext**: in der
+ersten Fassung taten sie das, wurden mitgedruckt, und D4 konnte nicht mehr unterscheiden, ob
+das Wort vom Platzhalter oder aus dem Erklärsatz stammte. Wer das Fixture kürzt, nimmt dem
+Punkt seinen Gegenstand.
+
+⚠️ **Ein Gegenproben-Skript, das mit `git checkout` aufräumt, löscht uncommittete Arbeit.**
+Am 2026-09-02 hat genau das die frisch gebaute Verdrahtung entfernt — der Lauf davor war
+grün gewesen *für Code, den es danach nicht mehr gab*. Aufgefallen ist es nur, weil nach
+einer Fixture-Reparatur noch einmal gefahren wurde. **Also: erst committen, dann sabotieren.**
+Dann ist `git checkout` im Aufräumpfad eine Rückkehr zum geprüften Stand statt ein
+Datenverlust. Wer nicht committen will, sichert die Datei vorher als Kopie und spielt die
+zurück — der Zustand vor der Sabotage ist der Bezugspunkt, nicht `HEAD`.
