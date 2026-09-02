@@ -112,6 +112,13 @@ export interface LetterLabelSet {
   telPrefix: string;
   closing: string;
   salutation: string;
+  /* Texte, die im PDF an der Stelle einer nicht darstellbaren Formel bzw. Grafik
+     stehen. Sie gehoeren hierher und nicht in die UI-Stringtabelle, weil sie
+     GEDRUCKT werden: ein "[Formel]" neben "Enclosures" waere ein Sprachbruch im
+     Brief. Die Oberflaechensprache ist eine andere Achse — ein deutsches Obsidian
+     kann einen englischen Brief setzen. */
+  phFormula: string;
+  phGraphic: string;
 }
 
 export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
@@ -121,7 +128,8 @@ export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
     unserZeichen: 'Unser Zeichen', telefon: 'Telefon', datum: 'Datum',
     telPrefix: 'Tel. ',
     closing: 'Mit freundlichen Grüßen',
-    salutation: 'Sehr geehrte Damen und Herren,'
+    salutation: 'Sehr geehrte Damen und Herren,',
+    phFormula: '[Formel]', phGraphic: '[Grafik]'
   },
   en: {
     anlage: 'Enclosure', anlagen: 'Enclosures',
@@ -129,7 +137,8 @@ export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
     unserZeichen: 'Our ref.', telefon: 'Phone', datum: 'Date',
     telPrefix: 'Phone ',
     closing: 'Kind regards',
-    salutation: 'Dear Sir or Madam,'
+    salutation: 'Dear Sir or Madam,',
+    phFormula: '[Formula]', phGraphic: '[Graphic]'
   }
 };
 

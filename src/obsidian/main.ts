@@ -398,7 +398,17 @@ export default class LetterheadPlugin extends Plugin {
       // unaffected and must keep the widget: a browser renders it correctly.
       const { markdown, codes } = extractCodeBlocks(model.bodyMarkdown || '', 'LETTERHEADCODE');
       await MarkdownRenderer.render(this.app, markdown, holder, model.sourcePath || '', comp);
-      const ex = domToIrSync(holder, { codes, resolvePlaceholder: (t) => parseCodePlaceholder(t, 'LETTERHEADCODE') });
+      // Die Platzhalter fuer degradierte Formeln/Grafiken folgen der BRIEFsprache
+      // (model.labels), nicht der Oberflaechensprache: sie werden gedruckt und stehen
+      // neben "Anlagen"/"Enclosures". Vor Kit 0.30.0 waren sie in der puren Schicht
+      // deutsch festgeschrieben; das Kit reicht sie jetzt durch, statt i18n zu
+      // importieren — ein Import haette genau die Kopplung hereingeholt, gegen die
+      // `check:pure` laeuft.
+      const ex = domToIrSync(holder, {
+        codes,
+        resolvePlaceholder: (t) => parseCodePlaceholder(t, 'LETTERHEADCODE'),
+        placeholders: { math: model.labels.phFormula, graphic: model.labels.phGraphic },
+      });
       simplified = ex.unsupportedCount;
       const res = await resolveImages(ex.blocks, ex.imageEls, (src) => this.decodeImage(src, model.sourceFile));
       bodyBlocks = res.blocks;

@@ -466,6 +466,20 @@ async function pruefeFrontmatter(cdp: Cdp, vaultDir: string): Promise<void> {
     enLabel && !deLabel,
     enLabel ? (deLabel ? 'beide Sprachen im selben Brief' : '"Enclosure(s)" statt "Anlage(n)"') : 'kein englisches Anlagen-Etikett gefunden',
   );
+
+  // Der Degradations-Platzhalter ist ein GEDRUCKTER Text und folgt deshalb der Brief-,
+  // nicht der Oberflächensprache. Dieser Punkt ist der einzige, der die Verdrahtung in
+  // `main.ts` überhaupt messen kann: im deutschen Brief liefert der Kit-Default denselben
+  // Text (`[Grafik]`), ein weggefallenes `placeholders` bliebe dort also unsichtbar.
+  const enPh = text.includes('[Graphic]');
+  const dePh = text.includes('[Grafik]');
+  record(
+    'D4 Degradations-Platzhalter folgt der Briefsprache',
+    enPh && !dePh,
+    enPh
+      ? (dePh ? '[Graphic] UND [Grafik] im selben Brief' : '[Graphic] im englischen Brief')
+      : (dePh ? '[Grafik] im englischen Brief — placeholders kommen nicht an' : 'kein Platzhalter gefunden — SVG spurlos verschwunden?'),
+  );
 }
 
 async function pruefeDegradation(cdp: Cdp, vaultDir: string): Promise<void> {

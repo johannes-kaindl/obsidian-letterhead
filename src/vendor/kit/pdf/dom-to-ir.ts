@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.27.0, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.30.0, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { Block, Inline, ListItem, Cell, Align } from './ir';
 import type { ExtractedCode } from './code-blocks';
 
@@ -19,12 +19,24 @@ const isMathEl = (el: Element) => {
 const isDecorative = (el: Element): boolean =>
   el.getAttribute('aria-hidden') === 'true' || /(^|[\s-])icon([\s-]|$)/.test(el.getAttribute('class') || '');
 
+// The two texts a reader sees where a formula or a graphic was dropped. They live in the
+// options rather than in an i18n call because this layer is pure — an import of the host's
+// string catalogue would drag in exactly the coupling `check:pure` guards against. The
+// defaults stay German so a consumer that vendors a newer copy keeps the texts it had.
+export interface PdfPlaceholders { math?: string; graphic?: string }
+type ResolvedPlaceholders = { math: string; graphic: string };
+const DEFAULT_PLACEHOLDERS: ResolvedPlaceholders = { math: '[Formel]', graphic: '[Grafik]' };
+const resolvePlaceholders = (ph?: PdfPlaceholders): ResolvedPlaceholders => ({
+  math: ph?.math ?? DEFAULT_PLACEHOLDERS.math,
+  graphic: ph?.graphic ?? DEFAULT_PLACEHOLDERS.graphic,
+});
+
 // Graphically rendered elements — MathJax, Mermaid, bare SVG — carry no text node at all.
 // Checking only `textContent` let them vanish without a trace *and* without incrementing the
 // counter, so the host's summary notice stayed silent too. Silent loss is worse than visible
 // simplification: the PDF gave no hint that anything was missing. Returns the placeholder to
 // show in the PDF, or null when the element is just an empty layout wrapper or decoration.
-function graphicPlaceholder(el: Element): string | null {
+function graphicPlaceholder(el: Element, ph: ResolvedPlaceholders): string | null {
   if ((el.textContent || '').trim()) return null;
   if (isDecorative(el)) return null;
   const nm = nameOf(el);
@@ -33,7 +45,7 @@ function graphicPlaceholder(el: Element): string | null {
   if (!self && !inner) return null;
   // A wrapper whose only graphic is a decorative icon is decorative itself.
   if (!self && inner && isDecorative(inner)) return null;
-  return isMathEl(el) || el.querySelector('mjx-container, math') ? '[Formel]' : '[Grafik]';
+  return isMathEl(el) || el.querySelector('mjx-container, math') ? ph.math : ph.graphic;
 }
 
 // A rendered task list item keeps its state only in the checkbox element; without a marker
@@ -47,7 +59,7 @@ function taskMarker(li: Element): string | null {
 }
 
 // Inline runs (bold/italic/code/link) from an element's descendants.
-function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boolean; link?: string }, acc: Inline[], stats?: { graphics: number }): Inline[] {
+function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boolean; link?: string }, acc: Inline[], ph: ResolvedPlaceholders, stats?: { graphics: number }): Inline[] {
   for (const c of Array.from(node.childNodes || [])) {
     if (isText(c)) {
       const txt = c.textContent || '';
@@ -58,15 +70,15 @@ function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boole
       if (nm === 'IMG') continue; // inline images are ignored inside text runs
       if (nm === 'UL' || nm === 'OL') continue; // nested lists are handled as separate child blocks
       if (nm === 'INPUT') continue; // the task checkbox is surfaced via taskMarker, not as a run
-      const ph = graphicPlaceholder(c as Element);
-      if (ph) { acc.push({ text: ph }); if (stats) stats.graphics++; continue; }
+      const gph = graphicPlaceholder(c as Element, ph);
+      if (gph) { acc.push({ text: gph }); if (stats) stats.graphics++; continue; }
       const next = {
         bold: ctx.bold || nm === 'STRONG' || nm === 'B',
         italic: ctx.italic || nm === 'EM' || nm === 'I',
         code: ctx.code || nm === 'CODE',
         link: nm === 'A' ? ((c as HTMLAnchorElement).getAttribute('href') || ctx.link) : ctx.link,
       };
-      runsFrom(c, next, acc, stats);
+      runsFrom(c, next, acc, ph, stats);
     }
   }
   return acc;
@@ -83,8 +95,8 @@ function mergeRuns(runs: Inline[]): Inline[] {
   return out.filter((r) => r.text !== '');
 }
 
-function inlinesOf(el: Element, stats?: { graphics: number }): Inline[] {
-  return mergeRuns(runsFrom(el, { bold: false, italic: false, code: false }, [], stats));
+function inlinesOf(el: Element, ph: ResolvedPlaceholders, stats?: { graphics: number }): Inline[] {
+  return mergeRuns(runsFrom(el, { bold: false, italic: false, code: false }, [], ph, stats));
 }
 
 function cellAlign(td: Element): Align | undefined {
@@ -98,7 +110,7 @@ function cellAlign(td: Element): Align | undefined {
 
 export function domToIrSync(
   root: HTMLElement,
-  opts?: { pageBreakMarker?: string; codes?: ExtractedCode[]; resolvePlaceholder?: (text: string) => number | null },
+  opts?: { pageBreakMarker?: string; codes?: ExtractedCode[]; resolvePlaceholder?: (text: string) => number | null; placeholders?: PdfPlaceholders },
 ): { blocks: Block[]; imageEls: HTMLImageElement[]; unsupportedCount: number } {
   const blocks: Block[] = [];
   const imageEls: HTMLImageElement[] = [];
@@ -109,6 +121,7 @@ export function domToIrSync(
   const marker = opts?.pageBreakMarker;
   const codes = opts?.codes;
   const resolvePlaceholder = opts?.resolvePlaceholder;
+  const placeholders = resolvePlaceholders(opts?.placeholders);
 
   // A placeholder paragraph stands for a fenced block that was pulled out of the Markdown
   // before rendering (see extractCodeBlocks) — Obsidian post-processors from other plugins
@@ -130,7 +143,7 @@ export function domToIrSync(
         if (nm === 'UL' || nm === 'OL') childBlocks.push({ type: 'list', ordered: nm === 'OL', items: parseList(sub) });
       }
       if (li.querySelector('img')) unsupportedCount++;
-      const inl = inlinesOf(li, gstats);
+      const inl = inlinesOf(li, placeholders, gstats);
       const mark = taskMarker(li);
       if (mark) {
         if (inl[0]) inl[0].text = inl[0].text.replace(/^\s+/, '');
@@ -150,14 +163,14 @@ export function domToIrSync(
       const tr = thead.querySelector('tr');
       if (tr) header = Array.from(tr.children).map((td) => {
         if (td.querySelector('img')) unsupportedCount++;
-        return { inlines: inlinesOf(td, gstats), align: cellAlign(td) };
+        return { inlines: inlinesOf(td, placeholders, gstats), align: cellAlign(td) };
       });
     }
     for (const tr of Array.from(tbody.querySelectorAll('tr'))) {
       if (thead && tr.parentElement && tr.parentElement.nodeName.toUpperCase() === 'THEAD') continue;
       const cells = Array.from(tr.children).map((td) => {
         if (td.querySelector('img')) unsupportedCount++;
-        return { inlines: inlinesOf(td, gstats), align: cellAlign(td) };
+        return { inlines: inlinesOf(td, placeholders, gstats), align: cellAlign(td) };
       });
       if (cells.length) rows.push(cells);
     }
@@ -176,13 +189,13 @@ export function domToIrSync(
       // merely happens to be called "icon-legend" from swallowing its own content.
       if (isDecorative(el) && !(el.textContent || '').trim()) continue;
       const nm = nameOf(el);
-      if (/^H[1-6]$/.test(nm)) blocks.push({ type: 'heading', level: Number(nm[1]) as 1, inlines: inlinesOf(el, gstats) });
+      if (/^H[1-6]$/.test(nm)) blocks.push({ type: 'heading', level: Number(nm[1]) as 1, inlines: inlinesOf(el, placeholders, gstats) });
       else if (nm === 'P') {
         const txt = (el.textContent || '').trim();
         if (marker && txt === marker) { blocks.push({ type: 'pagebreak' }); continue; }
         const code = codeFor(txt);
         if (code) { blocks.push({ type: 'code', lang: code.lang, text: code.text }); continue; }
-        const inl = inlinesOf(el, gstats);
+        const inl = inlinesOf(el, placeholders, gstats);
         if (inl.length) blocks.push({ type: 'paragraph', inlines: inl });
         for (const img of Array.from(el.querySelectorAll('img'))) {
           blocks.push({ type: 'image', data: EMPTY, wPx: 0, hPx: 0, alt: img.getAttribute('alt') || undefined });
@@ -196,14 +209,14 @@ export function domToIrSync(
       else if (nm === 'IMG') { blocks.push({ type: 'image', data: EMPTY, wPx: 0, hPx: 0, alt: (el as HTMLImageElement).getAttribute('alt') || undefined }); imageEls.push(el as HTMLImageElement); }
       else if (nm === 'HR') blocks.push({ type: 'hr' });
       else if (nm === 'DIV' || nm === 'SECTION' || nm === 'ARTICLE') {
-        const ph = graphicPlaceholder(el);
+        const ph = graphicPlaceholder(el, placeholders);
         if (ph) { blocks.push({ type: 'unsupported', text: ph }); unsupportedCount++; }
         else walk(el);
       }
       else {
         const t = (el.textContent || '').trim();
         if (t) { blocks.push({ type: 'unsupported', text: t }); unsupportedCount++; continue; }
-        const ph = graphicPlaceholder(el);
+        const ph = graphicPlaceholder(el, placeholders);
         if (ph) { blocks.push({ type: 'unsupported', text: ph }); unsupportedCount++; }
       }
     }

@@ -7,6 +7,23 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Changed
+- **Die Platzhalter für nicht darstellbare Formeln und Grafiken folgen jetzt der
+  Briefsprache.** Steht im Brief eine Formel oder eine reine Grafik, die das PDF nicht
+  wiedergeben kann, druckt Letterhead an ihrer Stelle einen sichtbaren Hinweis. Der war bis
+  hierher immer deutsch — in einem englischen Brief stand `[Grafik]` neben `Enclosures`.
+  Jetzt richtet er sich nach `sprache`/`language` bzw. der eingestellten Briefsprache:
+  `[Formel]`/`[Grafik]` bzw. `[Formula]`/`[Graphic]`. **Nicht** nach der Sprache der
+  Obsidian-Oberfläche — ein deutsches Obsidian kann einen englischen Brief setzen.
+- Die PDF-Engine kommt aus `obsidian-kit` **0.30.0**, das Dateiname-Schema aus
+  `code-kit` **0.5.0**. Beide Pins stehen in `src/vendor/kit/VENDOR.json`: seit
+  obsidian-kit `2ab1bb5` liegt die domänenfreie pure-Teilmenge in einem eigenen Repo, der
+  Vendor-Baum stammt also aus zwei Quellen. `tools/sync-kit.sh` liest aus beiden Tag-Refs
+  (`^{commit}`-gepeelt, bei code-kit zwingend — dort sind die Tags annotiert) und prüft alle
+  Quellpfade, bevor es die erste Datei schreibt. Am vendorierten Code ändert der Umzug
+  nichts: `filename-template.ts` ist in code-kit@0.5.0 byte-identisch mit dem bisherigen
+  Stand.
+
 ## [1.6.5] — 2026-09-02
 
 ### Changed

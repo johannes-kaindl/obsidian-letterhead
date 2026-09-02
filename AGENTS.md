@@ -68,6 +68,30 @@ nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
   (inkl. `'print'`) ohne Migration laden. Die Engine selbst zieht keine
   Laufzeit-Dependency, aber das Bündeln erfolgt über den `esbuild`-Build — `main.js` ist
   Build-Output, nicht committete Quelle.
+- **Der Vendor-Baum stammt aus ZWEI Quellen (seit 2026-09-02).** `src/vendor/kit/pdf/*` und
+  `vault-path.ts` kommen aus `obsidian-kit`, `filename-template.ts` aus **`code-kit`** — seit
+  obsidian-kit `2ab1bb5` liegt die domänenfreie pure-Teilmenge in einem eigenen Repo, und ein
+  Lauf, der sie weiter unter `obsidian-kit/src/pure/` sucht, findet sie nicht mehr.
+  `src/vendor/kit/VENDOR.json` führt deshalb **beide** Pins; der Kopf jeder vendorten Datei
+  nennt ihre Herkunft. `tools/sync-kit.sh` liest per `git show <ref>:<pfad>` aus den Tag-Refs
+  (CORE-META-22), nie aus dem Arbeitsstand des Nachbar-Repos, und prüft **alle** Quellpfade,
+  bevor es die erste Datei schreibt — sonst bliebe bei einem Abbruch mitten im Lauf eine Datei
+  zurück, die den „do not hand-edit"-Kopf trägt und darunter leer ist.
+  ⚠️ **`^{commit}` ist bei code-kit nicht optional:** dessen Tags sind **annotiert**, ein
+  ungepeeltes `rev-parse 0.5.0` liefert die SHA des Tag-Objekts, die in `git log` der Quelle
+  null mal vorkommt. obsidian-kit taggt leichtgewichtig, dort fällt das Fehlen nicht auf —
+  genau deshalb ist es in einem Nachbar-Repo einmal untergegangen.
+- **Der Degradations-Platzhalter folgt der BRIEFsprache, nicht der Oberflächensprache.**
+  `[Formel]`/`[Grafik]` bzw. `[Formula]`/`[Graphic]` stehen in `LETTER_LABELS`
+  (`src/core/model.ts`) neben „Anlagen"/„Enclosures", nicht in `src/i18n/strings.ts`: sie
+  werden **gedruckt**. Ein deutsches Obsidian kann einen englischen Brief setzen — dort wäre
+  ein `[Grafik]` neben `Enclosures` ein Sprachbruch. Kit 0.30.0 reicht die Texte über
+  `domToIrSync(el, { placeholders })` durch, statt sie in der puren Schicht festzuschreiben;
+  ein i18n-Import dort hätte genau die Kopplung hereingeholt, gegen die `check:pure` läuft.
+  **Bedingung, an der das hängt:** Prüfpunkt **D4** des GUI-Smoke ist der einzige, der die
+  Verdrahtung misst — im deutschen Brief liefert der Kit-Default denselben Text, ein
+  weggefallenes `placeholders` bliebe dort unsichtbar. Wer das Fixture `Smoke-Englisch.md`
+  um sein rohes SVG erleichtert, nimmt dem Punkt seinen Gegenstand.
 
 ## Commands
 

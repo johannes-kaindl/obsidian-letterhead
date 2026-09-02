@@ -39,4 +39,42 @@ describe('vendored dom-to-ir + code-blocks', () => {
       { type: 'code', lang: 'js', text: 'x=1' },
     ]);
   });
+
+  // Ein nacktes SVG traegt keinen Textknoten; die Engine setzt an seine Stelle einen
+  // sichtbaren Platzhalter, statt es spurlos fallen zu lassen. Seit Kit 0.30.0 ist dessen
+  // TEXT durchgereicht statt deutsch festgeschrieben — letterhead speist ihn aus
+  // LETTER_LABELS, folgt also der Brief- und nicht der Oberflaechensprache.
+  const svgDiv = () => {
+    const div = document.createElement('div');
+    div.innerHTML = '<p><svg width="10" height="10"><rect width="10" height="10"/></svg></p>';
+    return div;
+  };
+
+  it('uses the German placeholder by default (kit fallback)', () => {
+    const { blocks, unsupportedCount } = domToIrSync(svgDiv(), {});
+    expect(blocks).toEqual([{ type: 'paragraph', inlines: [{ text: '[Grafik]' }] }]);
+    // Der Zaehler ist die zweite Haelfte der Zusage: ein Platzhalter ohne Zaehlung
+    // liesse die Sammel-Notice schweigen, waehrend im PDF etwas fehlt.
+    expect(unsupportedCount).toBe(1);
+  });
+
+  it('honours the placeholder texts handed in by the caller', () => {
+    const { blocks } = domToIrSync(svgDiv(), {
+      placeholders: { math: '[Formula]', graphic: '[Graphic]' },
+    });
+    expect(blocks).toEqual([{ type: 'paragraph', inlines: [{ text: '[Graphic]' }] }]);
+  });
+
+  // Die Rekursion ist die Stelle, an der ein durchgereichtes Options-Objekt still unter den
+  // Tisch fallen kann: bei einem Blockquote ruft sich domToIrSync selbst auf. Faellt `opts`
+  // dort weg, greift wieder der deutsche Default — und zwar NUR in Zitaten, also an einer
+  // Stelle, die kein Grundfall-Test beruehrt.
+  it('keeps the placeholder texts inside a blockquote', () => {
+    const div = document.createElement('div');
+    div.innerHTML = '<blockquote><p><svg width="10" height="10"><rect width="10" height="10"/></svg></p></blockquote>';
+    const { blocks } = domToIrSync(div, { placeholders: { graphic: '[Graphic]' } });
+    expect(blocks).toEqual([
+      { type: 'blockquote', blocks: [{ type: 'paragraph', inlines: [{ text: '[Graphic]' }] }] },
+    ]);
+  });
 });
