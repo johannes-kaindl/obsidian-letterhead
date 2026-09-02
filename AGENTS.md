@@ -72,15 +72,24 @@ nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
 ## Commands
 
 ```bash
-npm run typecheck  # tsc --noEmit
-npm test           # vitest run (reine, Obsidian-freie Specs für src/core + src/vendor)
-npm run build      # tsc --noEmit + esbuild --production → main.js
-npm run check:pure # kein `from 'obsidian'`-Import in src/core, src/vendor
-npm run gate       # typecheck && test && check:pure && build — CI-Gate, siehe Releasing
-npm run deploy     # build, dann cp manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
+npm run typecheck         # tsc --noEmit
+npm run typecheck:scripts # tsc -p tsconfig.scripts.json (GUI-Smoke-Treiber)
+npm test                  # vitest run (reine, Obsidian-freie Specs für src/core + src/vendor)
+npm run build             # tsc --noEmit + esbuild --production → main.js
+npm run check:pure        # kein `from 'obsidian'`-Import in src/core, src/vendor
+npm run gate              # typecheck && typecheck:scripts && test && check:pure && lint && build
+npm run smoke:gui         # GUI-Smoke gegen ein laufendes Obsidian — siehe docs/SMOKE.md
+npm run deploy            # build, dann cp manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
 ```
 
 Manuelles Deploy-Ziel: `<vault>/.obsidian/plugins/letterhead/`.
+
+**`smoke:gui` braucht ein laufendes Obsidian und den CDP-Lock** (`--exclusive focus`, weil
+der Treiber das Fenster nach vorn holt). Der Staging-Vault entsteht aus dem getrackten
+Fixture: `npm run build && npm run smoke:gui -- --setup`. Prüfpunkte, übersprungene Punkte
+und die Durchlauf-Tabelle stehen in `docs/SMOKE.md`. Der Treiber löst ausschließlich
+`letterhead:export-letter-pdf` aus — nie `letterhead:export-letter`, der auf dem Desktop
+den OS-Druckdialog öffnet und damit jede weitere CDP-Kommunikation blockiert.
 
 ## Releasing
 

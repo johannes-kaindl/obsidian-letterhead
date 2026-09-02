@@ -295,10 +295,43 @@ function markerBilanz(text: string, erwartet: string[]): { ok: boolean; detail: 
 async function pruefeGrundlage(cdp: Cdp, v: VaultInfo): Promise<void> {
   console.log('\nA · Grundlage');
 
-  const geladen = await cdp.evaluate<boolean>(
+  let geladen = await cdp.evaluate<boolean>(
     `return Boolean(app.plugins.plugins[${JSON.stringify(PLUGIN_ID)}]);`,
   );
-  record('A1 Plugin geladen', geladen, geladen ? `Vault ${v.name}` : `app.plugins.plugins.${PLUGIN_ID} fehlt`);
+
+  // Ein frisch gebauter Staging-Vault startet in Obsidians Restricted Mode: Community-
+  // Plugins sind aus, und die `community-plugins.json` des Fixtures allein hebt das nicht
+  // auf. Der Treiber schaltet deshalb selbst frei — aber NUR im eigenen Staging-Vault.
+  // In einem fremden Vault wäre das ein Eingriff in den Wirt; dort bleibt der Punkt rot
+  // und nennt den Grund.
+  let freigeschaltet = '';
+  if (!geladen && v.name === REPO_NAME) {
+    freigeschaltet = await cdp.evaluate<string>(`
+      try {
+        if (app.plugins.setEnable) await app.plugins.setEnable(true);
+        await app.plugins.enablePluginAndSave(${JSON.stringify(PLUGIN_ID)});
+        await new Promise((r) => setTimeout(r, 1200));
+        return app.plugins.plugins[${JSON.stringify(PLUGIN_ID)}] ? "freigeschaltet" : "Aufruf ohne Wirkung";
+      } catch (e) {
+        return "Fehler: " + (e && e.message ? e.message : String(e));
+      }
+    `);
+    geladen = await cdp.evaluate<boolean>(
+      `return Boolean(app.plugins.plugins[${JSON.stringify(PLUGIN_ID)}]);`,
+    );
+  }
+
+  record(
+    'A1 Plugin geladen',
+    geladen,
+    geladen
+      ? `Vault ${v.name}${freigeschaltet ? ` (Restricted Mode aufgehoben: ${freigeschaltet})` : ''}`
+      : `app.plugins.plugins.${PLUGIN_ID} fehlt${
+          v.name === REPO_NAME
+            ? ` — Freischaltversuch: ${freigeschaltet || '(keiner)'}`
+            : ` — Vault "${v.name}" ist nicht der Staging-Vault, deshalb kein Freischaltversuch`
+        }`,
+  );
   if (!geladen) throw new Error('Ohne geladenes Plugin ist jeder weitere Punkt gegenstandslos.');
 
   const befehle = await cdp.evaluate<string[]>(`
@@ -688,10 +721,14 @@ async function main(): Promise<void> {
       (m) => warnungen.push(m),
     );
 
+    // A1 zuerst, DANN der Settings-Vorwert. Andersherum bricht der Lauf bei fehlendem
+    // Plugin in readSettings ab — mit `TypeError ... reading 'settings'`, einer Meldung,
+    // die auf einen Defekt im Treiber zeigt statt auf den tatsächlichen Zustand. Gemessen
+    // im ersten Lauf gegen einen frischen Staging-Vault (2026-09-02, 17:08).
+    await pruefeGrundlage(cdp, v);
+
     vorher = await readSettings(cdp);
     raeumePdfs(vaultDir);
-
-    await pruefeGrundlage(cdp, v);
     const grundBytes = await pruefeGrundfall(cdp, vaultDir);
     pruefeBriefinhalt(grundBytes);
     await pruefeFrontmatter(cdp, vaultDir);

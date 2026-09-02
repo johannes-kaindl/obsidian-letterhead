@@ -102,4 +102,31 @@ Blick aufs Papier (siehe `tools/render-hero.sh`).
 
 | Datum | Obsidian | Ergebnis | Gegenprobe |
 |---|---|---|---|
-| — | — | steht aus | steht aus |
+| 2026-09-02 | 1.13.7 | **33/33 grün**, 3 begründet übersprungen | **32/33 — genau E4 rot** |
+
+**Zur Gegenprobe vom 2026-09-02:** ausgebaut wurde die Leerzeilen-Polsterung in
+`extractCodeBlocks` (`src/vendor/kit/pdf/code-blocks.ts`) — der Fix, der den
+Codeblock-Verlust bei klebendem Fence behoben hat. E4 wurde rot und nannte dabei das
+historische Symptom wörtlich: *„Inhalt FEHLT · LETTERHEADCODE als Fließtext SICHTBAR"*.
+**Kein anderer Punkt fiel mit** — insbesondere blieb E3 (Codeblock *mit* Leerzeile davor)
+grün, was belegt, dass E4 den klebenden Fall misst und nicht Codeblöcke im Allgemeinen.
+Der Vendor-Baum wurde danach per `git checkout` wiederhergestellt; Gate grün, und der
+Build im Staging-Vault ist per sha1 wieder identisch mit dem Repo-Build.
+
+**Zwei Mängel fand der erste Lauf im Treiber selbst, nicht im Plugin** (beide behoben):
+
+- `readSettings` lief **vor** Prüfpunkt A1. Fehlte das Plugin, brach der Lauf mit
+  `TypeError … reading 'settings'` ab — einer Meldung, die auf einen Treiberdefekt zeigt
+  statt auf den tatsächlichen Zustand. A1 läuft jetzt zuerst.
+- Ein frisch gebauter Staging-Vault startet in Obsidians **Restricted Mode**; die
+  `community-plugins.json` des Fixtures allein hebt das nicht auf. Der Treiber schaltet
+  jetzt selbst frei — aber nur, wenn der Vault-Name dem Repo-Namen entspricht. In einem
+  fremden Vault wäre das ein Eingriff in den Wirt; dort bleibt der Punkt rot und nennt den
+  Grund.
+
+**Womit der Lauf gefahren wurde:** einer **eigenen Zweitinstanz** auf Port 9334
+(`--user-data-dir` mit eigener `obsidian.json`, in der der Staging-Vault vor dem Start
+steht). Zwei Gründe: an der regulären Instanz hingen acht fremde Vault-Fenster, und
+`obsidian://open?path=` hat den frisch gebauten Vault **nicht** registriert (gemessen
+17:03 — `obsidian.json` blieb unverändert). Der CDP-Lock wird trotzdem genommen: der
+macOS-Fokus ist systemweit, eine Zweitinstanz ändert daran nichts.
