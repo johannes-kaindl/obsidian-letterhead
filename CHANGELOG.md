@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.6.6] — 2026-09-03
+
 ### Changed
 - **Die Platzhalter für nicht darstellbare Formeln und Grafiken folgen jetzt der
   Briefsprache.** Steht im Brief eine Formel oder eine reine Grafik, die das PDF nicht

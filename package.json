@@ -1,6 +1,6 @@
 {
   "name": "obsidian-letterhead",
-  "version": "1.6.5",
+  "version": "1.6.6",
   "description": "Generate professionally formatted business letters (DIN 5008 and modern) from note frontmatter and export them to PDF — via the print dialog on desktop, or the system share sheet on iPhone and iPad.",
   "main": "main.js",
   "scripts": {
