@@ -1,16 +1,16 @@
 # Letterhead – DIN 5008 & modern letters
 
-> 🇬🇧 English · [🇩🇪 Deutsch](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/README.de.md)
+> 🇬🇧 English · [🇩🇪 Deutsch](README.de.md)
 
 An Obsidian plugin that turns a note into a professionally formatted business letter — German **DIN 5008** or a clean **modern** layout — and exports it to PDF: on desktop via the OS print dialog, on **iPhone/iPad** as a real, text-selectable PDF shared with one tap.
 
-[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE)
-[![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE-DOCS)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+[![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](LICENSE-DOCS)
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
 <p>
-  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/hero-din-de.png" alt="DIN 5008 business letter (German)" width="340">
-  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/hero-modern-en.png" alt="Modern business letter (English)" width="340">
+  <img src="docs/images/hero-din-de.png" alt="DIN 5008 business letter (German)" width="340">
+  <img src="docs/images/hero-modern-en.png" alt="Modern business letter (English)" width="340">
 </p>
 
 <sub><b>DIN 5008</b> (German) · <b>Modern</b> (English) — two layouts, two letter languages.</sub>
@@ -41,8 +41,8 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 
 ## Install
 
-Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead)
-(source mirror: [git.jkaindl.de/jkaindl/obsidian-letterhead](https://git.jkaindl.de/jkaindl/obsidian-letterhead))
+Repository: [git.jkaindl.de/jkaindl/obsidian-letterhead](https://git.jkaindl.de/jkaindl/obsidian-letterhead)
+(GitHub mirror: currently unavailable)
 
 > **Note (2026-09-03):** Letterhead is currently **not listed in the Community
 > plugins browser**. The GitHub account hosting the mirror is unavailable, which also
@@ -94,7 +94,7 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Letter
 
 ## Usage
 
-1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/examples/example-letter.md)), then fill them in.
+1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](examples/example-letter.md)), then fill them in.
 2. Run **Export letter as PDF / print** (command palette or the envelope ribbon icon). Use **Open letter preview** for a paginated preview first.
 3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** the finished PDF is saved to your **Output target** and, where that target is *share directly*, handed to the system share sheet — tap **Save to Files** or send it anywhere.
 
@@ -117,7 +117,7 @@ Two settings decide where your PDF ends up and what it is called:
 - **Output target** — where the exported PDF is written: **next to the note**, into **Obsidian's attachment folder**, into a **folder of your choice**, or not saved at all and **shared directly**. An existing file is never overwritten; a `" (2)"` is appended instead. Applies to the vector PDF export, not to the desktop print dialog.
 - **Filename scheme** — the name of the exported PDF, and the one the print dialog proposes. Placeholders `{notiz}` `{datum}` `{datum_lang}` `{empfaenger}` `{betreff}` `{unserzeichen}`; anything else in the field is kept literally. `{datum}` yields **YYYY-MM-DD** so letters sort chronologically in a file manager, `{datum_lang}` prints the date as it appears in the letter.
 
-Existing installations keep their previous behaviour (share directly, `{notiz}`); only fresh installations start with the new defaults. Full reference: [docs/reference/settings.md](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/settings.md).
+Existing installations keep their previous behaviour (share directly, `{notiz}`); only fresh installations start with the new defaults. Full reference: [docs/reference/settings.md](docs/reference/settings.md).
 
 ## How it works
 
@@ -132,13 +132,13 @@ Both routes share the same geometry. DIN 5008 positions — address field, fold 
 
 ## Documentation
 
-- [Tutorial — your first letter](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/tutorial.md)
-- [Reference — frontmatter fields](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/frontmatter.md) · [settings](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/settings.md) · [theming / CSS tokens](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/theming.md)
-- [Explanation — DIN 5008 measurements](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/explanation/din5008.md)
+- [Tutorial — your first letter](docs/tutorial.md)
+- [Reference — frontmatter fields](docs/reference/frontmatter.md) · [settings](docs/reference/settings.md) · [theming / CSS tokens](docs/reference/theming.md)
+- [Explanation — DIN 5008 measurements](docs/explanation/din5008.md)
 
 ## Theming
 
-Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): the **Custom CSS** field (**Settings → Advanced**) comes pre-filled with a fully commented-out preset — uncomment a line and adjust it; the **Reset preset** button restores that initial state, or you can copy [`presets/letterhead-theme.css`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/presets/letterhead-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/theming.md).
+Pick a style and info-line mode directly in the settings — no CSS required. For fine-tuning beyond that, the look is driven entirely by CSS custom properties (design tokens): the **Custom CSS** field (**Settings → Advanced**) comes pre-filled with a fully commented-out preset — uncomment a line and adjust it; the **Reset preset** button restores that initial state, or you can copy [`presets/letterhead-theme.css`](presets/letterhead-theme.css). Geometry tokens marked *DIN-critical* keep the address block aligned with the envelope window — change them deliberately. Full token list: [docs/reference/theming.md](docs/reference/theming.md).
 
 ## Development
 
@@ -156,9 +156,9 @@ See `AGENTS.md` for the full architecture notes and remaining deliberate deviati
 
 ## Privacy & security
 
-Letterhead runs entirely on your device: no network calls, no telemetry, no tracking. The source is TypeScript in `src/`, readable and auditable; `main.js` itself is build output, not a committed file. The only `btoa()` call embeds your configured logo as an inline `data:` URL. GitHub releases are cryptographically signed with a Sigstore/SLSA build-provenance attestation, built fresh from the tagged source by GitHub Actions — confirm the `main.js` you run came from this source with `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`. **Note that GitHub releases are currently paused**, so 1.6.5 and 1.6.6 were published on Forgejo only and carry `checksums.sha256` instead of an attestation; [`SECURITY.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.md) explains what each channel proves and how to verify a build yourself in the meantime. Full statement and how to report a vulnerability: [`SECURITY.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.md).
+Letterhead runs entirely on your device: no network calls, no telemetry, no tracking. The source is TypeScript in `src/`, readable and auditable; `main.js` itself is build output, not a committed file. The only `btoa()` call embeds your configured logo as an inline `data:` URL. GitHub releases are cryptographically signed with a Sigstore/SLSA build-provenance attestation, built fresh from the tagged source by GitHub Actions — confirm the `main.js` you run came from this source with `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`. **Note that GitHub releases are currently paused**, so 1.6.5 and 1.6.6 were published on Forgejo only and carry `checksums.sha256` instead of an attestation; [`SECURITY.md`](SECURITY.md) explains what each channel proves, how to verify a build yourself in the meantime, and how to report a vulnerability.
 
 ## License
 
-Code: **AGPL-3.0-or-later** — see [`LICENSE`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE); commercial dual-license option in [`LICENSING.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSING.md).
-Documentation/text: **CC BY-SA 4.0** — see [`LICENSE-DOCS`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE-DOCS).
+Code: **AGPL-3.0-or-later** — see [`LICENSE`](LICENSE); commercial dual-license option in [`LICENSING.md`](LICENSING.md).
+Documentation/text: **CC BY-SA 4.0** — see [`LICENSE-DOCS`](LICENSE-DOCS).

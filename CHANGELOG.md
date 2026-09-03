@@ -23,6 +23,12 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   **AnySource Sideloader** (liest Forgejo direkt) oder manuell aus dem Forgejo-Release.
   Seit dem 2026-09-03 gibt es dafür einen abonnierbaren **Katalog**, der Letterhead neben
   den übrigen Plugins desselben Autors listet — beide READMEs nennen ihn.
+- **Die READMEs zeigen wieder Bilder.** Beide banden Hero-Bilder und alle Dateilinks über
+  absolute `github.com`-URLs ein — 15 Stück je Sprache, seit dem Konto-Ausfall allesamt
+  **404**, sichtbar als zwei kaputte Bilder direkt unter der Überschrift. Sie sind jetzt
+  **repo-relativ** (`docs/images/…`, `SECURITY.md`, `LICENSE` …), funktionieren damit auf
+  jeder Forge und in jedem Klon und überstehen den nächsten Umzug. Die Repository-Zeile
+  nennt Forgejo als Quelle statt des unerreichbaren Mirrors.
 
 ## [1.6.6] — 2026-09-03
 
