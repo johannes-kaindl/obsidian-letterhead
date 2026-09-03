@@ -1,4 +1,19 @@
 #!/bin/sh
+# uebernommen aus obsidian-paperize/tools/sync-kit.sh, 2026-09-02 (Zwei-Quellen-Struktur)
+# uebernommen aus vault-rag + 3d-codeblocks/tools/sync-kit.sh, 2026-09-02 (Ref-Lesen)
+#
+# Beides sind UEBERNAHMEN, kein eigener Beleg — die Extraktions-Schwelle ist eine Zaehlung,
+# und eine Kopier-Kette sieht darin aus wie eine Mehrheit. Was hier aus welcher Quelle kommt:
+#   - Zwei Quellen in einem Skript + beide Pins in einer VENDOR.json: obsidian-paperize
+#     (`0125875`, 2026-09-02 17:30; diese Fassung hier entstand 53 min spaeter, nach Lektuere).
+#   - `git show <ref>:<pfad>` statt `cp` aus dem Arbeitsstand, `^{commit}`-Peelung,
+#     Vorab-Existenzpruefung, Dateiliste per `ls-tree`: die CORE-META-22-konformen Fassungen
+#     in vault-rag und 3d-codeblocks.
+# Eigen ist allein die KOMBINATION: paperize liest seine zwei Quellen weiterhin per `cp` aus
+# dem Arbeitsverzeichnis der Nachbar-Repos und ist damit nicht CORE-META-22-konform; die
+# Ref-Fassungen wiederum kennen nur eine Quelle. Das ist die Anwendung zweier Vorlagen
+# aufeinander, keine neue Abstraktion.
+#
 # Re-vendor the pure kit code this plugin consumes (PDF engine + flat pure modules).
 # Run after kit updates.
 #
