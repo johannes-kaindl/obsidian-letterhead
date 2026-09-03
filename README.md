@@ -9,8 +9,8 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
 <p>
-  <img src="docs/images/hero-din-de.png" alt="DIN 5008 business letter (German)" width="340">
-  <img src="docs/images/hero-modern-en.png" alt="Modern business letter (English)" width="340">
+  <img src="https://git.jkaindl.de/jkaindl/obsidian-letterhead/raw/branch/main/docs/images/hero-din-de.png" alt="DIN 5008 business letter (German)" width="340">
+  <img src="https://git.jkaindl.de/jkaindl/obsidian-letterhead/raw/branch/main/docs/images/hero-modern-en.png" alt="Modern business letter (English)" width="340">
 </p>
 
 <sub><b>DIN 5008</b> (German) · <b>Modern</b> (English) — two layouts, two letter languages.</sub>

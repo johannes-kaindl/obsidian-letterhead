@@ -9,8 +9,8 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 ![Platform](https://img.shields.io/badge/platform-Obsidian%20(Desktop%20%7C%20iOS)-lightgrey)
 
 <p>
-  <img src="docs/images/hero-din-de.png" alt="DIN-5008-Geschäftsbrief (Deutsch)" width="340">
-  <img src="docs/images/hero-modern-en.png" alt="Moderner Geschäftsbrief (Englisch)" width="340">
+  <img src="https://git.jkaindl.de/jkaindl/obsidian-letterhead/raw/branch/main/docs/images/hero-din-de.png" alt="DIN-5008-Geschäftsbrief (Deutsch)" width="340">
+  <img src="https://git.jkaindl.de/jkaindl/obsidian-letterhead/raw/branch/main/docs/images/hero-modern-en.png" alt="Moderner Geschäftsbrief (Englisch)" width="340">
 </p>
 
 <sub><b>DIN 5008</b> (Deutsch) · <b>Modern</b> (Englisch) — zwei Layouts, zwei Briefsprachen.</sub>

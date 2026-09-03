@@ -26,8 +26,10 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 - **Die READMEs zeigen wieder Bilder.** Beide banden Hero-Bilder und alle Dateilinks über
   absolute `github.com`-URLs ein — 15 Stück je Sprache, seit dem Konto-Ausfall allesamt
   **404**, sichtbar als zwei kaputte Bilder direkt unter der Überschrift. Sie sind jetzt
-  **repo-relativ** (`docs/images/…`, `SECURITY.md`, `LICENSE` …), funktionieren damit auf
-  jeder Forge und in jedem Klon und überstehen den nächsten Umzug. Die Repository-Zeile
+  **repo-relativ** (`SECURITY.md`, `LICENSE`, `docs/…`) und funktionieren damit auf jeder
+  Forge und in jedem Klon. Die **Bilder** bleiben absolut, aber auf Forgejo-Raw statt
+  GitHub: eine Store-Seite rendert die README außerhalb des Repos und lädt relative
+  Bildpfade nicht — worauf das README-Gate zu Recht hinwies. Die Repository-Zeile
   nennt Forgejo als Quelle statt des unerreichbaren Mirrors.
 
 ## [1.6.6] — 2026-09-03
