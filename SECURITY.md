@@ -15,9 +15,10 @@ Letterhead is built so you can verify what it does by reading it:
 - **Readable source, reproducibly built.** The plugin is TypeScript in `src/`,
   bundled to `main.js` via `esbuild`. `main.js` is a build artifact — it is
   gitignored and not committed — so there is no byte-identical "source = output"
-  file to point at; instead every release is built fresh from the tagged source by
-  GitHub Actions and cryptographically attested (see *Verifying a release* below).
-  The source itself stays fully readable, unminified, and dependency-light.
+  file to point at; instead a release is built fresh from the tagged source by
+  GitHub Actions and cryptographically attested (see *Release channels* below for
+  what each distribution channel does and does not prove). The source itself stays
+  fully readable, unminified, and dependency-light.
 - **No network, no telemetry.** No `fetch`/`XMLHttpRequest`, no remote endpoints, no
   tracking. Everything happens locally in your vault.
 - **No dynamic code execution.** No `eval`, no `new Function`, no dynamic `import()`.
@@ -43,22 +44,49 @@ no longer applies in the same way: `main.js` is now genuinely built. Provenance 
 comes from the reproducible-build attestation described below, not from source/output
 byte-identity.
 
-Releases carry a **GitHub artifact attestation** (Sigstore/SLSA build provenance): the
-release workflow checks out the tagged commit, runs `npm ci` + `npm run gate` (which
-includes the build), and signs the resulting `main.js`, `manifest.json` and
-`styles.css` — the exact bytes it just built, tied by OIDC to the GitHub Actions
-workflow run and the tagged commit. You get both: open, readable TypeScript source you
-can audit, and cryptographic proof that the shipped build came from that source.
+A GitHub release carries a **GitHub artifact attestation** (Sigstore/SLSA build
+provenance): the release workflow checks out the tagged commit, runs `npm ci` +
+`npm run gate` (which includes the build), and signs the resulting `main.js`,
+`manifest.json` and `styles.css` — the exact bytes it just built, tied by OIDC to the
+GitHub Actions workflow run and the tagged commit. Where that channel is available you
+get both: open, readable TypeScript source you can audit, and cryptographic proof that
+the shipped build came from that source.
+
+### Release channels
+Letterhead is distributed through two channels. They do **not** carry the same guarantees,
+and it is worth knowing which one your copy came from:
+
+| Channel | Ships | Proves |
+|---|---|---|
+| **GitHub release** — built by Actions | `main.js`, `manifest.json`, `styles.css`, plus a Sigstore/SLSA attestation | that these exact bytes were built by this repository's workflow from the tagged commit |
+| **Forgejo release** — `git.jkaindl.de` | the same three files, plus `checksums.sha256` | that the files you downloaded are the ones that were published — integrity, not build provenance |
+
+**Current status — 2026-09-03: GitHub releases are paused.** GitHub Actions is unavailable
+for the mirror account, so **1.6.5 and 1.6.6 were published on Forgejo only and carry no
+attestation.** Nothing about the build changed: both were produced by the same `npm run gate`
+from the tagged source, and `checksums.sha256` covers the published files. What is missing is
+the independent, cryptographic link between those files and the commit — a checksum you fetch
+from the same server as the files cannot establish that link on its own.
+
+If you need build provenance today, build from source instead: check out the tag, run
+`npm ci && npm run build`, and compare the resulting `main.js` against the one you were
+served. Attestations resume with the next GitHub release, and the paused tags will be
+attested retroactively once Actions is available again.
 
 ### Verifying a release
-Every release is published through GitHub Actions, which builds `main.js` from the
-tagged source and signs it with a Sigstore/SLSA build-provenance attestation. You can
-confirm that the `main.js` you run was built by this repository's release workflow
-from the tagged source:
+When a release is published through GitHub Actions, the workflow builds `main.js` from the
+tagged source and signs it with a Sigstore/SLSA build-provenance attestation. You can confirm
+that the `main.js` you run was built by this repository's release workflow from the tagged
+source:
 
 ```sh
 gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead
 ```
+
+⚠️ **While GitHub releases are paused (see above), this command cannot succeed** — neither for
+the releases that have no attestation, nor as a repository lookup. Treat a failure as the
+expected outcome for 1.6.5 and 1.6.6, not as evidence of tampering; use the build-from-source
+check described above instead.
 
 This does not mean the shipped `main.js` is byte-identical to any file in the
 repository (there is none — it is build output); it means the attested bytes were

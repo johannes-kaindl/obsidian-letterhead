@@ -43,7 +43,29 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead)
 (Quell-Mirror: [git.jkaindl.de/jkaindl/obsidian-letterhead](https://git.jkaindl.de/jkaindl/obsidian-letterhead))
 
-### Aus Obsidian (empfohlen)
+> **Hinweis (2026-09-03):** Letterhead ist derzeit **nicht im Community-Plugin-Verzeichnis
+> gelistet**. Das GitHub-Konto, auf dem der Mirror liegt, steht nicht zur Verfügung, wodurch
+> auch der Store-Eintrag entfallen ist. Das Plugin selbst ist davon nicht betroffen und wird
+> weiter gepflegt — Releases erscheinen auf Forgejo, und die beiden folgenden Wege
+> funktionieren heute.
+
+### Mit AnySource Sideloader (empfohlen)
+
+[AnySource Sideloader](https://git.jkaindl.de/jkaindl/anysource-sideloader) installiert und
+aktualisiert Plugins von beliebigen Git-Forges, unabhängig vom Community-Store.
+
+1. AnySource Sideloader installieren und aktivieren. (Seine eigene Erstinstallation läuft
+   von Hand — die Unabhängigkeit vom Store ist ja gerade der Zweck —, aber nur dieses eine
+   Mal; danach hält er sich und alles Weitere selbst aktuell.)
+2. Dieses Repository als Quelle hinzufügen:
+   `https://git.jkaindl.de/jkaindl/obsidian-letterhead`
+3. Letterhead installieren, dann das Absender-Profil in den Einstellungen ausfüllen.
+
+Updates kommen danach wie bei jedem anderen Plugin.
+
+### Aus dem Community-Plugin-Verzeichnis
+
+Wieder verfügbar, sobald der Store-Eintrag zurück ist:
 
 1. **Einstellungen → Community-Plugins → Durchsuchen** öffnen.
 2. Nach **„Letterhead"** suchen und **Installieren** wählen.
@@ -51,12 +73,18 @@ Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/
 
 ### Manuelle Installation
 
+`main.js`, `manifest.json` und `styles.css` aus dem
+[letzten Forgejo-Release](https://git.jkaindl.de/jkaindl/obsidian-letterhead/releases/latest)
+herunterladen und in den Vault kopieren. Jedes Release enthält zusätzlich
+`checksums.sha256` — damit lässt sich das Heruntergeladene per
+`shasum -a 256 -c checksums.sha256` prüfen.
+
 ```bash
 # Plugin in den Vault kopieren
 cp manifest.json main.js styles.css versions.json \
    "<dein-vault>/.obsidian/plugins/letterhead/"
 
-# …oder mit gesetztem OBSIDIAN_PLUGIN_DIR:
+# …oder aus einem Klon mit gesetztem OBSIDIAN_PLUGIN_DIR:
 npm run deploy
 ```
 
@@ -126,7 +154,7 @@ Vollständige Architektur-Hinweise und verbleibende bewusste Abweichungen vom Wo
 
 ## Datenschutz & Sicherheit
 
-Letterhead läuft vollständig auf deinem Gerät: keine Netzwerkaufrufe, keine Telemetrie, kein Tracking. Die Quelle ist TypeScript in `src/`, lesbar und prüfbar; `main.js` selbst ist Build-Output, keine committete Datei. Der einzige `btoa()`-Aufruf bettet dein konfiguriertes Logo als inline `data:`-URL ein. Releases werden kryptografisch mit einer Sigstore/SLSA-Build-Provenance-Attestation signiert, die GitHub Actions frisch aus der getaggten Quelle baut — prüfe mit `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`, dass das laufende `main.js` aus dieser Quelle stammt. Vollständige Erklärung und Meldung von Sicherheitslücken: [`SECURITY.de.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.de.md).
+Letterhead läuft vollständig auf deinem Gerät: keine Netzwerkaufrufe, keine Telemetrie, kein Tracking. Die Quelle ist TypeScript in `src/`, lesbar und prüfbar; `main.js` selbst ist Build-Output, keine committete Datei. Der einzige `btoa()`-Aufruf bettet dein konfiguriertes Logo als inline `data:`-URL ein. GitHub-Releases werden kryptografisch mit einer Sigstore/SLSA-Build-Provenance-Attestation signiert, die GitHub Actions frisch aus der getaggten Quelle baut — prüfe mit `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`, dass das laufende `main.js` aus dieser Quelle stammt. **GitHub-Releases sind derzeit ausgesetzt**, deshalb sind 1.6.5 und 1.6.6 nur auf Forgejo erschienen und tragen `checksums.sha256` statt einer Attestation; [`SECURITY.de.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.de.md) erklärt, was welcher Weg belegt und wie du einen Build in der Zwischenzeit selbst prüfst. Vollständige Erklärung und Meldung von Sicherheitslücken: [`SECURITY.de.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.de.md).
 
 ## Lizenz
 

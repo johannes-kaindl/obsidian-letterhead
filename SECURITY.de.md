@@ -16,10 +16,10 @@ Letterhead ist so gebaut, dass du durch Lesen überprüfen kannst, was es tut:
 - **Lesbare Quelle, reproduzierbar gebaut.** Das Plugin ist TypeScript in `src/`, per
   `esbuild` zu `main.js` gebündelt. `main.js` ist ein Build-Artefakt — gitignored,
   nicht committet —, es gibt also keine byte-identische „Quelle = Auslieferung"-Datei
-  mehr zu zeigen; stattdessen baut GitHub Actions jedes Release frisch aus der
-  getaggten Quelle und attestiert es kryptografisch (siehe *Release verifizieren*
-  unten). Die Quelle selbst bleibt vollständig lesbar, unminifiziert und
-  dependency-arm.
+  mehr zu zeigen; stattdessen baut GitHub Actions ein Release frisch aus der getaggten
+  Quelle und attestiert es kryptografisch (siehe *Auslieferungswege* unten — dort steht,
+  was welcher Weg belegt und was nicht). Die Quelle selbst bleibt vollständig lesbar,
+  unminifiziert und dependency-arm.
 - **Keine Netzwerkzugriffe, keine Telemetrie.** Kein `fetch`/`XMLHttpRequest`, keine
   Remote-Endpunkte, kein Tracking. Alles passiert lokal in deinem Vault.
 - **Keine dynamische Code-Ausführung.** Kein `eval`, kein `new Function`, kein
@@ -48,23 +48,51 @@ vendortes Kit mit anderen Plugins zu teilen — siehe [`AGENTS.md`](AGENTS.md) �
 beschriebenen Reproducible-Build-Attestation, nicht mehr aus Byte-Identität von
 Quelle und Auslieferung.
 
-Releases tragen eine **GitHub Artifact Attestation** (Sigstore/SLSA-Build-Provenance):
-Der Release-Workflow checkt den getaggten Commit aus, führt `npm ci` + `npm run gate`
-aus (inklusive Build) und signiert die dabei entstandenen Dateien `main.js`,
-`manifest.json` und `styles.css` — exakt die Bytes, die er gerade gebaut hat, per OIDC
-an den GitHub-Actions-Workflow-Lauf und den getaggten Commit gebunden. Du bekommst
-beides: offenen, lesbaren TypeScript-Quellcode zum Prüfen und den kryptografischen
-Nachweis, dass der ausgelieferte Build aus dieser Quelle stammt.
+Ein GitHub-Release trägt eine **GitHub Artifact Attestation**
+(Sigstore/SLSA-Build-Provenance): Der Release-Workflow checkt den getaggten Commit aus,
+führt `npm ci` + `npm run gate` aus (inklusive Build) und signiert die dabei entstandenen
+Dateien `main.js`, `manifest.json` und `styles.css` — exakt die Bytes, die er gerade gebaut
+hat, per OIDC an den GitHub-Actions-Workflow-Lauf und den getaggten Commit gebunden. Wo
+dieser Weg verfügbar ist, bekommst du beides: offenen, lesbaren TypeScript-Quellcode zum
+Prüfen und den kryptografischen Nachweis, dass der ausgelieferte Build aus dieser Quelle
+stammt.
+
+### Auslieferungswege
+Letterhead wird über zwei Wege ausgeliefert. Sie tragen **nicht** dieselbe Zusage, und es
+lohnt sich zu wissen, woher die eigene Kopie stammt:
+
+| Weg | Liefert | Belegt |
+|---|---|---|
+| **GitHub-Release** — von Actions gebaut | `main.js`, `manifest.json`, `styles.css` plus Sigstore/SLSA-Attestation | dass genau diese Bytes vom Workflow dieses Repositorys aus dem getaggten Commit gebaut wurden |
+| **Forgejo-Release** — `git.jkaindl.de` | dieselben drei Dateien plus `checksums.sha256` | dass die heruntergeladenen Dateien die veröffentlichten sind — Unversehrtheit, keine Build-Provenance |
+
+**Aktueller Stand — 2026-09-03: GitHub-Releases sind ausgesetzt.** GitHub Actions steht für
+das Mirror-Konto derzeit nicht zur Verfügung, deshalb sind **1.6.5 und 1.6.6 nur auf Forgejo
+erschienen und tragen keine Attestation.** Am Build selbst ändert das nichts: beide entstanden
+über dasselbe `npm run gate` aus der getaggten Quelle, und `checksums.sha256` deckt die
+veröffentlichten Dateien ab. Was fehlt, ist die unabhängige kryptografische Verbindung
+zwischen diesen Dateien und dem Commit — eine Prüfsumme, die vom selben Server kommt wie die
+Dateien, kann diese Verbindung allein nicht herstellen.
+
+Wer Build-Provenance heute braucht, baut stattdessen selbst aus der Quelle: Tag auschecken,
+`npm ci && npm run build` ausführen und das entstandene `main.js` gegen das ausgelieferte
+halten. Mit dem nächsten GitHub-Release gibt es wieder Attestationen, und die ausgesetzten
+Tags werden nachträglich attestiert, sobald Actions wieder läuft.
 
 ### Release verifizieren
-Jeder Release wird über GitHub Actions veröffentlicht, das `main.js` aus der
-getaggten Quelle baut und mit einer Sigstore/SLSA-Build-Provenance-Attestation
-signiert. Du kannst bestätigen, dass das laufende `main.js` vom Release-Workflow
-dieses Repositorys aus der getaggten Quelle gebaut wurde:
+Wird ein Release über GitHub Actions veröffentlicht, baut der Workflow `main.js` aus der
+getaggten Quelle und signiert es mit einer Sigstore/SLSA-Build-Provenance-Attestation. Du
+kannst bestätigen, dass das laufende `main.js` vom Release-Workflow dieses Repositorys aus
+der getaggten Quelle gebaut wurde:
 
 ```sh
 gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead
 ```
+
+⚠️ **Solange GitHub-Releases ausgesetzt sind (siehe oben), kann dieser Befehl nicht
+erfolgreich sein** — weder für die Releases ohne Attestation noch als Repository-Abfrage. Ein
+Fehlschlag ist für 1.6.5 und 1.6.6 der erwartete Ausgang und **kein** Hinweis auf
+Manipulation; nutze stattdessen die oben beschriebene Prüfung durch eigenen Build.
 
 Das bedeutet nicht, dass das ausgelieferte `main.js` byte-identisch mit einer Datei im
 Repository ist (es gibt keine — es ist Build-Output); es bedeutet, dass die

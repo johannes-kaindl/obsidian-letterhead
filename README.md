@@ -44,7 +44,28 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead)
 (source mirror: [git.jkaindl.de/jkaindl/obsidian-letterhead](https://git.jkaindl.de/jkaindl/obsidian-letterhead))
 
-### From Obsidian (recommended)
+> **Note (2026-09-03):** Letterhead is currently **not listed in the Community
+> plugins browser**. The GitHub account hosting the mirror is unavailable, which also
+> removed the store listing. The plugin itself is unaffected and fully maintained —
+> releases are published on Forgejo, and the two routes below both work today.
+
+### With AnySource Sideloader (recommended)
+
+[AnySource Sideloader](https://git.jkaindl.de/jkaindl/anysource-sideloader) installs and
+updates plugins from any git forge, independent of the Community Store.
+
+1. Install and enable AnySource Sideloader. (Its own first install is manual — being
+   independent of the store is the point — but it only has to be done once, and it then
+   keeps itself and everything else updated.)
+2. Add this repository as a source:
+   `https://git.jkaindl.de/jkaindl/obsidian-letterhead`
+3. Install Letterhead, then fill in your sender profile in the settings.
+
+Updates then arrive the same way any other plugin update does.
+
+### From Obsidian's Community plugins browser
+
+Available again once the store listing returns:
 
 1. Open **Settings → Community plugins → Browse**.
 2. Search for **"Letterhead"** and select **Install**.
@@ -52,12 +73,17 @@ Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/
 
 ### Manual install
 
+Download `main.js`, `manifest.json` and `styles.css` from the
+[latest Forgejo release](https://git.jkaindl.de/jkaindl/obsidian-letterhead/releases/latest)
+and copy them into your vault. Each release also ships `checksums.sha256`, so you can verify
+what you downloaded with `shasum -a 256 -c checksums.sha256`.
+
 ```bash
 # Copy the plugin into your vault
 cp manifest.json main.js styles.css versions.json \
    "<your-vault>/.obsidian/plugins/letterhead/"
 
-# …or, with OBSIDIAN_PLUGIN_DIR exported:
+# …or, from a clone with OBSIDIAN_PLUGIN_DIR exported:
 npm run deploy
 ```
 
@@ -127,7 +153,7 @@ See `AGENTS.md` for the full architecture notes and remaining deliberate deviati
 
 ## Privacy & security
 
-Letterhead runs entirely on your device: no network calls, no telemetry, no tracking. The source is TypeScript in `src/`, readable and auditable; `main.js` itself is build output, not a committed file. The only `btoa()` call embeds your configured logo as an inline `data:` URL. Releases are cryptographically signed with a Sigstore/SLSA build-provenance attestation, built fresh from the tagged source by GitHub Actions — confirm the `main.js` you run came from this source with `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`. Full statement and how to report a vulnerability: [`SECURITY.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.md).
+Letterhead runs entirely on your device: no network calls, no telemetry, no tracking. The source is TypeScript in `src/`, readable and auditable; `main.js` itself is build output, not a committed file. The only `btoa()` call embeds your configured logo as an inline `data:` URL. GitHub releases are cryptographically signed with a Sigstore/SLSA build-provenance attestation, built fresh from the tagged source by GitHub Actions — confirm the `main.js` you run came from this source with `gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead`. **Note that GitHub releases are currently paused**, so 1.6.5 and 1.6.6 were published on Forgejo only and carry `checksums.sha256` instead of an attestation; [`SECURITY.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.md) explains what each channel proves and how to verify a build yourself in the meantime. Full statement and how to report a vulnerability: [`SECURITY.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/SECURITY.md).
 
 ## License
 

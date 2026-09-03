@@ -7,6 +7,21 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Changed
+- **Doku: Installationsweg und Attestations-Zusage sagen jetzt, was tatsächlich gilt.**
+  Letterhead ist derzeit nicht im Community-Verzeichnis gelistet und GitHub-Releases sind
+  ausgesetzt — die README empfahl trotzdem die Store-Suche, und `SECURITY.md` sagte
+  unbedingt zu, *jedes* Release werde von GitHub Actions gebaut und Sigstore-signiert. Für
+  1.6.5 und 1.6.6 stimmte beides nicht: sie sind nur auf Forgejo erschienen und tragen
+  `checksums.sha256` statt einer Attestation. Neu beschreiben README und `SECURITY.md`
+  (je EN + DE) beide Auslieferungswege und **was jeder von beiden belegt** — Attestation
+  = Herkunft aus dem getaggten Commit, Prüfsumme = Unversehrtheit des Downloads, und eine
+  Prüfsumme vom selben Server wie die Dateien ersetzt das erste nicht. Der genannte
+  `gh attestation verify`-Aufruf trägt jetzt den Vorbehalt, dass sein Fehlschlag derzeit
+  der erwartete Ausgang ist und kein Manipulationshinweis; als Ersatz steht der Weg über
+  einen eigenen Build aus dem Tag da. Installation läuft bis auf Weiteres über
+  **AnySource Sideloader** (liest Forgejo direkt) oder manuell aus dem Forgejo-Release.
+
 ## [1.6.6] — 2026-09-03
 
 ### Changed
