@@ -57,7 +57,10 @@ aktualisiert Plugins von beliebigen Git-Forges, unabhängig vom Community-Store.
 1. AnySource Sideloader installieren und aktivieren. (Seine eigene Erstinstallation läuft
    von Hand — die Unabhängigkeit vom Store ist ja gerade der Zweck —, aber nur dieses eine
    Mal; danach hält er sich und alles Weitere selbst aktuell.)
-2. Dieses Repository als Quelle hinzufügen:
+2. Den Katalog abonnieren, der Letterhead neben den übrigen Plugins desselben Autors
+   listet:
+   `https://git.jkaindl.de/jkaindl/obsidian-catalog/raw/branch/main/catalog.json`
+   — oder nur dieses eine Repository als Quelle hinzufügen:
    `https://git.jkaindl.de/jkaindl/obsidian-letterhead`
 3. Letterhead installieren, dann das Absender-Profil in den Einstellungen ausfüllen.
 

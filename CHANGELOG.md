@@ -21,6 +21,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
   der erwartete Ausgang ist und kein Manipulationshinweis; als Ersatz steht der Weg über
   einen eigenen Build aus dem Tag da. Installation läuft bis auf Weiteres über
   **AnySource Sideloader** (liest Forgejo direkt) oder manuell aus dem Forgejo-Release.
+  Seit dem 2026-09-03 gibt es dafür einen abonnierbaren **Katalog**, der Letterhead neben
+  den übrigen Plugins desselben Autors listet — beide READMEs nennen ihn.
 
 ## [1.6.6] — 2026-09-03
 

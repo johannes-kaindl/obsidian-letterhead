@@ -57,7 +57,10 @@ updates plugins from any git forge, independent of the Community Store.
 1. Install and enable AnySource Sideloader. (Its own first install is manual — being
    independent of the store is the point — but it only has to be done once, and it then
    keeps itself and everything else updated.)
-2. Add this repository as a source:
+2. Subscribe to the catalog, which lists Letterhead alongside the other plugins from
+   the same author:
+   `https://git.jkaindl.de/jkaindl/obsidian-catalog/raw/branch/main/catalog.json`
+   — or add just this one repository as a source:
    `https://git.jkaindl.de/jkaindl/obsidian-letterhead`
 3. Install Letterhead, then fill in your sender profile in the settings.
 
