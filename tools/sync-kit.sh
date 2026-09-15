@@ -39,7 +39,7 @@ set -e
 
 KIT="${KIT_DIR:-../obsidian-kit}"
 KIT_REF="${KIT_REF:-0.30.0}"
-CODE_KIT="${CODE_KIT_DIR:-../../code-kit}"
+CODE_KIT="${CODE_KIT_DIR:-../../libs/code-kit}"
 CODE_KIT_REF="${CODE_KIT_REF:-0.5.0}"
 
 for paar in "$KIT|$KIT_REF" "$CODE_KIT|$CODE_KIT_REF"; do
