@@ -717,6 +717,29 @@ async function main(): Promise<void> {
 
   let vorher: Record<string, unknown> | null = null;
   let vaultDir = '';
+  // Ein SIGINT mitten im Lauf ueberspringt das `finally` unten NICHT im try/catch-Sinn,
+  // sondern beendet den Node-Prozess sofort — die per `setSettings` geschriebenen Test-
+  // Einstellungen (data.json des Vaults) blieben ohne diesen Handler bis zur naechsten
+  // manuellen Reparatur stehen. `vorher` ist zum Zeitpunkt des Signals der jeweils aktuelle
+  // Wert (per closure, kein Snapshot) — genau der Vorwert, den das echte `finally` auch nimmt.
+  let signalCleanupRunning = false;
+  const onAbortSignal = (signal: NodeJS.Signals): void => {
+    if (signalCleanupRunning) return;
+    signalCleanupRunning = true;
+    void (async () => {
+      console.log(`\n\nAbbruch durch ${signal} — raeume Einstellungen auf...`);
+      if (vorher) {
+        await setSettings(cdp, vorher).catch(() => {
+          console.log('  ! Einstellungen konnten nicht zurueckgeschrieben werden — von Hand pruefen');
+        });
+      }
+      cdp.close();
+      process.exit(130);
+    })();
+  };
+  process.on('SIGINT', onAbortSignal);
+  process.on('SIGTERM', onAbortSignal);
+
   try {
     await cdp.mitschnitt((zeile) => { if (/error|exception/i.test(zeile)) warnungen.push(`Renderer: ${zeile}`); });
     await requireVisible(cdp);
@@ -742,6 +765,23 @@ async function main(): Promise<void> {
     await pruefeGrundlage(cdp, v);
 
     vorher = await readSettings(cdp);
+    // B0 — ein per Ctrl-C abgebrochener Vorlauf haette `vorher` NIE zurueckgeschrieben; der
+    // hier gelesene Wert waere dann bereits der letzte Test-Patch (pruefeAblage schreibt zum
+    // Schluss outputMode:'customFolder', outputFolder:'Export/Briefe') statt des echten
+    // Ausgangszustands. Ohne diese Reparatur wuerde JEDER kuenftige Lauf den kaputten Wert als
+    // "Original" uebernehmen und dauerhaft auf sich selbst zurueckschreiben — eine Korruption,
+    // die sich selbst verewigt, statt beim naechsten Lauf aufzufallen.
+    const kaputtesVorher = vorher.outputMode === 'customFolder' && vorher.outputFolder === 'Export/Briefe';
+    record(
+      'B0 Kein liegen gebliebener Test-Ausgabepfad aus einem abgebrochenen Vorlauf',
+      !kaputtesVorher,
+      kaputtesVorher
+        ? 'outputMode/outputFolder trugen den G4-Testwert — auf Plugin-Default (nextToNote/"") zurueckgesetzt'
+        : 'Ausgangszustand unauffaellig',
+    );
+    if (kaputtesVorher) {
+      vorher = { ...vorher, outputMode: 'nextToNote', outputFolder: '', filenameTemplate: '{notiz}' };
+    }
     raeumePdfs(vaultDir);
     const grundBytes = await pruefeGrundfall(cdp, vaultDir);
     pruefeBriefinhalt(grundBytes);
@@ -781,6 +821,10 @@ async function main(): Promise<void> {
       console.log(`Erzeugte PDFs entfernt: ${n}`);
     }
     cdp.close();
+    // Abmelden, sonst haengt ein SPAETES Signal (nach normalem Abschluss, cdp schon zu) den
+    // Prozess in onAbortSignal an einer toten Verbindung auf.
+    process.off('SIGINT', onAbortSignal);
+    process.off('SIGTERM', onAbortSignal);
   }
 
   const rot = results.filter((r) => !r.passed);
