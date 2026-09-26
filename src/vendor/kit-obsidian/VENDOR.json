@@ -1,7 +1,7 @@
 {
   "source": "obsidian-kit",
   "version": "0.25.0",
-  "sha": "1ca38610b0fb457ea868739d2d835fb373174784",
-  "vendored": "settings_walker.ts, folder-suggest.ts (static import dependency), help-setting.ts (Kit 0.43.0, bcd1805)",
-  "note": "Verbatim snapshot. Never hand-edit. version/sha gelten fuer settings_walker.ts und folder-suggest.ts (von Hand auf 0.25.0 vendort, dieses Skript fasst sie nicht an); help-setting.ts hat einen eigenen Pin (KIT_HELP_REF) und wird per tools/sync-kit.sh geschrieben."
+  "sha": "1ca3861",
+  "vendored": "settings_walker.ts, folder-suggest.ts, help-setting.ts (obsidian-kit@0.43.0, bcd1805)",
+  "note": "Verbatim snapshot. Never hand-edit. Re-vendor via tools/sync-kit.sh (Werkzeug: ../tools/kit-sync, Pins in tools/kit-sync.json)."
 }

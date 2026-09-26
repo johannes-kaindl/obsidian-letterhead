@@ -1,0 +1,15 @@
+{
+  "sources": {
+    "obsidian-kit": { "ref": "0.30.0" },
+    "code-kit": { "ref": "0.5.0" }
+  },
+  "targets": [
+    { "dir": "src/vendor/kit/pdf", "source": "obsidian-kit", "fromDir": "src/pure/pdf", "vendorJson": "src/vendor/kit" },
+    { "dir": "src/vendor/kit", "source": "obsidian-kit", "from": "src/pure", "modules": ["vault-path"] },
+    { "dir": "src/vendor/kit", "source": "code-kit", "from": "src/ts/pure", "modules": ["filename-template"] },
+    {
+      "dir": "src/vendor/kit-obsidian", "source": "obsidian-kit", "from": "src/obsidian",
+      "modules": [{ "name": "settings_walker", "ref": "0.25.0" }, { "name": "folder-suggest", "ref": "0.25.0" }, { "name": "help-setting", "ref": "0.43.0" }]
+    }
+  ]
+}

@@ -7,6 +7,9 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Changed
+- Intern: Kit-Vendoring läuft über das zentrale Dach-Werkzeug (`tools/kit-sync.json`; `tools/sync-kit.sh` ist nur noch ein Aufruf). Alle vendorten Dateien sind byte-gleich, für Nutzer ändert sich nichts.
+
 ## [1.7.0] — 2026-09-26
 
 ### Added
