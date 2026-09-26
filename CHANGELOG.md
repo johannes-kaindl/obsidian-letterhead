@@ -9,6 +9,7 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ### Changed
 - Intern: Kit-Vendoring läuft über das zentrale Dach-Werkzeug (`tools/kit-sync.json`; `tools/sync-kit.sh` ist nur noch ein Aufruf). Alle vendorten Dateien sind byte-gleich, für Nutzer ändert sich nichts.
+- Intern: `settings_walker.ts` und `folder-suggest.ts` liegen jetzt auf Kit 0.43.0 (vorher 0.25.0, vom Vendoring-Skript vergessen). Neu ist nur die zusätzliche Funktion `installTabRefreshOnOpen`, die dieses Plugin nicht aufruft; das Verhalten bleibt gleich.
 
 ## [1.7.0] — 2026-09-26
 
