@@ -7,6 +7,9 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+### Added
+- **Hilfe-Zeile ganz oben in den Einstellungen**, mit Links auf die Dokumentation und den Issue-Tracker (Knopf `bug`).
+
 ### Changed
 - **Doku: Installationsweg und Attestations-Zusage sagen jetzt, was tatsächlich gilt.**
   Letterhead ist derzeit nicht im Community-Verzeichnis gelistet und GitHub-Releases sind

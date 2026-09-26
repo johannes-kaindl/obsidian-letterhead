@@ -41,6 +41,10 @@ KIT="${KIT_DIR:-../obsidian-kit}"
 KIT_REF="${KIT_REF:-0.30.0}"
 CODE_KIT="${CODE_KIT_DIR:-../../libs/code-kit}"
 CODE_KIT_REF="${CODE_KIT_REF:-0.5.0}"
+# Eigener Pin, Absicht: help-setting.ts (Hilfe-Zeile, UI-STANDARD 8) kam mit Kit 0.43.0 und haengt an
+# keinem anderen Modul. settings_walker.ts/folder-suggest.ts in src/vendor/kit-obsidian/ liegen
+# weiterhin auf 0.25.0 und werden von diesem Skript nicht angefasst (Vorlage epub-exporter 877eb2c).
+KIT_HELP_REF="${KIT_HELP_REF:-0.43.0}"
 
 for paar in "$KIT|$KIT_REF" "$CODE_KIT|$CODE_KIT_REF"; do
   repo=$(printf '%s' "$paar" | cut -d'|' -f1)
@@ -57,6 +61,10 @@ VER=$(git -C "$KIT" describe --tags --abbrev=0 "$KIT_REF")
 SHA=$(git -C "$KIT" rev-parse --short "${KIT_REF}^{commit}")
 CODE_VER=$(git -C "$CODE_KIT" describe --tags --abbrev=0 "$CODE_KIT_REF")
 CODE_SHA=$(git -C "$CODE_KIT" rev-parse --short "${CODE_KIT_REF}^{commit}")
+git -C "$KIT" cat-file -e "$KIT_HELP_REF:src/obsidian/help-setting.ts" 2>/dev/null \
+  || { echo "FEHLER: src/obsidian/help-setting.ts fehlt in Ref $KIT_HELP_REF (KIT_HELP_REF setzen)." >&2; exit 2; }
+HELP_VER=$(git -C "$KIT" describe --tags --abbrev=0 "$KIT_HELP_REF")
+HELP_SHA=$(git -C "$KIT" rev-parse --short "${KIT_HELP_REF}^{commit}")
 
 # Explizite Listen, kein Glob ueber das Arbeitsverzeichnis: nur was dieses Plugin wirklich
 # importiert, wird vendored. Ein Glob zoege Module herein, die kein Test und kein Bundle je
@@ -114,6 +122,19 @@ for m in $CODE_FLAT; do
   vendor "$CODE_KIT" "$CODE_KIT_REF" code-kit "$CODE_VER" "src/ts/pure/$m.ts" "src/vendor/kit/$m.ts"
   echo "vendored code-kit@$CODE_VER/ts/pure/$m.ts → src/vendor/kit/$m.ts"
 done
+
+vendor "$KIT" "$KIT_HELP_REF" obsidian-kit "$HELP_VER" "src/obsidian/help-setting.ts" "src/vendor/kit-obsidian/help-setting.ts"
+echo "vendored obsidian-kit@$HELP_VER/obsidian/help-setting.ts → src/vendor/kit-obsidian/help-setting.ts"
+
+cat > src/vendor/kit-obsidian/VENDOR.json <<JSON
+{
+  "source": "obsidian-kit",
+  "version": "0.25.0",
+  "sha": "1ca38610b0fb457ea868739d2d835fb373174784",
+  "vendored": "settings_walker.ts, folder-suggest.ts (static import dependency), help-setting.ts (Kit $HELP_VER, $HELP_SHA)",
+  "note": "Verbatim snapshot. Never hand-edit. version/sha gelten fuer settings_walker.ts und folder-suggest.ts (von Hand auf 0.25.0 vendort, dieses Skript fasst sie nicht an); help-setting.ts hat einen eigenen Pin (KIT_HELP_REF) und wird per tools/sync-kit.sh geschrieben."
+}
+JSON
 
 # VENDOR.json beantwortet "welches Kit ist das?", ohne die Quellen zu diffen. Beide Pins
 # stehen drin, weil der Baum aus zwei Quellen stammt — eine einzelne Versionsangabe waere

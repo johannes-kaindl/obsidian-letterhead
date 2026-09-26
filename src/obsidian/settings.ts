@@ -35,6 +35,7 @@ import {
 import { PLACEHOLDERS, DEFAULT_FILENAME_TEMPLATE } from '../core/filename';
 import { normStil, normSprache } from '../core/frontmatter';
 import { PRESET_CSS } from './html-engine';
+import { helpDefinition } from './help-row';
 import { renderSettingDefinitions, settingBodyHost, refreshSettingsTab } from '../vendor/kit-obsidian/settings_walker';
 
 /** Minimal shape the settings tab needs from the plugin instance. The
@@ -78,6 +79,7 @@ export class LetterheadSettingTab extends PluginSettingTab {
     ];
 
     return [
+      helpDefinition(),
       {
         type: 'group',
         items: [
