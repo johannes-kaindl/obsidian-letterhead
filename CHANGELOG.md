@@ -7,6 +7,8 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-09-26
+
 ### Added
 - **Hilfe-Zeile ganz oben in den Einstellungen**, mit Links auf die Dokumentation und den Issue-Tracker (Knopf `bug`).
 
