@@ -66,18 +66,9 @@ lohnt sich zu wissen, woher die eigene Kopie stammt:
 | **GitHub-Release** — von Actions gebaut | `main.js`, `manifest.json`, `styles.css` plus Sigstore/SLSA-Attestation | dass genau diese Bytes vom Workflow dieses Repositorys aus dem getaggten Commit gebaut wurden |
 | **Forgejo-Release** — `git.jkaindl.de` | dieselben drei Dateien plus `checksums.sha256` | dass die heruntergeladenen Dateien die veröffentlichten sind — Unversehrtheit, keine Build-Provenance |
 
-**Aktueller Stand — 2026-09-03: GitHub-Releases sind ausgesetzt.** GitHub Actions steht für
-das Mirror-Konto derzeit nicht zur Verfügung, deshalb sind **1.6.5 und 1.6.6 nur auf Forgejo
-erschienen und tragen keine Attestation.** Am Build selbst ändert das nichts: beide entstanden
-über dasselbe `npm run gate` aus der getaggten Quelle, und `checksums.sha256` deckt die
-veröffentlichten Dateien ab. Was fehlt, ist die unabhängige kryptografische Verbindung
-zwischen diesen Dateien und dem Commit — eine Prüfsumme, die vom selben Server kommt wie die
-Dateien, kann diese Verbindung allein nicht herstellen.
+**Releases ohne Attestation:** 1.6.5 und 1.6.6 wurden nicht vom GitHub-Actions-Workflow gebaut und tragen deshalb keine Attestation (für 1.6.6 am 2026-09-26 geprüft: `gh attestation verify` findet keine). Am Build selbst ändert das nichts: beide entstanden über dasselbe `npm run gate` aus der getaggten Quelle, und `checksums.sha256` deckt die veröffentlichten Dateien ab. Was fehlt, ist die unabhängige kryptografische Verbindung zwischen diesen Dateien und dem Commit — eine Prüfsumme, die vom selben Server kommt wie die Dateien, kann diese Verbindung allein nicht herstellen.
 
-Wer Build-Provenance heute braucht, baut stattdessen selbst aus der Quelle: Tag auschecken,
-`npm ci && npm run build` ausführen und das entstandene `main.js` gegen das ausgelieferte
-halten. Mit dem nächsten GitHub-Release gibt es wieder Attestationen, und die ausgesetzten
-Tags werden nachträglich attestiert, sobald Actions wieder läuft.
+Wer für eine dieser beiden Versionen Build-Provenance braucht, baut stattdessen selbst aus der Quelle: Tag auschecken, `npm ci && npm run build` ausführen und das entstandene `main.js` gegen das ausgelieferte halten. Über den Release-Workflow veröffentlichte Releases tragen die unten beschriebene Attestation.
 
 ### Release verifizieren
 Wird ein Release über GitHub Actions veröffentlicht, baut der Workflow `main.js` aus der
@@ -89,10 +80,7 @@ der getaggten Quelle gebaut wurde:
 gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead
 ```
 
-⚠️ **Solange GitHub-Releases ausgesetzt sind (siehe oben), kann dieser Befehl nicht
-erfolgreich sein** — weder für die Releases ohne Attestation noch als Repository-Abfrage. Ein
-Fehlschlag ist für 1.6.5 und 1.6.6 der erwartete Ausgang und **kein** Hinweis auf
-Manipulation; nutze stattdessen die oben beschriebene Prüfung durch eigenen Build.
+⚠️ **Für 1.6.5 und 1.6.6 kann dieser Befehl nicht erfolgreich sein**, weil diese Releases keine Attestation haben. Ein Fehlschlag ist dort der erwartete Ausgang und **kein** Hinweis auf Manipulation; nutze stattdessen die oben beschriebene Prüfung durch eigenen Build.
 
 Das bedeutet nicht, dass das ausgelieferte `main.js` byte-identisch mit einer Datei im
 Repository ist (es gibt keine — es ist Build-Output); es bedeutet, dass die

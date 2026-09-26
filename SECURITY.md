@@ -61,17 +61,9 @@ and it is worth knowing which one your copy came from:
 | **GitHub release** — built by Actions | `main.js`, `manifest.json`, `styles.css`, plus a Sigstore/SLSA attestation | that these exact bytes were built by this repository's workflow from the tagged commit |
 | **Forgejo release** — `git.jkaindl.de` | the same three files, plus `checksums.sha256` | that the files you downloaded are the ones that were published — integrity, not build provenance |
 
-**Current status — 2026-09-03: GitHub releases are paused.** GitHub Actions is unavailable
-for the mirror account, so **1.6.5 and 1.6.6 were published on Forgejo only and carry no
-attestation.** Nothing about the build changed: both were produced by the same `npm run gate`
-from the tagged source, and `checksums.sha256` covers the published files. What is missing is
-the independent, cryptographic link between those files and the commit — a checksum you fetch
-from the same server as the files cannot establish that link on its own.
+**Releases without an attestation:** 1.6.5 and 1.6.6 were not built by the GitHub Actions workflow, so they carry no attestation (checked for 1.6.6 on 2026-09-26: `gh attestation verify` finds none). Nothing about the build differs: both were produced by the same `npm run gate` from the tagged source, and `checksums.sha256` covers the published files. What is missing is the independent, cryptographic link between those files and the commit — a checksum you fetch from the same server as the files cannot establish that link on its own.
 
-If you need build provenance today, build from source instead: check out the tag, run
-`npm ci && npm run build`, and compare the resulting `main.js` against the one you were
-served. Attestations resume with the next GitHub release, and the paused tags will be
-attested retroactively once Actions is available again.
+If you need build provenance for one of those two versions, build from source instead: check out the tag, run `npm ci && npm run build`, and compare the resulting `main.js` against the one you were served. Releases published through the release workflow carry the attestation described below.
 
 ### Verifying a release
 When a release is published through GitHub Actions, the workflow builds `main.js` from the
@@ -83,10 +75,7 @@ source:
 gh attestation verify main.js --repo johannes-kaindl/obsidian-letterhead
 ```
 
-⚠️ **While GitHub releases are paused (see above), this command cannot succeed** — neither for
-the releases that have no attestation, nor as a repository lookup. Treat a failure as the
-expected outcome for 1.6.5 and 1.6.6, not as evidence of tampering; use the build-from-source
-check described above instead.
+⚠️ **For 1.6.5 and 1.6.6 this command cannot succeed**, because those releases have no attestation. Treat a failure there as the expected outcome, not as evidence of tampering; use the build-from-source check described above instead.
 
 This does not mean the shipped `main.js` is byte-identical to any file in the
 repository (there is none — it is build output); it means the attested bytes were
