@@ -73,6 +73,14 @@ jobs:
             exit 1
           fi
 
+      # Bootstrap zip (<id>.zip) and checksums.sha256 — same logic as the Forgejo path
+      # (tools/release/lib/plugin-zip.mjs, vendored here as scripts/plugin-zip.mjs): the
+      # archive is reproducible, the same source state yields the same bytes. A first-time
+      # install then needs one download instead of hand-saving three files into a folder
+      # you create yourself.
+      - name: Build zip and checksums
+        run: node scripts/build-release-assets.mjs release-assets
+
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v4
         with:
@@ -89,7 +97,7 @@ jobs:
           notes=$(awk -v t="## [$TAG]" 'index($0,t)==1{f=1;next} /^## \[/{f=0} f' CHANGELOG.md)
           [ -z "$notes" ] && notes="Release $TAG"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" main.js manifest.json styles.css --clobber
+            gh release upload "$TAG" main.js manifest.json styles.css release-assets/* --clobber
           else
-            gh release create "$TAG" main.js manifest.json styles.css --title "$TAG" --notes "$notes"
+            gh release create "$TAG" main.js manifest.json styles.css release-assets/* --title "$TAG" --notes "$notes"
           fi
