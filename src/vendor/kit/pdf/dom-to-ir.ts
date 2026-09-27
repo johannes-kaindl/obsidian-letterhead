@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.30.0, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.44.0, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { Block, Inline, ListItem, Cell, Align } from './ir';
 import type { ExtractedCode } from './code-blocks';
 
@@ -23,12 +23,19 @@ const isDecorative = (el: Element): boolean =>
 // options rather than in an i18n call because this layer is pure — an import of the host's
 // string catalogue would drag in exactly the coupling `check:pure` guards against. The
 // defaults stay German so a consumer that vendors a newer copy keeps the texts it had.
-export interface PdfPlaceholders { math?: string; graphic?: string }
-type ResolvedPlaceholders = { math: string; graphic: string };
-const DEFAULT_PLACEHOLDERS: ResolvedPlaceholders = { math: '[Formel]', graphic: '[Grafik]' };
+// `image` is the bare word, not a bracketed text: a table cell shows `[image: alt]` or
+// `[image]`, so the word has to be composable with the alt text (since 0.42.0).
+// `imageFailed` is the full text `resolveImages` shows for an image without alt text that could
+// not be decoded (a bare `[image: alt]` would read wrong with nothing to name); with alt text
+// the `image` word is reused, so one options object serves `domToIrSync` and `resolveImages`.
+export interface PdfPlaceholders { math?: string; graphic?: string; image?: string; imageFailed?: string }
+type ResolvedPlaceholders = { math: string; graphic: string; image: string; imageFailed: string };
+const DEFAULT_PLACEHOLDERS: ResolvedPlaceholders = { math: '[Formel]', graphic: '[Grafik]', image: 'Bild', imageFailed: '[Bild konnte nicht eingebettet werden]' };
 const resolvePlaceholders = (ph?: PdfPlaceholders): ResolvedPlaceholders => ({
   math: ph?.math ?? DEFAULT_PLACEHOLDERS.math,
   graphic: ph?.graphic ?? DEFAULT_PLACEHOLDERS.graphic,
+  image: ph?.image ?? DEFAULT_PLACEHOLDERS.image,
+  imageFailed: ph?.imageFailed ?? DEFAULT_PLACEHOLDERS.imageFailed,
 });
 
 // Graphically rendered elements — MathJax, Mermaid, bare SVG — carry no text node at all.
@@ -58,8 +65,10 @@ function taskMarker(li: Element): string | null {
   return checked ? '[x] ' : '[ ] ';
 }
 
-// Inline runs (bold/italic/code/link) from an element's descendants.
-function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boolean; link?: string }, acc: Inline[], ph: ResolvedPlaceholders, stats?: { graphics: number }): Inline[] {
+// Inline runs (bold/italic/code/link) from an element's descendants. `imageText`: a table
+// cell has no room for an image block, so an image there becomes a visible `[Bild: alt]`
+// run instead of vanishing (paperize-w8, 2026-09-25). Elsewhere images become blocks.
+function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boolean; link?: string }, acc: Inline[], ph: ResolvedPlaceholders, stats?: { graphics: number }, imageText = false): Inline[] {
   for (const c of Array.from(node.childNodes || [])) {
     if (isText(c)) {
       const txt = c.textContent || '';
@@ -67,7 +76,13 @@ function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boole
     } else if (isElem(c)) {
       const nm = nameOf(c);
       if (nm === 'BR') { acc.push({ text: '\n' }); continue; }
-      if (nm === 'IMG') continue; // inline images are ignored inside text runs
+      if (nm === 'IMG') {
+        if (imageText) {
+          const alt = (c as Element).getAttribute('alt');
+          acc.push({ text: alt ? `[${ph.image}: ${alt}]` : `[${ph.image}]`, bold: ctx.bold || undefined, italic: ctx.italic || undefined, link: ctx.link });
+        }
+        continue; // otherwise the image is emitted as its own block by the caller
+      }
       if (nm === 'UL' || nm === 'OL') continue; // nested lists are handled as separate child blocks
       if (nm === 'INPUT') continue; // the task checkbox is surfaced via taskMarker, not as a run
       const gph = graphicPlaceholder(c as Element, ph);
@@ -78,7 +93,7 @@ function runsFrom(node: Node, ctx: { bold: boolean; italic: boolean; code: boole
         code: ctx.code || nm === 'CODE',
         link: nm === 'A' ? ((c as HTMLAnchorElement).getAttribute('href') || ctx.link) : ctx.link,
       };
-      runsFrom(c, next, acc, ph, stats);
+      runsFrom(c, next, acc, ph, stats, imageText);
     }
   }
   return acc;
@@ -95,8 +110,22 @@ function mergeRuns(runs: Inline[]): Inline[] {
   return out.filter((r) => r.text !== '');
 }
 
-function inlinesOf(el: Element, ph: ResolvedPlaceholders, stats?: { graphics: number }): Inline[] {
-  return mergeRuns(runsFrom(el, { bold: false, italic: false, code: false }, [], ph, stats));
+function inlinesOf(el: Element, ph: ResolvedPlaceholders, stats?: { graphics: number }, imageText = false): Inline[] {
+  return mergeRuns(runsFrom(el, { bold: false, italic: false, code: false }, [], ph, stats, imageText));
+}
+
+// The images that belong to this list item itself — not those of a nested list, which the
+// recursive parseList claims. Nearest UL/OL ancestor decides.
+function ownImages(li: Element, listEl: Element): HTMLImageElement[] {
+  return Array.from(li.querySelectorAll('img')).filter((img) => {
+    let p = img.parentElement;
+    while (p && p !== listEl) {
+      const nm = nameOf(p);
+      if (nm === 'UL' || nm === 'OL') return false;
+      p = p.parentElement;
+    }
+    return true;
+  });
 }
 
 function cellAlign(td: Element): Align | undefined {
@@ -136,13 +165,19 @@ export function domToIrSync(
     const items: ListItem[] = [];
     for (const li of Array.from(listEl.children)) {
       if (nameOf(li) !== 'LI') continue;
-      // Split the LI's own inline text from nested lists.
+      // Split the LI's own inline text from nested lists. Its own images go first, as image
+      // blocks behind the text, and are collected BEFORE the nested lists are parsed: the
+      // order of imageEls must match the depth-first order resolveImages walks the blocks in.
+      // Until 0.41.x an image here only raised unsupportedCount and was lost (paperize-w8).
       const childBlocks: Block[] = [];
+      for (const img of ownImages(li, listEl)) {
+        childBlocks.push({ type: 'image', data: EMPTY, wPx: 0, hPx: 0, alt: img.getAttribute('alt') || undefined });
+        imageEls.push(img);
+      }
       for (const sub of Array.from(li.children)) {
         const nm = nameOf(sub);
         if (nm === 'UL' || nm === 'OL') childBlocks.push({ type: 'list', ordered: nm === 'OL', items: parseList(sub) });
       }
-      if (li.querySelector('img')) unsupportedCount++;
       const inl = inlinesOf(li, placeholders, gstats);
       const mark = taskMarker(li);
       if (mark) {
@@ -163,14 +198,14 @@ export function domToIrSync(
       const tr = thead.querySelector('tr');
       if (tr) header = Array.from(tr.children).map((td) => {
         if (td.querySelector('img')) unsupportedCount++;
-        return { inlines: inlinesOf(td, placeholders, gstats), align: cellAlign(td) };
+        return { inlines: inlinesOf(td, placeholders, gstats, true), align: cellAlign(td) };
       });
     }
     for (const tr of Array.from(tbody.querySelectorAll('tr'))) {
       if (thead && tr.parentElement && tr.parentElement.nodeName.toUpperCase() === 'THEAD') continue;
       const cells = Array.from(tr.children).map((td) => {
         if (td.querySelector('img')) unsupportedCount++;
-        return { inlines: inlinesOf(td, placeholders, gstats), align: cellAlign(td) };
+        return { inlines: inlinesOf(td, placeholders, gstats, true), align: cellAlign(td) };
       });
       if (cells.length) rows.push(cells);
     }
@@ -230,7 +265,9 @@ export async function resolveImages(
   blocks: Block[],
   imageEls: HTMLImageElement[],
   decode: (src: string) => Promise<{ data: Uint8Array; wPx: number; hPx: number } | null>,
+  placeholders?: PdfPlaceholders,
 ): Promise<{ blocks: Block[]; unsupportedAdded: number }> {
+  const ph = resolvePlaceholders(placeholders);
   let unsupportedAdded = 0;
   let imgIdx = 0;
   const mapBlock = async (b: Block): Promise<Block> => {
@@ -238,10 +275,20 @@ export async function resolveImages(
       const el = imageEls[imgIdx++];
       const src = el ? (el.getAttribute('src') || el.src || '') : '';
       const dec = src ? await decode(src) : null;
-      if (!dec) { unsupportedAdded++; return { type: 'unsupported', text: b.alt ? `[Bild: ${b.alt}]` : '[Bild konnte nicht eingebettet werden]' }; }
+      if (!dec) { unsupportedAdded++; return { type: 'unsupported', text: b.alt ? `[${ph.image}: ${b.alt}]` : ph.imageFailed }; }
       return { type: 'image', data: dec.data, wPx: dec.wPx, hPx: dec.hPx, alt: b.alt };
     }
     if (b.type === 'blockquote') return { type: 'blockquote', blocks: await Promise.all(b.blocks.map(mapBlock)) };
+    // List items carry image blocks in `children` since 0.42.0. `map` runs synchronously, so the
+    // image index is taken in depth-first order — the order domToIrSync collected imageEls in.
+    if (b.type === 'list') {
+      return {
+        type: 'list', ordered: b.ordered,
+        items: await Promise.all(b.items.map(async (it) => (it.children
+          ? { inlines: it.inlines, children: await Promise.all(it.children.map(mapBlock)) }
+          : it))),
+      };
+    }
     return b;
   };
   const out = await Promise.all(blocks.map(mapBlock));

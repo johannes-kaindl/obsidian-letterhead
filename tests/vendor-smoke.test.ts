@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect } from 'vitest';
-import { domToIrSync } from '../src/vendor/kit/pdf/dom-to-ir';
+import { domToIrSync, resolveImages } from '../src/vendor/kit/pdf/dom-to-ir';
 import { extractCodeBlocks, parseCodePlaceholder } from '../src/vendor/kit/pdf/code-blocks';
 
 describe('vendored dom-to-ir + code-blocks', () => {
@@ -76,5 +76,41 @@ describe('vendored dom-to-ir + code-blocks', () => {
     expect(blocks).toEqual([
       { type: 'blockquote', blocks: [{ type: 'paragraph', inlines: [{ text: '[Graphic]' }] }] },
     ]);
+  });
+
+  // Kit 0.42.0: ein Bild in einem Listenpunkt zaehlte vorher nur den Verlustzaehler hoch und
+  // verschwand — seit dem Bump landet es als eigener image-Block in den children des Listenpunkts.
+  it('puts an image inside a list item into the IR as its own block', () => {
+    const div = document.createElement('div');
+    div.innerHTML = '<ul><li>Text<img src="x.png" alt="Logo"></li></ul>';
+    const { blocks, imageEls } = domToIrSync(div, {});
+    expect(blocks).toEqual([
+      {
+        type: 'list',
+        ordered: false,
+        items: [
+          {
+            inlines: [{ text: 'Text' }],
+            children: [{ type: 'image', data: new Uint8Array(0), wPx: 0, hPx: 0, alt: 'Logo' }],
+          },
+        ],
+      },
+    ]);
+    expect(imageEls).toHaveLength(1);
+  });
+
+  // Kit 0.44.0: resolveImages nimmt die Fehl-Platzhalter jetzt als vierten Parameter, statt fest
+  // den deutschen Text zu zeigen — letterhead speist sie aus model.labels (Briefsprache), hier
+  // direkt gegen die Engine geprueft: ein Bild, das nicht dekodiert werden kann, zeigt bei
+  // englischer Sprache den englischen Text.
+  it('shows the English text for an image that fails to decode, when English placeholders are handed in', async () => {
+    const div = document.createElement('div');
+    div.innerHTML = '<p><img src="x.png"></p>';
+    const { blocks, imageEls } = domToIrSync(div, {});
+    const { blocks: resolved } = await resolveImages(blocks, imageEls, async () => null, {
+      image: 'Image',
+      imageFailed: '[Image could not be embedded]',
+    });
+    expect(resolved).toEqual([{ type: 'unsupported', text: '[Image could not be embedded]' }]);
   });
 });

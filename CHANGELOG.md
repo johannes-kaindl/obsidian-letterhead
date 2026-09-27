@@ -10,6 +10,13 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 ### Added
 - The GitHub release now also carries a ready-to-unpack `letterhead.zip` (the plugin folder with `main.js`, `manifest.json` and `styles.css`) and a `checksums.sha256` file. For a manual install, download the zip and unpack it into `.obsidian/plugins/` instead of creating the folder and saving three files by hand.
 
+### Fixed
+- An image inside a list item no longer just counts as "not shown" and vanishes — it now appears in the PDF as its own image, right behind the item's text (Kit 0.42.0).
+
+### Changed
+- An image inside a table cell that cannot be embedded now shows its alt text as `[Image: …]` (or `[Image]` without alt text) instead of only raising the "simplified" count silently (Kit 0.42.0).
+- Internal: the PDF engine (`src/vendor/kit/pdf`) is on Kit 0.44.0 now (was 0.30.0). `resolveImages` takes the failure texts as an explicit option instead of a fixed German string; letterhead feeds them from `model.labels` (`phImage`/`phImageFailed`), so the printed placeholder keeps following the letter language, not the interface language — same as the existing `phFormula`/`phGraphic`.
+
 ## [1.7.1] — 2026-09-26
 
 ### Changed

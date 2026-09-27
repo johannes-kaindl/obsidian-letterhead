@@ -2,7 +2,7 @@
   "source": "obsidian-kit",
   "version": "0.30.0",
   "sha": "6e571a4",
-  "vendored": "pdf/*.ts, vault-path.ts",
+  "vendored": "pdf/*.ts (obsidian-kit@0.44.0, 127c3a8), vault-path.ts",
   "code_kit_version": "0.5.0",
   "code_kit_sha": "efcd456",
   "code_kit_vendored": "filename-template.ts",

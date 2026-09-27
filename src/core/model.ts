@@ -119,6 +119,12 @@ export interface LetterLabelSet {
      kann einen englischen Brief setzen. */
   phFormula: string;
   phGraphic: string;
+  /* Wie phFormula/phGraphic gedruckter Text, kein UI-String (siehe oben): `phImage` ist
+     das bloße Wort, aus dem der PDF-Kern `[Wort: alt]` baut (Tabellenzelle, nicht
+     dekodierbares Bild mit Alt-Text); `phImageFailed` ist der ganze Text für ein
+     Bild ohne Alt-Text, das nicht eingebettet werden konnte (Kit 0.44.0). */
+  phImage: string;
+  phImageFailed: string;
 }
 
 export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
@@ -129,7 +135,8 @@ export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
     telPrefix: 'Tel. ',
     closing: 'Mit freundlichen Grüßen',
     salutation: 'Sehr geehrte Damen und Herren,',
-    phFormula: '[Formel]', phGraphic: '[Grafik]'
+    phFormula: '[Formel]', phGraphic: '[Grafik]',
+    phImage: 'Bild', phImageFailed: '[Bild konnte nicht eingebettet werden]'
   },
   en: {
     anlage: 'Enclosure', anlagen: 'Enclosures',
@@ -138,7 +145,8 @@ export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
     telPrefix: 'Phone ',
     closing: 'Kind regards',
     salutation: 'Dear Sir or Madam,',
-    phFormula: '[Formula]', phGraphic: '[Graphic]'
+    phFormula: '[Formula]', phGraphic: '[Graphic]',
+    phImage: 'Image', phImageFailed: '[Image could not be embedded]'
   }
 };
 

@@ -12,7 +12,8 @@
       "dir": "src/vendor/kit/pdf",
       "source": "obsidian-kit",
       "fromDir": "src/pure/pdf",
-      "vendorJson": "src/vendor/kit"
+      "vendorJson": "src/vendor/kit",
+      "ref": "0.44.0"
     },
     {
       "dir": "src/vendor/kit",

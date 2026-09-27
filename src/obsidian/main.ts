@@ -404,13 +404,17 @@ export default class LetterheadPlugin extends Plugin {
       // deutsch festgeschrieben; das Kit reicht sie jetzt durch, statt i18n zu
       // importieren — ein Import haette genau die Kopplung hereingeholt, gegen die
       // `check:pure` laeuft.
+      const placeholders = {
+        math: model.labels.phFormula, graphic: model.labels.phGraphic,
+        image: model.labels.phImage, imageFailed: model.labels.phImageFailed,
+      };
       const ex = domToIrSync(holder, {
         codes,
         resolvePlaceholder: (t) => parseCodePlaceholder(t, 'LETTERHEADCODE'),
-        placeholders: { math: model.labels.phFormula, graphic: model.labels.phGraphic },
+        placeholders,
       });
       simplified = ex.unsupportedCount;
-      const res = await resolveImages(ex.blocks, ex.imageEls, (src) => this.decodeImage(src, model.sourceFile));
+      const res = await resolveImages(ex.blocks, ex.imageEls, (src) => this.decodeImage(src, model.sourceFile), placeholders);
       bodyBlocks = res.blocks;
       simplified += res.unsupportedAdded;
     } finally {
