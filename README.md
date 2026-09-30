@@ -72,8 +72,9 @@ Once Letterhead is listed in the Community plugins browser:
 
 Download `main.js`, `manifest.json` and `styles.css` from the
 [latest release](https://github.com/johannes-kaindl/obsidian-letterhead/releases/latest)
-and copy them into your vault. Each release also ships `checksums.sha256`, so you can verify
-what you downloaded with `shasum -a 256 -c checksums.sha256`.
+and copy them into your vault.
+
+Or download `letterhead.zip` from the release — it contains exactly these files — and unpack it into `.obsidian/plugins/`; `checksums.sha256` lets you verify the download: `shasum -a 256 -c checksums.sha256`.
 
 ```bash
 # Copy the plugin into your vault
