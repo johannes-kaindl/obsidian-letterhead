@@ -15,6 +15,17 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 
 <sub><b>DIN 5008</b> (German) · <b>Modern</b> (English) — two layouts, two letter languages.</sub>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/hero.png" alt="Letterhead preview modal showing a formatted DIN 5008 business letter over an Obsidian note" width="600">
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/settings.png" alt="Letterhead settings tab with help row, layout options and sender profile" width="290">
+  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/note-and-frontmatter.png" alt="Obsidian note whose frontmatter properties hold the letter fields" width="300">
+</p>
+
+<sub>The letter preview, the settings tab and a note whose properties hold the letter fields.</sub>
+
 
 ## Features
 

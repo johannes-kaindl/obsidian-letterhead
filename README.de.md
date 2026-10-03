@@ -15,6 +15,17 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 
 <sub><b>DIN 5008</b> (Deutsch) · <b>Modern</b> (Englisch) — zwei Layouts, zwei Briefsprachen.</sub>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/hero.png" alt="Letterhead-Vorschau mit einem formatierten DIN-5008-Geschäftsbrief über einer Obsidian-Notiz" width="600">
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/settings.png" alt="Einstellungen von Letterhead mit Hilfe-Zeile, Layout-Optionen und Absenderprofil" width="290">
+  <img src="https://raw.githubusercontent.com/johannes-kaindl/obsidian-letterhead/main/docs/images/note-and-frontmatter.png" alt="Obsidian-Notiz, deren Frontmatter-Eigenschaften die Brieffelder enthalten" width="300">
+</p>
+
+<sub>Die Briefvorschau, die Einstellungen und eine Notiz, deren Eigenschaften die Brieffelder enthalten.</sub>
+
 ## Funktionen
 
 - **Briefe aus deinen Notizen:** Das Frontmatter einer Notiz hält die Metadaten, der Notiztext (Markdown) wird zum Brieftext — ein Befehl macht daraus einen fertig formatierten Geschäftsbrief.
