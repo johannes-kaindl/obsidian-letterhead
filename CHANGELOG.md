@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.8.1] — 2026-10-03
+
 ### Fixed
 - The preview modal is now wide enough to show the full A4 page. Its width rule never applied (the class sits on the modal element itself), so the modal stayed at Obsidian's default width and the letter sheet was cropped on the right.
 
