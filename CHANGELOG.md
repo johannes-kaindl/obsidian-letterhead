@@ -1,9 +1,8 @@
 # Changelog
 
-Alle nennenswerten Änderungen an diesem Projekt werden hier dokumentiert.
+All notable changes to this project are documented here.
 
-Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
-dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **ohne** v-Präfix).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Semantic Versioning](https://semver.org/) (tags **without** a `v` prefix).
 
 ## [Unreleased]
 
@@ -22,469 +21,220 @@ dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/) (Tags **
 ## [1.7.1] — 2026-09-26
 
 ### Changed
-- Intern: Kit-Vendoring läuft über das zentrale Dach-Werkzeug (`tools/kit-sync.json`; `tools/sync-kit.sh` ist nur noch ein Aufruf). Alle vendorten Dateien sind byte-gleich, für Nutzer ändert sich nichts.
-- Intern: `settings_walker.ts` und `folder-suggest.ts` liegen jetzt auf Kit 0.43.0 (vorher 0.25.0, vom Vendoring-Skript vergessen). Neu ist nur die zusätzliche Funktion `installTabRefreshOnOpen`, die dieses Plugin nicht aufruft; das Verhalten bleibt gleich.
+- Internal: kit vendoring now runs through the central umbrella tool (`tools/kit-sync.json`; `tools/sync-kit.sh` is just a call to it). All vendored files are byte-identical, nothing changes for users.
+- Internal: `settings_walker.ts` and `folder-suggest.ts` are now on Kit 0.43.0 (previously 0.25.0, missed by the vendoring script). The only new thing is the additional function `installTabRefreshOnOpen`, which this plugin does not call; behaviour stays the same.
 
 ## [1.7.0] — 2026-09-26
 
 ### Added
-- **Hilfe-Zeile ganz oben in den Einstellungen**, mit Links auf die Dokumentation und den Issue-Tracker (Knopf `bug`).
+- **A help row at the very top of the settings**, with links to the documentation and the issue tracker (`bug` button).
 
 ### Changed
-- **Doku: Installationsweg und Attestations-Zusage sagen jetzt, was tatsächlich gilt.**
-  Letterhead ist derzeit nicht im Community-Verzeichnis gelistet und GitHub-Releases sind
-  ausgesetzt — die README empfahl trotzdem die Store-Suche, und `SECURITY.md` sagte
-  unbedingt zu, *jedes* Release werde von GitHub Actions gebaut und Sigstore-signiert. Für
-  1.6.5 und 1.6.6 stimmte beides nicht: sie sind nur auf Forgejo erschienen und tragen
-  `checksums.sha256` statt einer Attestation. Neu beschreiben README und `SECURITY.md`
-  (je EN + DE) beide Auslieferungswege und **was jeder von beiden belegt** — Attestation
-  = Herkunft aus dem getaggten Commit, Prüfsumme = Unversehrtheit des Downloads, und eine
-  Prüfsumme vom selben Server wie die Dateien ersetzt das erste nicht. Der genannte
-  `gh attestation verify`-Aufruf trägt jetzt den Vorbehalt, dass sein Fehlschlag derzeit
-  der erwartete Ausgang ist und kein Manipulationshinweis; als Ersatz steht der Weg über
-  einen eigenen Build aus dem Tag da. Installation läuft bis auf Weiteres über
-  **AnySource Sideloader** (liest Forgejo direkt) oder manuell aus dem Forgejo-Release.
-  Seit dem 2026-09-03 gibt es dafür einen abonnierbaren **Katalog**, der Letterhead neben
-  den übrigen Plugins desselben Autors listet — beide READMEs nennen ihn.
-- **Die READMEs zeigen wieder Bilder.** Beide banden Hero-Bilder und alle Dateilinks über
-  absolute `github.com`-URLs ein — 15 Stück je Sprache, seit dem Konto-Ausfall allesamt
-  **404**, sichtbar als zwei kaputte Bilder direkt unter der Überschrift. Sie sind jetzt
-  **repo-relativ** (`SECURITY.md`, `LICENSE`, `docs/…`) und funktionieren damit auf jeder
-  Forge und in jedem Klon. Die **Bilder** bleiben absolut, aber auf Forgejo-Raw statt
-  GitHub: eine Store-Seite rendert die README außerhalb des Repos und lädt relative
-  Bildpfade nicht — worauf das README-Gate zu Recht hinwies. Die Repository-Zeile
-  nennt Forgejo als Quelle statt des unerreichbaren Mirrors.
+- **Docs: the installation path and the attestation promise now say what actually holds.** Letterhead is currently not listed in the community directory and GitHub releases are suspended — yet the README still recommended searching the store, and `SECURITY.md` promised unconditionally that *every* release is built and Sigstore-signed by GitHub Actions. For 1.6.5 and 1.6.6 neither was true: they appeared on Forgejo only and carry `checksums.sha256` instead of an attestation. README and `SECURITY.md` (EN + DE each) now describe both delivery paths and **what each of them proves** — attestation = provenance from the tagged commit, checksum = integrity of the download, and a checksum from the same server as the files does not replace the former. The `gh attestation verify` call mentioned there now carries the caveat that its failure is currently the expected outcome and not a sign of tampering; the route via your own build from the tag is given as a substitute. Until further notice, installation goes through **AnySource Sideloader** (reads Forgejo directly) or manually from the Forgejo release. Since 2026-09-03 there is a subscribable **catalog** for this, which lists Letterhead alongside the author's other plugins — both READMEs mention it.
+- **The READMEs show images again.** Both embedded hero images and all file links through absolute `github.com` URLs — 15 per language, all of them **404** since the account outage, visible as two broken images directly under the heading. They are now **repo-relative** (`SECURITY.md`, `LICENSE`, `docs/…`) and therefore work on any forge and in any clone. The **images** stay absolute, but on Forgejo raw instead of GitHub: a store page renders the README outside the repo and does not load relative image paths — which the README gate rightly pointed out. The repository line names Forgejo as the source instead of the unreachable mirror.
 
 ## [1.6.6] — 2026-09-03
 
 ### Changed
-- **Die Platzhalter für nicht darstellbare Formeln und Grafiken folgen jetzt der
-  Briefsprache.** Steht im Brief eine Formel oder eine reine Grafik, die das PDF nicht
-  wiedergeben kann, druckt Letterhead an ihrer Stelle einen sichtbaren Hinweis. Der war bis
-  hierher immer deutsch — in einem englischen Brief stand `[Grafik]` neben `Enclosures`.
-  Jetzt richtet er sich nach `sprache`/`language` bzw. der eingestellten Briefsprache:
-  `[Formel]`/`[Grafik]` bzw. `[Formula]`/`[Graphic]`. **Nicht** nach der Sprache der
-  Obsidian-Oberfläche — ein deutsches Obsidian kann einen englischen Brief setzen.
-- Die PDF-Engine kommt aus `obsidian-kit` **0.30.0**, das Dateiname-Schema aus
-  `code-kit` **0.5.0**. Beide Pins stehen in `src/vendor/kit/VENDOR.json`: seit
-  obsidian-kit `2ab1bb5` liegt die domänenfreie pure-Teilmenge in einem eigenen Repo, der
-  Vendor-Baum stammt also aus zwei Quellen. `tools/sync-kit.sh` liest aus beiden Tag-Refs
-  (`^{commit}`-gepeelt, bei code-kit zwingend — dort sind die Tags annotiert) und prüft alle
-  Quellpfade, bevor es die erste Datei schreibt. Am vendorierten Code ändert der Umzug
-  nichts: `filename-template.ts` ist in code-kit@0.5.0 byte-identisch mit dem bisherigen
-  Stand.
+- **The placeholders for formulas and graphics that cannot be rendered now follow the letter language.** If a letter contains a formula or a pure graphic that the PDF cannot reproduce, Letterhead prints a visible note in its place. Until now it was always German — in an English letter, `[Grafik]` sat next to `Enclosures`. Now it follows `sprache`/`language` or the configured letter language: `[Formel]`/`[Grafik]` or `[Formula]`/`[Graphic]`. It does **not** follow the language of the Obsidian interface — a German Obsidian can set an English letter.
+- The PDF engine comes from `obsidian-kit` **0.30.0**, the filename template from `code-kit` **0.5.0**. Both pins are in `src/vendor/kit/VENDOR.json`: since obsidian-kit `2ab1bb5` the domain-free pure subset lives in a separate repo, so the vendor tree now comes from two sources. `tools/sync-kit.sh` reads from both tag refs (`^{commit}`-peeled, mandatory for code-kit — its tags are annotated) and checks all source paths before it writes the first file. The move changes nothing about the vendored code: `filename-template.ts` in code-kit@0.5.0 is byte-identical to the previous state.
 
 ## [1.6.5] — 2026-09-02
 
 ### Changed
-- Dateiname-Schema und Vault-Pfad-Rechnung kommen aus `obsidian-kit` 0.27.0
-  (`src/vendor/kit/filename-template.ts`, `src/vendor/kit/vault-path.ts`) statt aus lokalen
-  Kopien. Beide Module wurden aus letterhead, obsidian-paperize und yijing-oracle
-  zusammengeführt; letterhead hat den `Object.hasOwn`-Guard und den Nullguard in
-  `sanitizeFilename` beigesteuert.
-- `tools/sync-kit.sh` liest den Kit-Code aus einer festen Tag-Ref (`git show 0.27.0:<pfad>`)
-  statt aus dem Arbeitsstand des Nachbar-Repos und stempelt den mit `^{commit}` gepeelten
-  Tag-Commit. Vorher hing das Ergebnis am HEAD von `../obsidian-kit`, und `VENDOR.json` nannte
-  eine SHA, die kein Release trägt. Kein vendorierter Inhalt ändert sich dadurch.
-- `authorUrl` im Manifest zeigt auf das GitHub-Profil, unter dem der Code liegt, statt auf die
-  selbst gehostete Domain — der Store-Review prüft das Feld auf Erreichbarkeit.
+- The filename template and the vault-path calculation come from `obsidian-kit` 0.27.0 (`src/vendor/kit/filename-template.ts`, `src/vendor/kit/vault-path.ts`) instead of local copies. Both modules were merged from letterhead, obsidian-paperize and yijing-oracle; letterhead contributed the `Object.hasOwn` guard and the null guard in `sanitizeFilename`.
+- `tools/sync-kit.sh` reads the kit code from a fixed tag ref (`git show 0.27.0:<path>`) instead of the working state of the neighbouring repo, and stamps the tag commit peeled with `^{commit}`. Before, the result depended on the HEAD of `../obsidian-kit`, and `VENDOR.json` named a SHA that no release carries. No vendored content changes as a result.
+- `authorUrl` in the manifest points to the GitHub profile under which the code lives, instead of the self-hosted domain — the store review checks the field for reachability.
 
 ### Fixed
-- **Ein führender Slash im Zielordner wird jetzt entfernt.** Die lokale Pfad-Fügung strippte
-  nur *schließende* Slashes (`Export/PDF/` → `Export/PDF`), führende blieben stehen und hätten
-  einen nicht normalisierten Vault-Pfad (`/Export/Brief.pdf`) an `adapter.mkdir`/`writeBinary`
-  weitergereicht. Kein bestehendes Ergebnis ändert sich dadurch — der eigene Zielordner läuft
-  vorher durch Obsidians `normalizePath`, und der Ordner der Notiz kommt von Obsidian selbst.
-  Es fällt eine Falle im Modul weg, kein sichtbarer Fehler: die Zusage gilt jetzt im Modul
-  statt nur an der einen Aufrufstelle. Der Kit-Baustein wandelt zusätzlich Backslashes zu `/`
-  und kollabiert interne Mehrfach-Slashes — beides konnte die lokale Fassung nicht.
+- **A leading slash in the target folder is now stripped.** The local path joining only stripped *trailing* slashes (`Export/PDF/` → `Export/PDF`); leading ones stayed and would have passed a non-normalised vault path (`/Export/Brief.pdf`) on to `adapter.mkdir`/`writeBinary`. No existing result changes — the custom target folder already runs through Obsidian's `normalizePath` beforehand, and the note's folder comes from Obsidian itself. A trap in the module goes away, not a visible bug: the guarantee now holds in the module instead of only at the one call site. The kit component additionally converts backslashes to `/` and collapses internal repeated slashes — the local version could do neither.
 
 ### Security
-- Die Ausdrücke im Release-Workflow stehen jetzt in `env:` statt direkt in `run:`-Skripten.
-  In `run:` interpoliert GitHub den Wert vor dem Shell-Start, ein Tag-Name kann dort also
-  Shell-Syntax einschleusen; über `env:` erreicht er das Skript als Variable.
+- The expressions in the release workflow now sit in `env:` instead of directly in `run:` scripts. In `run:`, GitHub interpolates the value before the shell starts, so a tag name can inject shell syntax there; via `env:` it reaches the script as a variable.
 
 ### Removed
-- Die Null-Prototyp-Map in `buildFilename` (`Object.create(null)`) ist **absichtlich**
-  entfallen. Sie war die zweite von zwei Schichten gegen dasselbe Leck; die erste, der
-  `Object.hasOwn`-Guard, sitzt jetzt im Kit-Modul und schützt dort alle drei Plugins.
-  `{toString}`, `{constructor}` & Co. bleiben unverändert wörtlich stehen (per Test
-  festgenagelt) — wer die Map vermisst, sieht keine Regression, sondern die entfallene
-  Redundanz.
+- The null-prototype map in `buildFilename` (`Object.create(null)`) was removed **on purpose**. It was the second of two layers against the same leak; the first, the `Object.hasOwn` guard, now sits in the kit module and protects all three plugins there. `{toString}`, `{constructor}` & co. remain verbatim, unchanged (pinned by a test) — anyone who misses the map sees no regression, but the removed redundancy.
 
 ## [1.6.4] — 2026-08-14
 
 ### Fixed
-- **Codeblock verschwand aus dem PDF, wenn ein Fence direkt an einer Textzeile klebte.** Ein
-  Fenced Code darf in CommonMark/Obsidian einen Absatz unterbrechen — steht er ohne Leerzeile
-  unter einer Textzeile, landete der interne Platzhalter per Zeilenumbruch im selben Absatz.
-  Aufgelöst wird aber nur ein alleinstehender Platzhalter, also fiel der Codeblock aus dem PDF
-  und der rohe Platzhaltertext (`LETTERHEADCODE0`) wurde stattdessen als Fließtext gedruckt.
-  Bestand seit 1.4.0. Behoben stromaufwärts in `obsidian-kit` 0.26.1, hier re-vendored.
+- **A code block vanished from the PDF when a fence stuck directly to a line of text.** In CommonMark/Obsidian a fenced code block may interrupt a paragraph — if it sits directly under a line of text without a blank line, the internal placeholder ended up in the same paragraph via a line break. But only a stand-alone placeholder is resolved, so the code block dropped out of the PDF and the raw placeholder text (`LETTERHEADCODE0`) was printed as running text instead. Present since 1.4.0. Fixed upstream in `obsidian-kit` 0.26.1, re-vendored here.
 
 ### Changed
-- PDF-Engine von `obsidian-kit` 0.22.0 auf 0.26.1 nachgezogen (außer der Codeblock-Korrektur
-  keine inhaltliche Änderung — die übrigen Kit-Releases betrafen andere Module).
-- Settings-Fallback-Walker kommt aus `obsidian-kit` 0.25.0 statt aus einer lokalen Kopie.
-- ESLint-Kern und der lokale Spiegel des Store-Scanners stammen jetzt aus der zentralen
-  Release-Vorlage — was `npm run lint` prüft, entspricht damit dem, was der Store prüft.
-- Release-Tooling zentralisiert (`../tools/release/`) statt einer repo-eigenen Kopie;
-  `check-no-nul-bytes.mjs` ist Teil der Test-Kette, CI nutzt `checkout`/`setup-node` v5.
+- PDF engine brought from `obsidian-kit` 0.22.0 up to 0.26.1 (apart from the code-block fix, no functional change — the other kit releases concerned other modules).
+- The settings fallback walker comes from `obsidian-kit` 0.25.0 instead of a local copy.
+- The ESLint core and the local mirror of the store scanner now come from the central release template — what `npm run lint` checks therefore matches what the store checks.
+- Release tooling centralised (`../tools/release/`) instead of a repo-owned copy; `check-no-nul-bytes.mjs` is part of the test chain, CI uses `checkout`/`setup-node` v5.
 
 ## [1.6.3] — 2026-08-05
 
 ### Fixed
-- **Grafisch gerenderte Elemente verschwanden spurlos aus dem PDF.** MathJax-Formeln, Mermaid-
-  Diagramme und nacktes SVG tragen keinen Textknoten; die DOM→IR-Umwandlung prüfte nur
-  `textContent` und ließ sie ungezählt fallen — auch die Zusammenfassungs-Notice blieb dadurch
-  stumm, das PDF gab keinen Hinweis, dass etwas fehlte. Jetzt erscheinen `[Formel]`/`[Grafik]`
-  als sichtbare Vereinfachung. Dekoratives (Callout-Icons, `aria-hidden`) wird weiterhin
-  übergangen, statt fälschlich als verlorene Grafik gemeldet zu werden.
-- **Aufgabenlisten verloren ihren Zustand.** `- [ ]` und `- [x]` wurden zu optisch gleichen
-  Aufzählungspunkten; der Zustand steht jetzt wieder als `[ ]`/`[x]` voran.
-- **Überschrift blieb über einer fast leeren Seite zurück.** Der Waisenschutz maß Textzeilen des
-  Folgeblocks — bei einem Bild sinnlos, weil es atomar umbricht. Jetzt zählt die volle Bildhöhe.
+- **Graphically rendered elements vanished without a trace from the PDF.** MathJax formulas, Mermaid diagrams and bare SVG carry no text node; the DOM→IR conversion only checked `textContent` and dropped them uncounted — so the summary notice stayed silent too, and the PDF gave no hint that something was missing. Now `[Formel]`/`[Grafik]` appear as a visible simplification. Decorative elements (callout icons, `aria-hidden`) are still skipped instead of being wrongly reported as a lost graphic.
+- **Task lists lost their state.** `- [ ]` and `- [x]` became visually identical bullet points; the state is now put in front again as `[ ]`/`[x]`.
+- **A heading was left behind above an almost empty page.** The orphan protection measured text lines of the following block — pointless for an image, because it breaks atomically. Now the full image height counts.
 
-Alle drei stammen aus `obsidian-kit` 0.18.0–0.22.0 und waren seit 1.4.0 (Kit 0.17.0) vorhanden.
+All three come from `obsidian-kit` 0.18.0–0.22.0 and had been present since 1.4.0 (Kit 0.17.0).
 
 ## [1.6.2] — 2026-07-25
 
 ### Fixed
-- **Eingebettete Bilder erschienen auf iOS nicht im Vektor-PDF.** Obsidians iOS-App (Capacitor)
-  liefert für eingebettete Bild-Elemente `src="capacitor://localhost/_capacitor_file_/…"` statt
-  `app://` wie auf Desktop. Die Bild-Erkennung kannte dieses Schema nicht und behandelte den vollen
-  Capacitor-URL fälschlich als vault-relativen Wikilink — dessen Auflösung scheiterte, das Bild
-  wurde nie gerastert und erschien im PDF nur als Platzhaltertext. Betraf jedes eingebettete
-  Bildformat auf iOS/iPadOS, nicht nur SVG. Auf iPhone verifiziert.
-- **Phantom-Ordner bei jedem Export in den Vault-Root.** Beim Export-Ziel „Custom-Ordner" mit
-  Vault-Root (`/`) oder direkt neben der Notiz im Root berechnete die Verzeichnis-Ermittlung beim
-  Schreiben der PDF einen um ein Zeichen verkürzten Ordnernamen und legte ihn als leeres
-  Verzeichnis an. Betraf jeden Export ohne Unterordner im Zielpfad. Auf iPhone verifiziert.
+- **Embedded images did not appear in the vector PDF on iOS.** Obsidian's iOS app (Capacitor) delivers `src="capacitor://localhost/_capacitor_file_/…"` for embedded image elements instead of `app://` as on desktop. The image detection did not know this scheme and wrongly treated the full Capacitor URL as a vault-relative wikilink — its resolution failed, the image was never rasterised and appeared in the PDF only as placeholder text. Affected every embedded image format on iOS/iPadOS, not only SVG. Verified on iPhone.
+- **Phantom folder on every export to the vault root.** With the export target "Custom folder" and the vault root (`/`), or directly next to the note in the root, the directory detection computed a folder name shortened by one character when writing the PDF and created it as an empty directory. Affected every export without a subfolder in the target path. Verified on iPhone.
 
 ## [1.6.1] — 2026-07-23
 
 ### Changed
-- **Store-Warnung `obsidianmd/prefer-create-el` im Code aufgelöst statt abgeschaltet.** Der
-  frühere `eslint`-Override (`prefer-create-el: off`) ist entfernt; der Linter meldet jetzt
-  0 Warnungen. `core/image.ts` erzeugt das Raster-`<canvas>` nicht mehr selbst über
-  `activeDocument.createElement`, sondern bekommt es als Factory injiziert (`() => createEl('canvas')`)
-  — die reine Kernschicht bleibt so frei von Obsidian-Globals. Der Druck-`iframe` (`doPrint`) nutzt
-  `createEl`; die Vorschau-Paginierung erzeugt ihre Blätter mit `createDiv()` und übernimmt sie per
-  `doc.adoptNode()` in den iframe-Realm (Obsidians Helfer existieren dort nicht). Rein intern, kein
-  sichtbares Verhalten geändert (Desktop-Druck, Vektor-PDF und Vorschau verifiziert).
+- **Store warning `obsidianmd/prefer-create-el` resolved in code instead of switched off.** The former `eslint` override (`prefer-create-el: off`) is removed; the linter now reports 0 warnings. `core/image.ts` no longer creates the raster `<canvas>` itself via `activeDocument.createElement` but receives it injected as a factory (`() => createEl('canvas')`) — so the pure core layer stays free of Obsidian globals. The print `iframe` (`doPrint`) uses `createEl`; the preview pagination creates its sheets with `createDiv()` and adopts them into the iframe realm via `doc.adoptNode()` (Obsidian's helpers do not exist there). Purely internal, no visible behaviour changed (desktop print, vector PDF and preview verified).
 
 ## [1.6.0] — 2026-07-23
 
 ### Removed
-- **Einstellung „Mobiler Export" entfernt.** Sie bot seit 1.4.0 nur noch eine einzige Option und
-  wurde von keinem Codepfad mehr gelesen — der HTML/Quick-Look-Weg war damals zugunsten des
-  Degradations-Modells abgeschafft worden, das Dropdown blieb als Attrappe stehen. Der
-  gespeicherte Schlüssel wird weiterhin akzeptiert, alte Konfigurationen laden also unverändert;
-  es ändert sich nichts am Verhalten, nur eine wirkungslose Zeile verschwindet aus den
-  Einstellungen.
+- **"Mobile export" setting removed.** Since 1.4.0 it offered only a single option and was no longer read by any code path — the HTML/Quick Look route had been abolished in favour of the degradation model back then, and the dropdown stayed as a dummy. The stored key is still accepted, so old configurations load unchanged; nothing changes in behaviour, only an ineffective row disappears from the settings.
 
 ### Fixed
-- **Dokumentation beschrieb einen Exportweg, den es nicht mehr gibt.** README (beide Sprachen)
-  und das Tutorial führten weiterhin durch den alten iOS-Umweg (HTML-Datei → Quick Look →
-  Drucken → Vorschau aufziehen → sichern) und verwiesen auf die „Mobiler Export"-Einstellung.
-  Seit 1.3.0 ist der mobile Export ein Tipp. Auch `AGENTS.md` und ein Kommentar in `core/model.ts`
-  behaupteten den wählbaren Fallback.
-- **Referenz-Doku um die 1.5.0-Einstellungen ergänzt:** Ausgabeziel, eigener Ordner und
-  Dateinamen-Schema samt Platzhalter-Tabelle fehlten in `docs/reference/settings.md` vollständig,
-  obwohl sie bestimmen, wohin die PDF geschrieben wird und wie sie heißt.
+- **The documentation described an export route that no longer exists.** The README (both languages) and the tutorial still walked through the old iOS detour (HTML file → Quick Look → Print → pinch open the preview → save) and referred to the "Mobile export" setting. Since 1.3.0, mobile export is a single tap. `AGENTS.md` and a comment in `core/model.ts` also asserted the selectable fallback.
+- **Reference docs extended with the 1.5.0 settings:** output target, custom folder and filename template including the placeholder table were missing from `docs/reference/settings.md` entirely, although they determine where the PDF is written and what it is called.
 
 ### Changed
-- **Intern:** `core/body-ir.ts` nimmt das Briefmodell nicht mehr als `any`, sondern als
-  typisierte Consumer-Shape `LetterBodyModel` (Muster von `LetterHeadModel`). Damit fallen die
-  letzten 32 Lint-Warnungen des Repos weg, die im Community-Store-Review als Warnings auftauchten.
-  Keine Verhaltensänderung: alle drei Änderungen sind Typkonstrukte, der Build-Output ist bis auf
-  die Bezeichner-Vergabe des Minifiers identisch (Zahlen-Literale byte-gleich). Der Anlagen-Block
-  ist dabei erstmals von Tests abgedeckt (Singular/Plural-Label, Fallback, Position).
-- **Einstellungen-Tab auf die deklarative API (`getSettingDefinitions`) umgestellt.** Auf Obsidian
-  ab 1.13 rendern die Einstellungen im nativen Karten-Layout inklusive Einstellungs-Suche; auf
-  älteren Versionen greift unverändert der bisherige Aufbau (`display()`), der dieselben
-  Definitionen durchläuft — es gibt keine zweite Quelle. `minAppVersion` bleibt 1.8.7, Felder und
-  Verhalten sind identisch. Damit entfällt der letzte begründungslose Lint-Override des Repos.
+- **Internal:** `core/body-ir.ts` no longer takes the letter model as `any` but as the typed consumer shape `LetterBodyModel` (pattern of `LetterHeadModel`). This removes the repo's last 32 lint warnings, which showed up as warnings in the community store review. No behaviour change: all three changes are type constructs, the build output is identical apart from the minifier's identifier assignment (number literals byte-identical). The enclosures block is covered by tests for the first time (singular/plural label, fallback, position).
+- **Settings tab switched to the declarative API (`getSettingDefinitions`).** On Obsidian 1.13 and later the settings render in the native card layout including settings search; on older versions the previous setup (`display()`) still applies, running through the same definitions — there is no second source. `minAppVersion` stays 1.8.7, fields and behaviour are identical. This removes the repo's last lint override without a justification.
 
 ## [1.5.0] — 2026-07-20
 
 ### Added
-- **Ausgabeziel** (Einstellungen → Erweitert): Wohin die exportierte PDF geschrieben wird —
-  **neben die Notiz**, in **Obsidians Anhang-Ordner**, in einen **eigenen Ordner** oder gar nicht
-  speichern und **direkt teilen**. Bisher landete jeder Export im versteckten Zwischenordner und
-  wurde extern geöffnet; das ist jetzt eine Option von vieren statt der einzige Weg. Eine
-  vorhandene Datei wird nicht überschrieben, sondern um `" (2)"` ergänzt.
-- **Dateinamen-Schema** (Einstellungen → Erweitert): Wie die PDF heißt, ist konfigurierbar.
-  Platzhalter `{notiz}` `{datum}` `{datum_lang}` `{empfaenger}` `{betreff}` `{unserzeichen}`,
-  alles andere im Feld bleibt wörtlich stehen. `{datum}` liefert **YYYY-MM-DD**, damit Briefe im
-  Dateimanager chronologisch sortieren; `{datum_lang}` gibt das Datum so aus, wie es im Brief
-  steht. Neuinstallationen starten mit `{datum} {empfaenger}`.
-- **Der Druckdialog schlägt jetzt den Briefnamen vor.** Bisher bot er den Fenstertitel an — etwa
-  `Beispielbrief - MeinVault - Obsidian 1.13.2.pdf`. Er nutzt dasselbe Schema wie der PDF-Export.
+- **Output target** (Settings → Advanced): where the exported PDF is written — **next to the note**, into **Obsidian's attachment folder**, into a **custom folder**, or not saved at all and **shared directly**. Until now every export landed in the hidden intermediate folder and was opened externally; that is now one option of four instead of the only way. An existing file is not overwritten but gets `" (2)"` appended.
+- **Filename template** (Settings → Advanced): what the PDF is called is configurable. Placeholders `{notiz}` `{datum}` `{datum_lang}` `{empfaenger}` `{betreff}` `{unserzeichen}`; everything else in the field stays literal. `{datum}` yields **YYYY-MM-DD** so that letters sort chronologically in the file manager; `{datum_lang}` outputs the date as it appears in the letter. New installations start with `{datum} {empfaenger}`.
+- **The print dialog now suggests the letter name.** Until now it offered the window title — for example `Sample letter - MyVault - Obsidian 1.13.2.pdf`. It uses the same template as the PDF export.
 
 ### Changed
-- Bestehende Installationen behalten ihr bisheriges Verhalten und müssen nichts umstellen:
-  Ausgabeziel steht bei ihnen auf „direkt teilen", das Dateinamen-Schema auf `{notiz}`. Beides
-  lässt sich in den Einstellungen umstellen.
+- Existing installations keep their previous behaviour and do not need to change anything: for them the output target is set to "share directly" and the filename template to `{notiz}`. Both can be changed in the settings.
 
 ## [1.4.1] — 2026-07-20
 
-Behebt die vier Fehler, an denen der Community-Store-Review von 1.4.0 gescheitert
-ist. Der gedruckte Brief ist unverändert — die Änderungen betreffen, **wie** er
-erzeugt wird.
+Fixes the four errors on which the community store review of 1.4.0 failed. The printed letter is unchanged — the changes concern **how** it is produced.
 
 ### Changed
-- **Desktop-Druck läuft über ein eigenes iframe.** Bisher hängte der Export ein
-  `<style>` in Obsidians `document.head`, schrieb den Brief per `innerHTML` in die
-  App-DOM und blendete alle Geschwister-Elemente per `display:none` aus. Beides ist
-  im Community-Store verboten. Der Brief wird jetzt als eigenständiges Dokument in
-  einem versteckten iframe gedruckt. Nebeneffekt: eigenes Custom-CSS kann nicht mehr
-  in die laufende App durchschlagen, und der Druck wartet auf das `load`-Ereignis
-  des Rahmens statt auf einen 150-ms-Timer — eingebettete Logos sind dadurch
-  zuverlässig gesetzt, bevor der Druckdialog aufgeht.
-- **`minAppVersion` 1.4.0 → 1.8.7.** Das Plugin nutzt `getLanguage` (ab 1.8.7) und
-  `processFrontMatter` (ab 1.4.4); die bisherige Angabe war schlicht zu niedrig.
+- **Desktop print runs through its own iframe.** Until now the export attached a `<style>` to Obsidian's `document.head`, wrote the letter into the app DOM via `innerHTML` and hid all sibling elements via `display:none`. Both are forbidden in the community store. The letter is now printed as a stand-alone document in a hidden iframe. Side effect: your own custom CSS can no longer leak into the running app, and printing waits for the frame's `load` event instead of a 150 ms timer — embedded logos are therefore reliably in place before the print dialog opens.
+- **`minAppVersion` 1.4.0 → 1.8.7.** The plugin uses `getLanguage` (from 1.8.7) and `processFrontMatter` (from 1.4.4); the previous value was simply too low.
 
 ### Fixed
-- Objekte im Frontmatter erzeugten die wörtliche Zeichenkette `[object Object]` im
-  fertigen Brief (etwa bei versehentlich verschachteltem YAML unter `betreff:` oder
-  `info_1:`). Solche Werte bleiben jetzt leer. Alle bisher funktionierenden
-  Frontmatter-Werte — Text, Zahlen, Listen, Datumsangaben — werden unverändert
-  dargestellt.
+- Objects in the frontmatter produced the literal string `[object Object]` in the finished letter (for instance with accidentally nested YAML under `betreff:` or `info_1:`). Such values now stay empty. All frontmatter values that worked so far — text, numbers, lists, dates — are rendered unchanged.
 
 ### Internal
-- `eslint` + `eslint-plugin-obsidianmd` als Gate (`npm run lint`, Teil von
-  `npm run gate`), inklusive Verbot von Inline-`eslint-disable` (der Store wertet
-  die als Fehler). Damit sind Store-Findings vor dem Release lokal sichtbar — genau
-  die Lücke, durch die 1.4.0 durchgefallen ist.
-- Ausstehend als eigener Schnitt: `src/core/body-ir.ts` nimmt das Briefmodell als
-  `any` (32 Lint-Warnungen). Eine saubere Typisierung legt ~9 echte Typfehler in
-  kuvert-kritischem Layout-Code frei und gehört nicht in ein Compliance-Release.
+- `eslint` + `eslint-plugin-obsidianmd` as a gate (`npm run lint`, part of `npm run gate`), including a ban on inline `eslint-disable` (the store counts those as errors). Store findings are thereby visible locally before the release — exactly the gap through which 1.4.0 failed.
+- Pending as a separate cut: `src/core/body-ir.ts` takes the letter model as `any` (32 lint warnings). Proper typing exposes ~9 real type errors in envelope-critical layout code and does not belong in a compliance release.
 
 ## [1.4.0] — 2026-07-12
 
-Umbau der Build- und Provenance-Basis — die Brief-Funktionalität ist unverändert,
-aber der mobile Vektor-PDF-Export wird deutlich leistungsfähiger.
+Rebuild of the build and provenance basis — the letter functionality is unchanged, but the mobile vector PDF export becomes considerably more capable.
 
 ### Changed
-- **Build-System:** Das Plugin ist nicht mehr abhängigkeits- und build-frei. `src/`
-  (TypeScript) wird per `esbuild` zu `main.js` gebündelt; `main.js` ist jetzt ein
-  Build-Artefakt (gitignored), keine committete Quelle mehr. Grund: der
-  PDF-Engine-Kern wird als geteiltes Kit vendored (`src/vendor/kit/`) statt pro
-  Plugin neu geschrieben — das ist mit reinem Zero-Build nicht mehr praktikabel.
-- **Release-/Provenance-Modell:** Die GitHub-Attestation (`actions/attest-build-provenance`)
-  signiert jetzt den **Build-Output** (`main.js`/`manifest.json`/`styles.css`), frisch aus
-  dem getaggten Quellstand via `npm ci` + `npm run gate` gebaut — nicht mehr committete Bytes
-  1:1 (bisheriges `source = output`-Modell aus 1.2.2). Provenance-Garantie: reproduzierbar aus
-  dem attestierten Commit, verifizierbar mit `gh attestation verify`.
-- **Mobiler Vektor-PDF-Export erzeugt jetzt reiche Markdown-Bodies:** Tabellen,
-  eingebettete Bilder, Code-Blöcke und mehrseitige Paginierung werden direkt im
-  Vektor-PDF gerendert (per Degradation auf einfachere Darstellung bei nicht
-  unterstützten Elementen) — statt wie bisher auf den HTML/Quick-Look-Weg
-  auszuweichen. Der Desktop-Druckweg (`window.print()`) ist unverändert.
-- **Code-Blöcke bleiben auch dann intakt, wenn andere Plugins sie einfärben:**
-  Fenced-Code wird für den PDF-Weg direkt aus dem Markdown gelesen, statt aus dem
-  gerenderten DOM. Obsidians Renderer führt alle installierten Markdown-Prozessoren
-  aus — ein fremdes Plugin, das z. B. ```json in ein eigenes Widget verwandelt (etwa
-  „JSON Editor"), hinterlässt dort kein `<pre>` mehr, sondern seine Bedienelemente.
-  Im PDF erscheint jetzt der Code, den Sie geschrieben haben, unabhängig von Ihren
-  übrigen Plugins. Der Desktop-Druckweg nutzt weiterhin die gerenderte Ansicht (dort
-  ist die Plugin-Darstellung korrekt und gewollt).
+- **Build system:** the plugin is no longer dependency-free and build-free. `src/` (TypeScript) is bundled into `main.js` by `esbuild`; `main.js` is now a build artifact (gitignored), no longer committed source. Reason: the PDF engine core is vendored as a shared kit (`src/vendor/kit/`) instead of being rewritten per plugin — which is no longer practical with a pure zero-build setup.
+- **Release/provenance model:** the GitHub attestation (`actions/attest-build-provenance`) now signs the **build output** (`main.js`/`manifest.json`/`styles.css`), freshly built from the tagged source state via `npm ci` + `npm run gate` — no longer committed bytes 1:1 (the previous `source = output` model from 1.2.2). Provenance guarantee: reproducible from the attested commit, verifiable with `gh attestation verify`.
+- **The mobile vector PDF export now produces rich Markdown bodies:** tables, embedded images, code blocks and multi-page pagination are rendered directly in the vector PDF (degrading to a simpler representation for unsupported elements) — instead of falling back to the HTML/Quick Look route as before. The desktop print route (`window.print()`) is unchanged.
+- **Code blocks stay intact even when other plugins colour them:** fenced code is read directly from the Markdown for the PDF route instead of from the rendered DOM. Obsidian's renderer runs all installed Markdown processors — a foreign plugin that turns e.g. ```json into its own widget (such as "JSON Editor") leaves no `<pre>` there any more, but its controls. In the PDF, the code you wrote now appears, regardless of your other plugins. The desktop print route still uses the rendered view (there the plugin's rendering is correct and intended).
 
 ## [1.3.0] — 2026-06-28
 
-Mobiler PDF-Export als **ein Tipp** — die schwächste Stelle des Plugins (der
-manuelle Quick-Look-Tanz auf iOS) ist behoben.
+Mobile PDF export as **one tap** — the weakest spot of the plugin (the manual Quick Look dance on iOS) is fixed.
 
 ### Added
-- **Mobiler Vektor-PDF-Export:** Auf iPhone/iPad erzeugt der Brief jetzt ein echtes,
-  textselektierbares Vektor-PDF und teilt es direkt über den System-Share-Sheet
-  (`navigator.share()`) — statt HTML zu schreiben und den Nutzer durch Schnellansicht →
-  Drucken → Aufziehen → Sichern zu schicken. Eigener, **abhängigkeits- und build-freier**
-  PDF-Writer (PDF 1.7, Adobe-Core-14-Standardschriften, WinAnsi mit Umlauten/€); keine
-  neue Bibliothek, keine Netzwerkzugriffe — die Zero-Build-/`source = output`-Garantie
-  bleibt unverändert.
-- Neuer Befehl **„Brief als PDF exportieren (Vektor)"** — erzeugt das Vektor-PDF auf
-  Desktop und Mobile.
-- Einstellung **„Mobiler Export"** (`Vektor-PDF` ⁄ `Drucken / Quick Look`) als
-  Sicherheitsventil; Standard ist das neue Vektor-PDF.
-- Node-Tests (`npm test`, reines `node --test` ohne Build-Toolchain) für die puren
-  Engine-Funktionen (Einheiten, Encoding, Metriken, Writer, Umbruch, Layout, Body).
+- **Mobile vector PDF export:** on iPhone/iPad the letter now produces a real, text-selectable vector PDF and shares it directly via the system share sheet (`navigator.share()`) — instead of writing HTML and sending the user through Quick Look → Print → pinch open → Save. Own **dependency-free and build-free** PDF writer (PDF 1.7, Adobe Core 14 standard fonts, WinAnsi with umlauts/€); no new library, no network access — the zero-build/`source = output` guarantee stays unchanged.
+- New command **"Export letter as PDF (vector)"** — produces the vector PDF on desktop and mobile.
+- Setting **"Mobile export"** (`Vector PDF` ⁄ `Print / Quick Look`) as a safety valve; the default is the new vector PDF.
+- Node tests (`npm test`, plain `node --test` without a build toolchain) for the pure engine functions (units, encoding, metrics, writer, wrapping, layout, body).
 
 ### Notes
-- Komplexe Body-Inhalte (Tabellen, eingebettete Bilder, Code-Blöcke) lösen automatisch
-  den bisherigen HTML/Quick-Look-Weg als Fallback aus; der Desktop-Druckweg ist unverändert.
+- Complex body content (tables, embedded images, code blocks) automatically triggers the previous HTML/Quick Look route as a fallback; the desktop print route is unchanged.
 
 ## [1.2.2] — 2026-06-16
 
-Lieferketten-Transparenz — keine funktionalen Änderungen am Brief.
+Supply-chain transparency — no functional changes to the letter.
 
 ### Added
-- **GitHub Artifact Attestation** für Release-Dateien: Releases werden über GitHub
-  Actions veröffentlicht und signieren `main.js`, `manifest.json` und `styles.css`
-  kryptografisch (Sigstore/SLSA-Provenance). Da das Plugin abhängigkeits- und build-frei
-  ist, wird **nichts gebaut** — signiert werden exakt die committeten Bytes, die du liest
-  und installierst. Verifizierbar mit `gh attestation verify`. Die lesbare, ungebündelte
-  Quelle bleibt die primäre Garantie; die Attestation legt eine Provenance-Schicht darüber.
+- **GitHub artifact attestation** for release files: releases are published via GitHub Actions and cryptographically sign `main.js`, `manifest.json` and `styles.css` (Sigstore/SLSA provenance). Since the plugin is dependency-free and build-free, **nothing is built** — exactly the committed bytes that you read and install are signed. Verifiable with `gh attestation verify`. The readable, unbundled source remains the primary guarantee; the attestation puts a provenance layer on top.
 
 ## [1.2.1] — 2026-06-13
 
-Feinschliff nach dem Community-Verzeichnis-Review — keine funktionalen Änderungen am Brief.
+Polish after the community directory review — no functional changes to the letter.
 
 ### Changed
-- Spracherkennung nutzt nur noch `getLanguage()` + `moment.locale()`; der redundante
-  `localStorage`-Fallback wurde entfernt.
-- `ui-monospace` aus dem Monospace-Stack des technischen Stils entfernt — auf älteren
-  Obsidian-Versionen nicht unterstützt; die benannten System-Fonts decken alle Plattformen ab.
+- Language detection now uses only `getLanguage()` + `moment.locale()`; the redundant `localStorage` fallback was removed.
+- `ui-monospace` removed from the monospace stack of the technical style — not supported on older Obsidian versions; the named system fonts cover all platforms.
 
 ### Removed
-- Veraltete Design-Entwürfe unter `design/` (die Stile leben seit 1.1.0 in `main.js`,
-  Theming in `presets/letterhead-theme.css`).
+- Obsolete design drafts under `design/` (the styles have lived in `main.js` since 1.1.0, theming in `presets/letterhead-theme.css`).
 
 ### Added
-- `package-lock.json` (leeres Lockfile — das Plugin ist dependency-free) für reproduzierbare Builds.
+- `package-lock.json` (empty lockfile — the plugin is dependency-free) for reproducible builds.
 
 ## [1.2.0] — 2026-06-13
 
 ### Added
-- **PDF-Export auf iPhone/iPad** über das System-Teilen-Sheet: Da `window.print()`
-  in der mobilen Obsidian-WebView wirkungslos ist, schreibt das Plugin den Brief
-  als eigenständige HTML-Datei (Dateiname = Notizname) in einen versteckten
-  Export-Ordner und übergibt sie via „In Standard-App öffnen" ans System. Ein Dialog
-  führt durch die Schritte: Schnellansicht → Teilen → Drucken → Vorschau aufziehen →
-  Teilen → In Dateien sichern.
-- Die **Frontmatter-Vorlage** befüllt `gruss` und `unterschrift` jetzt mit den
-  effektiven Standardwerten (statt leer) und legt `info_1` … `info_4` vollständig an.
+- **PDF export on iPhone/iPad** via the system share sheet: since `window.print()` has no effect in the mobile Obsidian WebView, the plugin writes the letter as a stand-alone HTML file (file name = note name) into a hidden export folder and hands it to the system via "Open in default app". A dialog guides through the steps: Quick Look → Share → Print → pinch open the preview → Share → Save to Files.
+- The **frontmatter template** now fills `gruss` and `unterschrift` with the effective default values (instead of leaving them empty) and creates `info_1` … `info_4` in full.
 
 ### Changed
-- **Umbenannt von „Briefkopf" zu „Letterhead"** (Plugin-ID `letterhead`, Repository
-  `obsidian-letterhead`) — eine international verständliche, funktionale Bezeichnung.
-  Die Brief-Funktionalität bleibt unverändert; bestehende Frontmatter-Felder gelten weiter.
-- Die Vorschau skaliert auf Mobilgeräten jetzt per `transform` statt CSS `zoom`
-  (WebKit ignoriert `zoom`) und wird auf iPhone/iPad wieder vollständig angezeigt.
-- Plugin-Beschreibung präzisiert: Druckdialog auf dem Desktop, Teilen-Sheet auf iOS.
-- Export-Schaltfläche in der Vorschau gekürzt zu „PDF-Export".
+- **Renamed from "Briefkopf" to "Letterhead"** (plugin ID `letterhead`, repository `obsidian-letterhead`) — an internationally understandable, functional name. The letter functionality stays unchanged; existing frontmatter fields remain valid.
+- On mobile devices the preview now scales via `transform` instead of CSS `zoom` (WebKit ignores `zoom`) and is displayed in full again on iPhone/iPad.
+- Plugin description made more precise: print dialog on desktop, share sheet on iOS.
+- Export button in the preview shortened to "PDF export".
 
 ### Fixed
-- Vorschau wurde auf iOS rechts abgeschnitten (A4-Blatt wurde nicht herunterskaliert).
+- The preview was cut off on the right on iOS (the A4 sheet was not scaled down).
 
 ## [1.1.1] — 2026-06-12
 
 ### Fixed
-- **Plugin-UI war englisch trotz deutscher Obsidian-App**: Die Spracherkennung
-  nutzt jetzt die offizielle `getLanguage()`-API (Fallback: `moment.locale()`,
-  dann Legacy-`localStorage`). Gefunden im Pre-Submission-Test.
+- **Plugin UI was English despite a German Obsidian app**: language detection now uses the official `getLanguage()` API (fallback: `moment.locale()`, then legacy `localStorage`). Found in the pre-submission test.
 
 ### Added
-- **Flache Infoblock-Felder `info_1` … `info_4`** im Format „Label: Wert" —
-  in Obsidians Eigenschaften-Ansicht direkt editierbar (die `info:`-Map bleibt
-  für YAML-Nutzer erhalten; ohne Doppelpunkt wird das Label „Info" verwendet).
-- Die **Frontmatter-Vorlage folgt der Briefsprache**: englische Feldnamen
-  (`recipient`, `subject`, `salutation`, …) bei Briefsprache Englisch, und sie
-  fügt jetzt alle Felder ein (`gruss`, `unterschrift`, `stil`, `infozeile`,
-  `sprache`, `info_1`) — leer = Einstellungs-/Sprach-Standard, alles in den
-  Eigenschaften editierbar.
+- **Flat info block fields `info_1` … `info_4`** in the format "Label: Value" — directly editable in Obsidian's properties view (the `info:` map is kept for YAML users; without a colon the label "Info" is used).
+- The **frontmatter template follows the letter language**: English field names (`recipient`, `subject`, `salutation`, …) when the letter language is English, and it now inserts all fields (`gruss`, `unterschrift`, `stil`, `infozeile`, `sprache`, `info_1`) — empty = settings/language default, everything editable in the properties.
 
 ### Changed
-- **Custom-CSS-Feld kommt vorbefüllt** mit einem komplett auskommentierten,
-  wirkungslosen Preset (dokumentiert alle Tokens an Ort und Stelle); der
-  Button heißt jetzt **„Reset preset"**. Migration: leere Felder und das alte
-  *aktive* Preset (das die Stil-Auswahl übersteuerte) werden ersetzt.
-- Kürzere Settings-Beschreibungen — näher am Obsidian-Standard-Layout.
+- **The custom CSS field comes pre-filled** with a fully commented-out, ineffective preset (documenting all tokens in place); the button is now called **"Reset preset"**. Migration: empty fields and the old *active* preset (which overrode the style selection) are replaced.
+- Shorter settings descriptions — closer to the Obsidian standard layout.
 
 ## [1.1.0] — 2026-06-10
 
 ### Added
-- **Drei eingebaute Stile** (Einstellung „Stil", pro Brief per Frontmatter
-  `stil` überschreibbar): A Sachlich-modern (serifenlos), B Klassisch-seriös
-  (Serife), C Technisch-präzise (monospaced Akzente) — aus `design/css/`
-  übernommen, ohne Webfont-Import (offline-fähig, System-Monospace-Stack).
-- **Infozeilen-Layout** (Einstellung „Infozeile", Frontmatter `infozeile`):
-  „Vollständig" = Infoblock rechts neben der Anschrift (Label-Wert-Zeilen),
-  „Nur Datum" = schlichte rechtsbündige Orts-/Datumszeile.
-- **Anlagenvermerk**: Frontmatter `anlagen` (Liste oder Blockskalar) erzeugt
-  einen gestapelten Anlagen-Block unter der Unterschrift („Anlage"/„Anlagen").
-- **Freie Infoblock-Zeilen**: Frontmatter-Map `info` (z. B. Kundennummer),
-  plus eingebautes Feld `steuernummer`.
-- Neue Design-Tokens für den Briefkopf-Namen (`--bk-name-font`, `-size`,
-  `-weight`, `-spacing`, `-transform`) sowie `--bk-din-head-top`,
-  `--bk-din-info-top`, `--bk-din-info-width`, `--bk-din-dateline-top`.
-- Einstellung **„Druckversatz oben (mm)"** (Token `--bk-print-offset`):
-  Feinjustierung, falls die Anschrift im Kuvertfenster zu hoch sitzt; schiebt
-  den Briefinhalt nach unten, Falt-/Lochmarken bleiben papierbezogen
-  unverändert.
-- **Frontmatter-Sektion in den Einstellungen**: kompakte Übersicht aller
-  Felder + Button/Befehl **„Brief-Frontmatter in Notiz einfügen"** (ergänzt
-  Empfänger, Betreff, Anrede, Ort, Datum, Anlagen, ohne vorhandene Werte zu
-  überschreiben).
-- **`absender` als einfache YAML-Liste** (eine Kuvertzeile pro Listenpunkt;
-  Telefon/E-Mail/Web/PLZ+Ort werden automatisch erkannt) — zusätzlich zu den
-  Einzelfeldern `absender_name` & Co., die weiterhin Feld für Feld gewinnen.
-- **Paginierte Brief-Vorschau**: zeigt echte A4-Blätter mit denselben
-  Seitenumbruch-Positionen wie der Druck statt einer Endlos-Seite.
-- **Mehrsprachigkeit**: Die Plugin-UI folgt automatisch der
-  Obsidian-App-Sprache (Englisch Standard, Deutsch lokalisiert). Neu ist die
-  davon unabhängige Einstellung **Letter language** (Frontmatter `sprache`):
-  deutsche oder englische Brief-Labels (Anlage/Enclosure, Ihr Zeichen/Your
-  ref., Datum/Date, Tel./Phone) inkl. Sprach-Standard für die Grußformel
-  („Mit freundlichen Grüßen“ / „Kind regards“); „Standard-Grußformel“ leer =
-  Sprach-Standard (bestehender deutscher Default wird migriert).
+- **Three built-in styles** (setting "Style", overridable per letter via frontmatter `stil`): A Objective-modern (sans-serif), B Classic-serious (serif), C Technical-precise (monospaced accents) — taken over from `design/css/`, without a web font import (offline-capable, system monospace stack).
+- **Info line layout** (setting "Info line", frontmatter `infozeile`): "Full" = info block to the right of the address (label-value rows), "Date only" = plain right-aligned place/date line.
+- **Enclosure note**: frontmatter `anlagen` (list or block scalar) produces a stacked enclosures block below the signature ("Anlage"/"Anlagen").
+- **Free info block rows**: frontmatter map `info` (e.g. customer number), plus the built-in field `steuernummer`.
+- New design tokens for the letterhead name (`--bk-name-font`, `-size`, `-weight`, `-spacing`, `-transform`) as well as `--bk-din-head-top`, `--bk-din-info-top`, `--bk-din-info-width`, `--bk-din-dateline-top`.
+- Setting **"Print offset top (mm)"** (token `--bk-print-offset`): fine adjustment if the address sits too high in the envelope window; pushes the letter content down, fold/punch marks stay unchanged relative to the paper.
+- **Frontmatter section in the settings**: compact overview of all fields + button/command **"Insert letter frontmatter into note"** (adds recipient, subject, salutation, place, date, enclosures, without overwriting existing values).
+- **`absender` as a simple YAML list** (one envelope line per list item; phone/email/web/postcode+city are detected automatically) — in addition to the individual fields `absender_name` & co., which still win field by field.
+- **Paginated letter preview**: shows real A4 sheets with the same page-break positions as the print instead of an endless page.
+- **Multilingual support**: the plugin UI automatically follows the Obsidian app language (English default, German localised). New is the independent setting **Letter language** (frontmatter `sprache`): German or English letter labels (Anlage/Enclosure, Ihr Zeichen/Your ref., Datum/Date, Tel./Phone) including a language default for the closing formula ("Mit freundlichen Grüßen" / "Kind regards"); "Default closing" empty = language default (the existing German default is migrated).
 
 ### Changed
-- **DIN-Briefkopf neu**: Name (oder Logo) links, Kontaktdaten rechts, Hairline
-  darunter — statt rechtsbündigem Kopf + Absenderblock neben der Anschrift.
-- Die horizontale Bezugszeichenzeile wurde durch den **Infoblock** ersetzt;
-  die Einstellung „Bezugszeichenzeile" wird zu „Infozeile" migriert.
-- Settings-Migration: War eine der Design-Varianten-Dateien ins Feld
-  „Eigenes CSS" eingefügt, wird sie automatisch als Stil/Infozeile übernommen
-  und das Feld geleert; alte Schrift-Defaults werden zu „Stil-Standard".
-- **Grundschriftgröße aller Stile auf 10 pt** (vorher 11/11,5 pt); per
-  Einstellung oder Token weiterhin frei änderbar.
-- Druckränder nach Dokumenten-Standard: Folgeseiten oben 25 mm, unten überall
-  20 mm; Seite 1 behält oben 10 mm (DIN-Briefkopf sitzt konstruktionsbedingt
-  hoch).
-- Einstellungen zeigen jetzt die wirksamen Standardwerte als Platzhalter
-  (Schriftart/-größe je Stil, automatische Rücksendeangabe).
-- **UI auf Englisch** gemäß Obsidian-Community-Richtlinien (Sentence case,
-  `setHeading()` statt eigener Überschriften, kein Top-Level-Heading):
-  Befehle heißen jetzt „Export letter as PDF / print", „Open letter preview",
-  „Insert letter frontmatter into note". Die Befehl-IDs wurden bereinigt
-  (`export-letter`, `open-preview`, `insert-frontmatter` — ohne Plugin-Präfix);
-  zugewiesene Hotkeys müssen einmalig neu gesetzt werden. Brief-Inhalte
-  (Anlagen, Ihr Zeichen, Grußformel …) bleiben deutsch — sie sind Briefsprache
-  nach DIN, keine UI.
-- `ihr_schreiben` wird jetzt als Datum gemäß Locale formatiert; `telefon_bezug`
-  hat keinen Absender-Default mehr (Telefon steht bereits im Briefkopf).
-- **Einstellungen ohne CSS-Pflicht**: Stil + Infozeile als Dropdowns;
-  Schriftart/-größe sind optionale Overrides (leer = Stil-Standard);
-  „Eigenes CSS" ist nach „Erweitert" gewandert.
-- Neue Komponenten-Klassennamen analog zur Design-Vorschau (`.bk-address`,
-  `.bk-return`, `.bk-recipient`, `.bk-infoblock`, `.bk-dateline`,
-  `.bk-greeting`, `.bk-closing`, `.bk-signature`, `.bk-enclosures`); die
-  1.0-Namen bleiben als Aliasse im Markup erhalten.
+- **DIN letterhead redone**: name (or logo) on the left, contact details on the right, hairline below — instead of a right-aligned head + sender block next to the address.
+- The horizontal reference line was replaced by the **info block**; the setting "Reference line" is migrated to "Info line".
+- Settings migration: if one of the design variant files was pasted into the "Custom CSS" field, it is automatically adopted as style/info line and the field is emptied; old font defaults become "Style default".
+- **Base font size of all styles set to 10 pt** (previously 11/11.5 pt); still freely changeable via setting or token.
+- Print margins per document standard: follow-up pages 25 mm at the top, 20 mm at the bottom everywhere; page 1 keeps 10 mm at the top (the DIN letterhead sits high by design).
+- The settings now show the effective default values as placeholders (font/size per style, automatic return address).
+- **UI in English** in line with the Obsidian community guidelines (sentence case, `setHeading()` instead of custom headings, no top-level heading): commands are now called "Export letter as PDF / print", "Open letter preview", "Insert letter frontmatter into note". The command IDs were cleaned up (`export-letter`, `open-preview`, `insert-frontmatter` — without plugin prefix); assigned hotkeys have to be set again once. Letter contents (enclosures, your reference, closing formula …) stay German — they are letter language according to DIN, not UI.
+- `ihr_schreiben` is now formatted as a date according to the locale; `telefon_bezug` no longer has a sender default (the phone number is already in the letterhead).
+- **Settings without a CSS obligation**: style + info line as dropdowns; font/size are optional overrides (empty = style default); "Custom CSS" has moved to "Advanced".
+- New component class names analogous to the design preview (`.bk-address`, `.bk-return`, `.bk-recipient`, `.bk-infoblock`, `.bk-dateline`, `.bk-greeting`, `.bk-closing`, `.bk-signature`, `.bk-enclosures`); the 1.0 names are kept as aliases in the markup.
 
 ### Fixed
-- **Feste Druckränder** (`@page` oben 10 mm / unten 15 mm): Drucker ohne
-  randlosen Druck schneiden den Briefkopf nicht mehr ab, und mehrseitige
-  Briefe brechen mit sauberen Rändern um statt an der Blattkante (zusätzlich
-  `orphans`/`widows`; Gruß/Unterschrift/Anlagen bleiben zusammen). Alle
-  DIN-Positionen bleiben papierbezogen exakt — die Komponenten ziehen den
-  Seitenrand intern ab; die Vorschau simuliert ihn.
-- **Brief-Vorschau**: Die A4-Seite wird jetzt vollständig ins Vorschaufenster
-  eingepasst (Zoom-to-fit, nie über 100 %). Vorher wurde die mm-breite Seite
-  bei schmalen Fenstern vom Flex-Layout gestaucht — Texte brachen zu früh um
-  und die Schrift wirkte zu groß.
+- **Fixed print margins** (`@page` 10 mm at the top / 15 mm at the bottom): printers without borderless printing no longer cut off the letterhead, and multi-page letters break with clean margins instead of at the sheet edge (additionally `orphans`/`widows`; closing/signature/enclosures stay together). All DIN positions stay exact relative to the paper — the components subtract the page margin internally; the preview simulates it.
+- **Letter preview**: the A4 page is now fitted completely into the preview window (zoom-to-fit, never above 100 %). Before, the mm-wide page was squeezed by the flex layout in narrow windows — text wrapped too early and the font looked too large.
 
 ## [1.0.0] — 2026-06-09
 
 ### Added
-- Erste Veröffentlichung.
-- Zwei Themes: **DIN 5008** (Form A/B, fensterkuvert-tauglich) und **Modern**.
-- PDF-Export über den OS-Druckdialog — funktioniert auf Desktop **und iPhone/iPad**.
-- Frontmatter-Felder für Empfänger, Betreff, Anrede, Grußformel, Datum,
-  Bezugszeichen und Absender-Overrides (deutsche + englische Aliasse).
-- Absender-Profil in den Einstellungen.
-- Faltmarken (105/210 mm bzw. 87/192 mm) und Lochmarke (148,5 mm).
-- Logo/Briefkopf aus Vault-Bild (als data-URL eingebettet).
-- CSS-Design-Tokens + kommentiertes Preset (Datei + „Preset einfügen"-Button).
-- Vorschau-Modal vor dem Export.
+- First release.
+- Two themes: **DIN 5008** (Form A/B, window-envelope suitable) and **Modern**.
+- PDF export via the OS print dialog — works on desktop **and iPhone/iPad**.
+- Frontmatter fields for recipient, subject, salutation, closing, date, reference marks and sender overrides (German + English aliases).
+- Sender profile in the settings.
+- Fold marks (105/210 mm and 87/192 mm) and punch mark (148.5 mm).
+- Logo/letterhead from a vault image (embedded as a data URL).
+- CSS design tokens + commented preset (file + "Insert preset" button).
+- Preview modal before the export.
