@@ -185,7 +185,7 @@ Session-Handoff unter `.remember/` (gitignored).
   Coding-Cockpit des Maintainers (`$VAULT/25_Coding/obsidian-letterhead/_SDD/`, CORE-META-14, maintainer-lokal).
   Sie tragen Arbeitskontext (Vault-Pfade, Schwester-Repo-Interna), der in einem public Repo niemandem nützt.
   Das Repo behält die Design-Essenz in dieser Datei + `CHANGELOG.md`.
-- **Alt-Bestand:** `docs/superpowers/{specs,plans}/` (falls vorhanden) ist eingefroren — nichts Neues dort ablegen.
+- **Alt-Bestand:** Specs und Pläne liegen im Vault-Cockpit unter `_SDD/` (CORE-META-14); `docs/superpowers/` gibt es im Repo nicht mehr.
 - **Nie im Repo:** absolute Pfade außerhalb des Repos (`/Users/…`, Vault-Pfade) — Platzhalter nutzen
   (`$VAULT/…`, `~/…`, repo-relativ). Herkunftsnachweise als Repo-Name + `Datei:Zeile` sind dagegen erwünscht.
   Gate: `scripts/check-no-abs-paths.mjs` (Teil von `npm test`).

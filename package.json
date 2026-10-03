@@ -18,6 +18,7 @@
     "preflight": "test -f ../tools/release/preflight.mjs || { echo \"FEHLER: ../tools/release/ fehlt. Dieses Repo muss im Dach-Verzeichnis obsidian-plugins/ neben tools/ liegen — das Release-Tooling liegt dort zentral, nicht im Plugin. Ein Clone ohne Dach ist nicht release-faehig.\" >&2; exit 1; }; node ../tools/release/preflight.mjs",
     "release": "test -f ../tools/release/release.mjs || { echo \"FEHLER: ../tools/release/ fehlt. Dieses Repo muss im Dach-Verzeichnis obsidian-plugins/ neben tools/ liegen — das Release-Tooling liegt dort zentral, nicht im Plugin. Ein Clone ohne Dach ist nicht release-faehig.\" >&2; exit 1; }; node ../tools/release/release.mjs"
   },
+  "author": "Johannes Kaindl",
   "license": "AGPL-3.0-or-later",
   "devDependencies": {
     "@types/node": "^20",

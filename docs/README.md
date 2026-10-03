@@ -17,4 +17,4 @@ Every page also exists in German (`*.de.md`, [Einstieg](tutorial.de.md)). The [R
 
 ---
 
-`SMOKE.md` and `superpowers/` hold maintainer material (the GUI smoke checklist, design specs) and are not user documentation.
+`SMOKE.md` holds maintainer material (the GUI smoke checklist) and is not user documentation.
