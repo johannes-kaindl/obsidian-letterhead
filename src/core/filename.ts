@@ -2,7 +2,7 @@
  *  Configurable filename scheme for exported / printed letters.
  *  Pure: no obsidian import (check:pure).
  *
- *  Spec: docs/superpowers/specs/2026-07-16-letterhead-output-target-design.md
+ *  Spec: Vault-Cockpit _SDD/2026-07-16-letterhead-output-target-design.md
  *  (§ Dateinamen-Schema). Pulled forward from 1.5.0 into 1.4.2 because the
  *  desktop print dialog proposes Obsidian's window title as the filename —
  *  see doPrint() in obsidian/html-engine.ts.
