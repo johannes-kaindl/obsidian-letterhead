@@ -3,7 +3,7 @@
    (themes "DIN 5008" + "Modern") and injected into the print/preview
    document, so it stays isolated from Obsidian's own CSS. */
 
-.briefkopf-preview-modal .modal {
+.modal.briefkopf-preview-modal {
   width: min(900px, 96vw);
   max-width: 96vw;
 }
