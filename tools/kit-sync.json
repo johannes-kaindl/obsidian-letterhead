@@ -1,10 +1,10 @@
 {
   "sources": {
     "obsidian-kit": {
-      "ref": "0.30.0"
+      "ref": "0.57.0"
     },
     "code-kit": {
-      "ref": "0.5.0"
+      "ref": "0.24.0"
     }
   },
   "targets": [
@@ -12,8 +12,7 @@
       "dir": "src/vendor/kit/pdf",
       "source": "obsidian-kit",
       "fromDir": "src/pure/pdf",
-      "vendorJson": "src/vendor/kit",
-      "ref": "0.44.0"
+      "vendorJson": "src/vendor/kit"
     },
     {
       "dir": "src/vendor/kit",
@@ -39,8 +38,7 @@
         "settings_walker",
         "folder-suggest",
         "help-setting"
-      ],
-      "ref": "0.43.0"
+      ]
     }
   ]
 }

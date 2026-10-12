@@ -1,7 +1,7 @@
 {
   "source": "obsidian-kit",
-  "version": "0.43.0",
-  "sha": "bcd1805",
+  "version": "0.57.0",
+  "sha": "004fdb1",
   "vendored": "settings_walker.ts, folder-suggest.ts, help-setting.ts",
   "note": "Verbatim snapshot. Never hand-edit. Re-vendor via tools/sync-kit.sh (Werkzeug: ../tools/kit-sync, Pins in tools/kit-sync.json)."
 }

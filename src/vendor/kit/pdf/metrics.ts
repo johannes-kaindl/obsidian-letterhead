@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.44.0, src/pure/pdf/metrics.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.57.0, src/pure/pdf/metrics.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/metrics.ts
 // Pure PDF font metrics (Core-14 AFM widths). No Obsidian, no DOM.
 // Ported from obsidian-letterhead/main.js
