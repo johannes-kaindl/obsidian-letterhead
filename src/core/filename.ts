@@ -15,11 +15,13 @@
  *  class, the sanitizing, the `Object.hasOwn` guard and the fallback chain are
  *  shared with yijing-oracle and paperize. What stays here is what the kit
  *  deliberately leaves to the caller (kit module header, § "Nicht im Kit"):
- *  letterhead's placeholder set, the two template constants, the migration, the
- *  per-field cap (it acts BEFORE substitution) and the overall cap (n=1).
+ *  letterhead's placeholder set, the two template constants, the migration and the
+ *  per-field cap (its value is letterhead's; it acts BEFORE substitution). The cut
+ *  itself (`clipText`) and the overall cap (`maxLength`) come from the kit since
+ *  code-kit 0.23.0, bit-identical to the inline `clip` they replaced.
  * ------------------------------------------------------------------ */
 
-import { buildFilename as fillTemplate, sanitizeFilename } from '../vendor/kit/filename-template';
+import { buildFilename as fillTemplate, clipText, sanitizeFilename } from '../vendor/kit/filename-template';
 
 /** Kit-side sanitizer, re-exported so callers and tests keep one import. Its
  *  `INVALID` class is byte-identical to the one that used to live here, and the
@@ -91,10 +93,6 @@ export function migrateFilenameTemplate(stored: unknown, isFreshInstall: boolean
   return isFreshInstall ? DEFAULT_FILENAME_TEMPLATE : LEGACY_FILENAME_TEMPLATE;
 }
 
-function clip(s: string, max: number): string {
-  return s.length > max ? s.slice(0, max).trim() : s;
-}
-
 export function buildFilename(template: string, v: FilenameValues): string {
   /* A plain object literal is safe here: the kit resolves placeholders through
      Object.hasOwn, so `{toString}` & co. stay literal instead of writing the
@@ -106,16 +104,16 @@ export function buildFilename(template: string, v: FilenameValues): string {
     datum: v.datum,
     datum_lang: v.datum_lang,
     // Field cap acts BEFORE substitution, which is why it cannot live in the kit.
-    empfaenger: clip(v.empfaenger, FIELD_MAX),
-    betreff: clip(v.betreff, FIELD_MAX),
+    empfaenger: clipText(v.empfaenger, FIELD_MAX),
+    betreff: clipText(v.betreff, FIELD_MAX),
     unserzeichen: v.unserzeichen,
   };
 
   // Fallback chain — never return a nameless export; `lastResort` is what keeps
   // the kit from returning '' here.
-  const out = fillTemplate(template, subs, {
+  return fillTemplate(template, subs, {
     fallbacks: [LEGACY_FILENAME_TEMPLATE],
     lastResort: 'Brief',
+    maxLength: TOTAL_MAX,
   });
-  return clip(out, TOTAL_MAX);
 }

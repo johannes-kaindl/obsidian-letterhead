@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- Internal: the plugin now builds on the shared library at obsidian-kit 0.57.0 and code-kit 0.24.0. The PDF engine and the settings helpers are unchanged. Nothing changes for you.
+- Exported file names are cut to the same lengths as before (48 characters per recipient or subject, 120 overall), now by the shared library instead of a local copy. Checked identical at the boundaries, including a space exactly at the cut.
+
 ## [1.8.1] — 2026-10-03
 
 ### Fixed

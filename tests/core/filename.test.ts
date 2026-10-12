@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { buildFilename as kitBuild } from '../../src/vendor/kit/filename-template';
 import {
   buildFilename,
   sanitizeFilename,
@@ -153,5 +154,53 @@ describe('buildFilename', () => {
     expect(DEFAULT_FILENAME_TEMPLATE).toBe('{datum} {empfaenger}');
     expect(LEGACY_FILENAME_TEMPLATE).toBe('{notiz}');
     expect(buildFilename(LEGACY_FILENAME_TEMPLATE, V)).toBe(V.notiz);
+  });
+});
+
+/* Bitgleichheit der Kappung (Welle 19): bis 1.8.1 schrieb filename.ts die Kappung selbst
+   (`clip`, 48 je Feld, 120 gesamt); seit dem Kit (`clipText`, `maxLength`) kommt sie von dort.
+   Die Referenz unten ist die alte Inline-Fassung, Zeile für Zeile. Gemessen wird an den Grenzen
+   (genau, ±1) und mit einem Leerzeichen genau an der Schnittstelle, wo `trim` den Unterschied
+   zwischen „gekappt“ und „unverändert“ sichtbar macht. */
+describe('Kappung bitgleich zur Inline-Fassung', () => {
+  const clipAlt = (s: string, max: number): string => (s.length > max ? s.slice(0, max).trim() : s);
+  const alt = (template: string, v: FilenameValues): string => {
+    const out = kitBuild(
+      template,
+      { notiz: v.notiz, datum: v.datum, datum_lang: v.datum_lang, empfaenger: clipAlt(v.empfaenger, 48), betreff: clipAlt(v.betreff, 48), unserzeichen: v.unserzeichen },
+      { fallbacks: [LEGACY_FILENAME_TEMPLATE], lastResort: 'Brief' },
+    );
+    return clipAlt(out, 120);
+  };
+
+  const feld = (n: number, mitLeerzeichenAn?: number): string => {
+    const a = 'M'.repeat(n).split('');
+    if (mitLeerzeichenAn !== undefined && mitLeerzeichenAn < n) a[mitLeerzeichenAn] = ' ';
+    return a.join('');
+  };
+
+  it('Feldgrenze 48: 47, 48, 49 Zeichen, auch mit Leerzeichen an der Schnittstelle', () => {
+    for (const n of [47, 48, 49, 60]) {
+      for (const leer of [undefined, 46, 47, 48]) {
+        const v = { ...V, empfaenger: feld(n, leer), betreff: feld(n, leer) };
+        expect(buildFilename('{empfaenger}|{betreff}', v)).toBe(alt('{empfaenger}|{betreff}', v));
+      }
+    }
+  });
+
+  it('Gesamtgrenze 120: 119, 120, 121 Zeichen, auch mit Leerzeichen an der Schnittstelle', () => {
+    for (const n of [119, 120, 121, 130]) {
+      for (const leer of [undefined, 118, 119, 120]) {
+        const v = { ...V, notiz: feld(n, leer) };
+        expect(buildFilename('{notiz}', v)).toBe(alt('{notiz}', v));
+      }
+    }
+    // Der Schnitt fällt auf Position 120 hinter ein Leerzeichen: trim muss es entfernen.
+    const v = { ...V, notiz: 'N'.repeat(119) + ' ' + 'X'.repeat(10) };
+    expect(buildFilename('{notiz}', v)).toBe('N'.repeat(119));
+  });
+
+  it('Rückfall-Konstante und leere Felder bleiben unverändert', () => {
+    expect(buildFilename('{empfaenger}', { ...V, empfaenger: '', notiz: '' })).toBe(alt('{empfaenger}', { ...V, empfaenger: '', notiz: '' }));
   });
 });
