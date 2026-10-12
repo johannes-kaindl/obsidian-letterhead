@@ -28,32 +28,28 @@
  *
  * ## Voraussetzung
  *
- * ⚠️ **Zuerst prüfen, wer sonst an Obsidian hängt.** Der Debug-Port ist geteilte
- * Infrastruktur; ein `quit` trifft die Instanz, an der möglicherweise eine andere Session
- * arbeitet, und zerstört deren Zustand. Der eigene Lauf ist danach sauber grün, der Schaden
- * entsteht woanders und fällt nicht auf.
+ * Der Treiber läuft gegen eine **Zweitinstanz** mit eigenem Profil und eigenem Port — nie gegen
+ * die reguläre Instanz (9222), an der andere Sessions hängen; ein `quit` träfe deren Zustand.
+ * `--port` ist Pflicht, einen Standardport gibt es nicht.
  *
  * ```bash
- * lsof -nP -iTCP:9222 -sTCP:LISTEN >/dev/null && echo "läuft bereits — NICHT beenden"
- * curl -s http://127.0.0.1:9222/json/list | grep -o '"title":"[^"]*"'   # wen träfe ein Quit?
+ * npm run build && npm run smoke:gui -- --setup   # Staging-Vault aus fixtures/vault/ ($STAGING_VAULTS_DIR)
+ * UD=/tmp/obs-test-obsidian-letterhead; mkdir -p "$UD"
+ * cp ~/Library/Application\ Support/obsidian/obsidian-*.asar "$UD"/     # aktuelle App-Version
+ * # Vault und "language":"en" in "$UD/obsidian.json" eintragen (Obsidian liest sie nur beim Start)
+ * lsof -nP -iTCP:9389 -sTCP:LISTEN                                        # Port frei?
+ * /Applications/Obsidian.app/Contents/MacOS/Obsidian --user-data-dir="$UD" --remote-debugging-port=9389 &
+ * python3 ~/.claude/hooks/obsidian-cdp-lock.py acquire --label obsidian-letterhead --intent "GUI-Smoke" --exclusive focus --port 9389 --ttl 300
+ * npm run smoke:gui -- --port 9389
+ * python3 ~/.claude/hooks/obsidian-cdp-lock.py release --port 9389
  * ```
  *
- * Läuft dort schon eine fremde Messung, ist die **Zweitinstanz** der richtige Ort statt
- * einer Nachfrage — die Sperre hängt am Profil, nicht am Rechner:
+ * Vertrauensdialog und Restricted Mode des frischen Profils hebt der Treiber selbst auf
+ * (`bereiteInstanzVor`, Punkt A1). Je Messlauf ein frischer Prozess; der erste Lauf nach der
+ * Profilanlage ist ein Aufwärmlauf und zählt nicht.
  *
- * ```bash
- * UD=/tmp/obs-letterhead; mkdir -p "$UD"
- * /Applications/Obsidian.app/Contents/MacOS/Obsidian --user-data-dir="$UD" --remote-debugging-port=9334 &
- * npm run smoke:gui -- --port 9334
- * ```
- *
- * Der reguläre Weg, wenn nichts läuft:
- *
- * ```bash
- * open -a Obsidian --args --remote-debugging-port=9222
- * npm run build && npm run smoke:gui -- --setup   # Staging-Vault aus fixtures/vault/
- * npm run smoke:gui
- * ```
+ * Bilanz: vier Zustände nach CORE-TEST-19 (grün · rot · übersprungen · nichts gemessen), die
+ * Soll-Liste `PUNKTE` ist der Nenner; Exit 1 bei Rot oder „nichts gemessen“, Exit 2 bei Abbruch.
  *
  * Typen: `tsconfig.scripts.json` (im `gate` über `npm run typecheck:scripts`).
  */
@@ -62,7 +58,8 @@ import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 
-import { Cdp, attachTo, closeExtraLeaves, notices, openExisting, pollUntil, requireVisible } from '../../tools/obsidian-cdp/cdp.js';
+import { createBilanz, parseArgs, runDriver } from '../../tools/obsidian-cdp/bilanz.js';
+import { Cdp, attachTo, bereiteInstanzVor, closeExtraLeaves, notices, openExisting, pollUntil, requireVisible } from '../../tools/obsidian-cdp/cdp.js';
 import { buildVault, requireEigenerBuild, stagingVaultDir } from '../../tools/obsidian-cdp/vault.js';
 
 const REPO_NAME = 'obsidian-letterhead';
@@ -72,28 +69,51 @@ const FIXTURE_DIR = join(REPO_ROOT, 'fixtures/vault');
 
 /* ---------------------------------------------------------------- Protokoll */
 
-interface Check {
-  name: string;
-  passed: boolean;
-  detail: string;
-}
+/** Soll-Liste aller Prüfpunkte — der Nenner der Bilanz (CORE-TEST-19). Ein Punkt, der nie
+ *  aufgezeichnet wird, zählt als „nichts gemessen“ und setzt Exit 1. */
+const PUNKTE = [
+  'A1 Plugin geladen',
+  'A2 alle vier Befehle registriert',
+  'A3 Ribbon-Knopf vorhanden',
+  'B0 Kein liegen gebliebener Test-Ausgabepfad aus einem abgebrochenen Vorlauf',
+  'B1 PDF entsteht neben der Notiz',
+  'B2 Datei ist ein PDF',
+  'B3 Notice nennt den gespeicherten Pfad',
+  'B4 Text ist Vektor-Text in Core-14-Schriften',
+  'C1 Empfängeranschrift, alle drei Zeilen',
+  'C2 Betreff, Anrede, Gruß, Unterschrift',
+  'C3 Infoblock trägt die Bezugszeichen',
+  'C4 Anlagenvermerk',
+  'C5 Absender aus den Einstellungen im Briefkopf',
+  'C6 Umlaute und € kommen als WinAnsi durch',
+  'C7 Fließtext samt Auszeichnungen',
+  'D1 englische Aliasse treffen dieselben Felder',
+  'D2 Schlüssel case-insensitiv, Trennzeichen egal',
+  'D3 language: en schaltet die Brief-Etiketten um',
+  'D4 Degradations-Platzhalter folgt der Briefsprache',
+  'E1 Tabellenzellen stehen im PDF',
+  'E2 Task-Zustände sind unterscheidbar',
+  'E3 Codeblock mit Leerzeile davor',
+  'E4 klebender Fence: Codeblock überlebt, kein roher Platzhalter',
+  'E5 rohes SVG degradiert sichtbar zu [Grafik]',
+  'E6 PNG ist als Bild eingebettet, nicht als Platzhalter',
+  'E7 Notice zählt die vereinfachten Elemente',
+  'F1 Brief bricht auf mehrere Seiten um',
+  'F2 erster, mittlerer und letzter Absatz sind da',
+  'G1 nextToNote legt neben der Notiz ab, nicht in der Wurzel',
+  'G2 zweiter Export überschreibt nicht, sondern zählt hoch',
+  'G3 Dateiname folgt dem Schema {datum} {empfaenger}',
+  'G4 customFolder legt den Zielordner an und schreibt hinein',
+  'H1 Vorschau-Modal öffnet',
+  'H2 Vorschau paginiert in Blätter',
+  'H3 Falz- und Lochmarken sind gezeichnet',
+  'Desktop-Druckpfad (letterhead:export-letter)',
+  'iOS-Share-Kaskade (navigator.canShare → share → openWithDefaultApp)',
+  'SVG-Logo im Briefkopf',
+] as const;
 
-const results: Check[] = [];
-
-function record(name: string, passed: boolean, detail: string): void {
-  results.push({ name, passed, detail });
-  console.log(`${passed ? '  ✓' : '  ✗'} ${name}${detail ? ` — ${detail}` : ''}`);
-}
-
-/** Was der Lauf bewusst NICHT misst. Steht im Protokoll, damit eine Lücke nicht wie
- *  Abdeckung aussieht — ein stillschweigend ausgelassener Punkt liest sich hinterher
- *  wie ein grüner. */
-const uebersprungen: string[] = [];
-
-function skipped(name: string, reason: string): void {
-  uebersprungen.push(name);
-  console.log(`  – ${name} — übersprungen: ${reason}`);
-}
+const bilanz = createBilanz({ punkte: PUNKTE });
+const { record, skipped, unmeasured } = bilanz;
 
 const warnungen: string[] = [];
 
@@ -295,41 +315,22 @@ function markerBilanz(text: string, erwartet: string[]): { ok: boolean; detail: 
 async function pruefeGrundlage(cdp: Cdp, v: VaultInfo): Promise<void> {
   console.log('\nA · Grundlage');
 
-  let geladen = await cdp.evaluate<boolean>(
+  // Ein frisches Profil startet im Restricted Mode und fragt nach dem Vertrauen in den Vault-
+  // Ersteller; beides erledigt `bereiteInstanzVor` — aber NUR im eigenen Staging-Vault
+  // (`nurVault`). In einem fremden Vault wäre das ein Eingriff in den Wirt; dort bleibt der
+  // Punkt rot und nennt den Grund.
+  const klar = await bereiteInstanzVor(cdp, { pluginIds: [PLUGIN_ID], nurVault: REPO_NAME, sprache: 'en' });
+  const geladen = await cdp.evaluate<boolean>(
     `return Boolean(app.plugins.plugins[${JSON.stringify(PLUGIN_ID)}]);`,
   );
-
-  // Ein frisch gebauter Staging-Vault startet in Obsidians Restricted Mode: Community-
-  // Plugins sind aus, und die `community-plugins.json` des Fixtures allein hebt das nicht
-  // auf. Der Treiber schaltet deshalb selbst frei — aber NUR im eigenen Staging-Vault.
-  // In einem fremden Vault wäre das ein Eingriff in den Wirt; dort bleibt der Punkt rot
-  // und nennt den Grund.
-  let freigeschaltet = '';
-  if (!geladen && v.name === REPO_NAME) {
-    freigeschaltet = await cdp.evaluate<string>(`
-      try {
-        if (app.plugins.setEnable) await app.plugins.setEnable(true);
-        await app.plugins.enablePluginAndSave(${JSON.stringify(PLUGIN_ID)});
-        await new Promise((r) => setTimeout(r, 1200));
-        return app.plugins.plugins[${JSON.stringify(PLUGIN_ID)}] ? "freigeschaltet" : "Aufruf ohne Wirkung";
-      } catch (e) {
-        return "Fehler: " + (e && e.message ? e.message : String(e));
-      }
-    `);
-    geladen = await cdp.evaluate<boolean>(
-      `return Boolean(app.plugins.plugins[${JSON.stringify(PLUGIN_ID)}]);`,
-    );
-  }
 
   record(
     'A1 Plugin geladen',
     geladen,
     geladen
-      ? `Vault ${v.name}${freigeschaltet ? ` (Restricted Mode aufgehoben: ${freigeschaltet})` : ''}`
-      : `app.plugins.plugins.${PLUGIN_ID} fehlt${
-          v.name === REPO_NAME
-            ? ` — Freischaltversuch: ${freigeschaltet || '(keiner)'}`
-            : ` — Vault "${v.name}" ist nicht der Staging-Vault, deshalb kein Freischaltversuch`
+      ? `Vault ${v.name} (${klar.hinweis})`
+      : `app.plugins.plugins.${PLUGIN_ID} fehlt — ${klar.hinweis}${
+          v.name === REPO_NAME ? '' : ` · Vault "${v.name}" ist nicht der Staging-Vault, deshalb kein Freischaltversuch`
         }`,
   );
   if (!geladen) throw new Error('Ohne geladenes Plugin ist jeder weitere Punkt gegenstandslos.');
@@ -442,7 +443,7 @@ async function pruefeFrontmatter(cdp: Cdp, vaultDir: string): Promise<void> {
   const notice = await exportPdf(cdp, 'Smoke-Englisch.md');
   const ziel = join(vaultDir, 'Smoke-Englisch.pdf');
   if (!(await warteAufDatei(ziel))) {
-    record('D1 PDF für die englische Notiz', false, `keine Datei · Notice: ${notice || '(keine)'}`);
+    unmeasured('D1 englische Aliasse treffen dieselben Felder', `Gegenstand nicht erreicht: keine Datei · Notice: ${notice || '(keine)'}`);
     return;
   }
   const text = pdfText(readFileSync(ziel));
@@ -488,7 +489,7 @@ async function pruefeDegradation(cdp: Cdp, vaultDir: string): Promise<void> {
   const notice = await exportPdf(cdp, 'Smoke-Reich.md');
   const ziel = join(vaultDir, 'Smoke-Reich.pdf');
   if (!(await warteAufDatei(ziel))) {
-    record('E1 PDF für die reiche Notiz', false, `keine Datei · Notice: ${notice || '(keine)'}`);
+    unmeasured('E1 Tabellenzellen stehen im PDF', `Gegenstand nicht erreicht: keine Datei · Notice: ${notice || '(keine)'}`);
     return;
   }
   const bytes = readFileSync(ziel);
@@ -557,7 +558,7 @@ async function pruefeMehrseitig(cdp: Cdp, vaultDir: string): Promise<void> {
   const notice = await exportPdf(cdp, 'Smoke-Lang.md');
   const ziel = join(vaultDir, 'Smoke-Lang.pdf');
   if (!(await warteAufDatei(ziel))) {
-    record('F1 PDF für den langen Brief', false, `keine Datei · Notice: ${notice || '(keine)'}`);
+    unmeasured('F1 Brief bricht auf mehrere Seiten um', `Gegenstand nicht erreicht: keine Datei · Notice: ${notice || '(keine)'}`);
     return;
   }
   const bytes = readFileSync(ziel);
@@ -661,6 +662,7 @@ async function pruefeVorschau(cdp: Cdp): Promise<void> {
 
   if (!rahmen) {
     record('H2 Vorschau paginiert in Blätter', false, 'kein .bk-sheet im iframe nach 10 s');
+    unmeasured('H3 Falz- und Lochmarken sind gezeichnet', 'Gegenstand nicht erreicht: kein .bk-sheet im iframe');
   } else {
     record('H2 Vorschau paginiert in Blätter', rahmen.sheets >= 1, `${rahmen.sheets} .bk-sheet`);
     // Falz- und Lochmarken sind kuvert-kritisch; sie fehlen still, wenn eine Einstellung
@@ -700,17 +702,20 @@ function setupVault(): void {
 }
 
 async function main(): Promise<void> {
-  const argv = process.argv.slice(2);
-  if (argv.includes('--setup')) {
+  const args = parseArgs(process.argv.slice(2));
+  if (args.has('setup')) {
     setupVault();
     return;
   }
 
-  const portArg = argv.indexOf('--port');
-  const port = portArg >= 0 ? Number(argv[portArg + 1]) : 9222;
-  const vaultArg = argv.indexOf('--vault');
-  const vaultFilter = vaultArg >= 0 ? argv[vaultArg + 1] : REPO_NAME;
-  const behalten = argv.includes('--keep');
+  // Kein Standardport: 9222 gehört der regulären Instanz, an der andere Sessions hängen.
+  const portArg = args.value('port');
+  if (!portArg || !Number.isInteger(Number(portArg))) {
+    throw new Error('--port <Port> ist Pflicht (Zweitinstanz, z. B. --port 9389) — kein Standardport.');
+  }
+  const port = Number(portArg);
+  const vaultFilter = args.value('vault') ?? REPO_NAME;
+  const behalten = args.has('keep');
 
   const cdp = await attachTo('workspace', port, vaultFilter);
   if (!cdp) throw new Error(`Kein Obsidian-Fenster für Vault "${vaultFilter}" auf Port ${port}.`);
@@ -827,21 +832,12 @@ async function main(): Promise<void> {
     process.off('SIGTERM', onAbortSignal);
   }
 
-  const rot = results.filter((r) => !r.passed);
-  console.log(`\n${results.length - rot.length}/${results.length} Prüfpunkte grün`);
-  if (uebersprungen.length) console.log(`Übersprungen: ${uebersprungen.length} (oben einzeln begründet)`);
+  bilanz.abschluss();
   for (const w of warnungen) console.log(`WARNUNG: ${w}`);
   console.log(
     'Nicht mechanisch geprüft: wie der Brief AUSSIEHT — DIN-Maße am Fensterkuvert, Grauwert,\n' +
     'Umbruchästhetik, Logo-Platzierung. Dafür bleibt der Blick aufs Papier.',
   );
-  if (rot.length) {
-    console.log(`\nRot: ${rot.map((r) => r.name).join(' · ')}`);
-    process.exitCode = 1;
-  }
 }
 
-main().catch((e: unknown) => {
-  console.error(`\nABBRUCH: ${(e as Error).message}`);
-  process.exitCode = 2;
-});
+runDriver(main);

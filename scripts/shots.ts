@@ -168,7 +168,9 @@ async function main(): Promise<void> {
     return;
   }
   const portArg = args.indexOf('--port');
-  const port = portArg >= 0 ? Number(args[portArg + 1]) : 9222;
+  // Kein Standardport: 9222 gehoert der regulaeren Instanz, an der andere Sessions haengen.
+  const port = portArg >= 0 ? Number(args[portArg + 1]) : NaN;
+  if (!Number.isInteger(port)) throw new Error('--port <Port> ist Pflicht (Zweitinstanz, z. B. --port 9402) — kein Standardport.');
   const onlyArg = args.indexOf('--only');
   const only = onlyArg >= 0 ? args[onlyArg + 1] : null;
 
