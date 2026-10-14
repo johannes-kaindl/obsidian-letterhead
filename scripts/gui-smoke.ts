@@ -59,7 +59,7 @@ import { join } from 'node:path';
 import { cwd } from 'node:process';
 
 import { createBilanz, parseArgs, runDriver } from '../../tools/obsidian-cdp/bilanz.js';
-import { Cdp, attachTo, bereiteInstanzVor, closeExtraLeaves, notices, openExisting, pollUntil, requireVisible } from '../../tools/obsidian-cdp/cdp.js';
+import { Cdp, attachTo, beimAbbruch, bereiteInstanzVor, clearNotices, closeExtraLeaves, istAbgebrochen, notices, openExisting, pollUntil, requireVisible, schliesseDialog } from '../../tools/obsidian-cdp/cdp.js';
 import { buildVault, requireEigenerBuild, stagingVaultDir } from '../../tools/obsidian-cdp/vault.js';
 
 const REPO_NAME = 'obsidian-letterhead';
@@ -211,17 +211,6 @@ async function vaultInfo(cdp: Cdp): Promise<VaultInfo> {
       configDir: app.vault.configDir,
       name: app.vault.getName(),
     };
-  `);
-}
-
-/** Notices leeren, damit der nächste Punkt nicht den Toast der vorigen Aktion liest.
- *  `.notice` gehört Obsidian, nicht dem Prüfling — jedes Plugin im Vault schreibt dorthin. */
-async function clearNotices(cdp: Cdp): Promise<void> {
-  await cdp.evaluate(`
-    const docs = new Set([document]);
-    if (typeof activeDocument !== "undefined" && activeDocument) docs.add(activeDocument);
-    for (const doc of docs) for (const n of doc.querySelectorAll(".notice")) n.remove();
-    return true;
   `);
 }
 
@@ -674,14 +663,8 @@ async function pruefeVorschau(cdp: Cdp): Promise<void> {
     );
   }
 
-  await cdp.evaluate(`
-    const m = document.querySelector(".briefkopf-preview-modal");
-    if (m) {
-      const schliessen = m.querySelector(".modal-close-button");
-      if (schliessen) schliessen.click();
-    }
-    return true;
-  `);
+  // Schliessen-Knopf in beiden Formen (.modal-close-button bis 1.12, .modal-header-button ab 1.14), sonst Escape.
+  await schliesseDialog(cdp);
 }
 
 /* ------------------------------------------------------------------- Lauf */
@@ -722,28 +705,15 @@ async function main(): Promise<void> {
 
   let vorher: Record<string, unknown> | null = null;
   let vaultDir = '';
-  // Ein SIGINT mitten im Lauf ueberspringt das `finally` unten NICHT im try/catch-Sinn,
-  // sondern beendet den Node-Prozess sofort — die per `setSettings` geschriebenen Test-
-  // Einstellungen (data.json des Vaults) blieben ohne diesen Handler bis zur naechsten
-  // manuellen Reparatur stehen. `vorher` ist zum Zeitpunkt des Signals der jeweils aktuelle
-  // Wert (per closure, kein Snapshot) — genau der Vorwert, den das echte `finally` auch nimmt.
-  let signalCleanupRunning = false;
-  const onAbortSignal = (signal: NodeJS.Signals): void => {
-    if (signalCleanupRunning) return;
-    signalCleanupRunning = true;
-    void (async () => {
-      console.log(`\n\nAbbruch durch ${signal} — raeume Einstellungen auf...`);
-      if (vorher) {
-        await setSettings(cdp, vorher).catch(() => {
-          console.log('  ! Einstellungen konnten nicht zurueckgeschrieben werden — von Hand pruefen');
-        });
-      }
-      cdp.close();
-      process.exit(130);
-    })();
+  // Die Test-Einstellungen (data.json des Vaults) und die erzeugten PDFs gehen als EIN Schritt beim Abbruch-Modul der
+  // Bruecke zurueck (`beimAbbruch`, angemeldet VOR der ersten Aenderung). Ctrl-C/SIGTERM: das Modul sperrt den
+  // Hauptzweig, faehrt den Schritt, druckt die Bilanz, Exit 130 — der fruehere lokale Handler lief neben dem `finally`
+  // her (Rennen). `vorher` ist zum Zeitpunkt des Signals der jeweils aktuelle Wert (per closure, kein Snapshot).
+  const zustandZurueck = async (): Promise<void> => {
+    if (vorher) await setSettings(cdp, vorher);
+    if (vaultDir && !behalten) raeumePdfs(vaultDir);
   };
-  process.on('SIGINT', onAbortSignal);
-  process.on('SIGTERM', onAbortSignal);
+  const zustand = beimAbbruch(zustandZurueck, 'Einstellungen und erzeugte PDFs zurücksetzen');
 
   try {
     await cdp.mitschnitt((zeile) => { if (/error|exception/i.test(zeile)) warnungen.push(`Renderer: ${zeile}`); });
@@ -809,7 +779,10 @@ async function main(): Promise<void> {
       'auf iOS taintet WebKit das Canvas beim drawImage eines SVG (bekannter, vorbestehender Bug); auf dem Desktop rastert Chromium korrekt, der Punkt würde die Grenze also verdecken statt sie zu messen',
     );
   } finally {
-    // Vorwert zurück, auch nach Abbruch. Die Settings des Prüflings sind das Einzige, was
+    // Nach Ctrl-C räumt das Abbruch-Modul auf, druckt die Bilanz und beendet den Prozess; dieser Zweig darf dann weder ein
+    // zweites Mal aufräumen noch die Bilanz ein zweites Mal drucken.
+    if (istAbgebrochen()) return;
+    // Normalweg: Vorwert zurück. Die Settings des Prüflings sind das Einzige, was
     // dieser Lauf am Wirt verändert — die PDFs sind seine eigene Ausgabe.
     if (vorher) {
       try {
@@ -825,11 +798,9 @@ async function main(): Promise<void> {
       const n = raeumePdfs(vaultDir);
       console.log(`Erzeugte PDFs entfernt: ${n}`);
     }
+    // Abmelden, sonst liefe ein SPAETES Signal (nach normalem Abschluss, cdp schon zu) gegen eine tote Verbindung.
+    zustand();
     cdp.close();
-    // Abmelden, sonst haengt ein SPAETES Signal (nach normalem Abschluss, cdp schon zu) den
-    // Prozess in onAbortSignal an einer toten Verbindung auf.
-    process.off('SIGINT', onAbortSignal);
-    process.off('SIGTERM', onAbortSignal);
   }
 
   bilanz.abschluss();
