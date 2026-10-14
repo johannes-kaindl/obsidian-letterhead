@@ -6,9 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- The vector PDF (iPhone/iPad and "Export letter as PDF (vector)") now reads the same design tokens as print and preview. Colours, font size, line height, spacing and name size set as `--bk-*` values in Custom CSS apply to the PDF as well, so one theme gives the same letter on every device. Font stacks, the Modern layout and class rules still apply to print and preview only, and the PDF keeps the 14 standard fonts. The settings descriptions and the theming reference now say which part applies where.
+- "Reset preset" asks for confirmation first and saves your current Custom CSS to `custom-css-backup.css` in the plugin folder.
+
 ### Changed
+- In the English interface the style names are translated ("A · Neutral (sans-serif)", "B · Classic (serif)", "C · Technical (monospaced accents)"). The frontmatter field is still `style`; the German alias `stil` keeps working.
+- The DIN form entries and the output-folder hint follow the interface language ("Export/Letters" in English).
+- Test files are now type-checked in the gate.
 - Internal: the plugin now builds on the shared library at obsidian-kit 0.57.0 and code-kit 0.24.0. The PDF engine and the settings helpers are unchanged. Nothing changes for you.
 - Exported file names are cut to the same lengths as before (48 characters per recipient or subject, 120 overall), now by the shared library instead of a local copy. Checked identical at the boundaries, including a space exactly at the cut.
+
+### Removed
+- The unused `mobileExport` setting is dropped from the stored settings on load.
 
 ## [1.8.1] — 2026-10-03
 

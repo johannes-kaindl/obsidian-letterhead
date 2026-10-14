@@ -11,7 +11,7 @@ willst — für die meisten Anpassungen reicht aber schon die Stil-Auswahl.
 Schnellstart: Das Feld **Custom CSS** (Einstellungen → Advanced) ist mit einem
 komplett auskommentierten Preset vorbefüllt — Zeile einkommentieren, Wert
 anpassen, fertig. **Reset preset** stellt den Ausgangszustand wieder her
-(identisch mit [`presets/letterhead-theme.css`](../../presets/letterhead-theme.css)).
+(identisch mit [`presets/letterhead-theme.css`](../../presets/letterhead-theme.css)) nach einer Rückfrage; dein bisheriges CSS wird vorher als `custom-css-backup.css` im Plugin-Ordner gesichert.
 
 > Hinweis: Das Token-Präfix `--bk-…` und die Klassen `.bk-…` sind historisch —
 > `bk` = „Briefkopf", das deutsche Wort für den Briefkopf und der ursprüngliche
@@ -71,6 +71,19 @@ Papierpositionen exakt stimmen.
 | `--bk-din-content-top` | `98.46mm` | — |
 
 Hintergrund: [DIN 5008](../explanation/din5008.de.md).
+
+## Welche Tokens das Vektor-PDF liest
+
+Der Desktop-Druck und die Vorschau rendern HTML/CSS, dort gilt jedes Token und jede Klassenregel von oben. Das **Vektor-PDF** (mobil und der Befehl „Brief als PDF exportieren (Vektor)“) zeichnet eine eigene Engine. Seit 1.9.0 gehen beide Wege von demselben aufgelösten Token-Satz aus: Stil-Defaults, dann die Einstellungen, dann deine `--bk-*`-Angaben im Feld **Custom CSS**. Das PDF übernimmt nur einfache Werte:
+
+| Token | Im PDF akzeptiert |
+|-------|-------------------|
+| `--bk-font-size`, `--bk-name-size`, `--bk-space`, `--bk-block-gap`, `--bk-signature-gap` | Längen in `pt` oder `mm` (`--bk-font-size` in `pt`) |
+| `--bk-line-height` | eine einfache Zahl |
+| `--bk-color-text`, `--bk-color-muted`, `--bk-color-rule`, `--bk-color-hairline` | Hex-Farben (`#rgb` oder `#rrggbb`) |
+| `--bk-name-transform` | `none` oder `uppercase` |
+
+Alles andere bleibt bei Druck und Vorschau: `var(...)`-Werte, Schriftstapel (`--bk-font-family`, `--bk-name-font`), Schriftgewichte, das Modern-Layout und Klassenregeln wie `.bk-betreff`. Das PDF schreibt die 14 PDF-Standardschriften, eine Hausschrift lässt sich also nicht einbetten — das ist Absicht.
 
 ## Beispiel — eigenes CSS
 

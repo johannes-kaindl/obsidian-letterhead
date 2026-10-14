@@ -11,8 +11,8 @@ Sprache des **Briefs** ist davon unabhängig (Einstellung **Letter language**).
 
 | Einstellung | Werte | Bedeutung |
 |-------------|-------|-----------|
-| **Layout** | `DIN 5008 (German standard)` · `Modern / international` | Brief-Grundlayout. DIN = deutscher Standard, fensterkuvert-tauglich; Modern = freies, internationales Layout. |
-| **Style** | `A · Sachlich (neutral sans)` · `B · Klassisch (serif)` · `C · Technisch (monospaced accents)` | Komplettes Erscheinungsbild (Schrift, Farben, Abstände, Briefkopf-Typo). Pro Brief per Frontmatter `stil` überschreibbar. |
+| **Layout** | `DIN 5008 (German standard)` · `Modern / international` | Brief-Grundlayout. DIN = deutscher Standard, fensterkuvert-tauglich; Modern = freies, internationales Layout. Nur Druck und Vorschau: das Vektor-PDF nutzt immer DIN. |
+| **Style** | `A · Sachlich (neutral serifenlos)` · `B · Klassisch (Serife)` · `C · Technisch (monospaced Akzente)` | Komplettes Erscheinungsbild (Schrift, Farben, Abstände, Briefkopf-Typo). Pro Brief per Frontmatter `stil` überschreibbar. |
 | **Info line** | `Full (info block)` · `Date only` | Full: Infoblock rechts neben der Anschrift (Steuernummer, Zeichen, … Datum). Date only: schlichte rechtsbündige Orts-/Datumszeile — für Arbeitgeber- und Privatkorrespondenz. Pro Brief per Frontmatter `infozeile` überschreibbar. |
 | **DIN 5008 form** | `Form A (27 mm)` · `Form B (45 mm)` | Position des Anschriftfelds und der Falzmarken. Form B ist der Standard. |
 
@@ -51,7 +51,7 @@ erscheint links im Briefkopf, die Kontaktdaten rechts.
 
 | Einstellung | Bedeutung |
 |-------------|-----------|
-| **Font (CSS font-family)** | Optionaler Override. Leer = Standard des gewählten Stils; der Platzhalter zeigt den wirksamen Wert. |
+| **Font (CSS font-family)** | Optionaler Override. Leer = Standard des gewählten Stils; der Platzhalter zeigt den wirksamen Wert. Nur Druck und Vorschau: das Vektor-PDF nutzt die PDF-Standardschrift des Stils. |
 | **Font size (pt)** | Optionaler Override. Leer = Stil-Standard (10 pt); der Platzhalter zeigt den wirksamen Wert. |
 | **Date locale** | z. B. `de-DE`, `en-GB`, `en-US` — Format der Datumsausgabe. |
 | **Letter language** | Sprache der gedruckten Labels: `Deutsch` (Anlagen, Ihr Zeichen, Datum, Tel.) oder `English` (Enclosures, Your ref., Date, Phone). Pro Brief per Frontmatter `sprache` überschreibbar. |
@@ -72,7 +72,7 @@ zu überschreiben. Vollständige Referenz: [Frontmatter-Felder](frontmatter.de.m
 | **Ausgabeziel** | Wohin die exportierte PDF geschrieben wird: **Neben die Notiz** · **Obsidians Anhang-Ordner** · **Eigener Ordner** · **Nicht speichern, direkt teilen**. Gilt für den Vektor-PDF-Export, nicht für den Desktop-Druckdialog — dort entscheidet das Betriebssystem, wo die Datei landet. Eine vorhandene Datei wird nie überschrieben, sondern um `" (2)"` ergänzt. |
 | **Eigener Ordner** | Vault-relativer Zielordner, z.B. `Export/Briefe`. Wird nur angezeigt, wenn **Ausgabeziel** auf *Eigener Ordner* steht — ein Feld, das in den anderen drei Modi wirkungslos ist, wäre eine Falle. |
 | **Dateinamen-Schema** | Name der exportierten PDF und Vorschlag im Druckdialog. Siehe die Platzhalter-Tabelle unten. |
-| **Custom CSS (optional)** | Eigenes CSS für Feinheiten jenseits von Stil + Infozeile; wird zuletzt geladen und gewinnt. Das Feld ist mit einem **komplett auskommentierten** (wirkungslosen) Preset vorbefüllt, das alle Tokens dokumentiert — Zeile einkommentieren = aktivieren. **Reset preset** stellt den Ausgangszustand wieder her. Siehe [Theming](theming.de.md). |
+| **Custom CSS (optional)** | Eigenes CSS für Feinheiten jenseits von Stil + Infozeile; wird zuletzt geladen und gewinnt. Das Feld ist mit einem **komplett auskommentierten** (wirkungslosen) Preset vorbefüllt, das alle Tokens dokumentiert — Zeile einkommentieren = aktivieren. **Reset preset** stellt den Ausgangszustand nach einer Rückfrage wieder her und sichert dein bisheriges CSS als `custom-css-backup.css` im Plugin-Ordner. Das Vektor-PDF liest nur die einfachen `--bk-*`-Werte (Farben, Größen, Abstände). Siehe [Theming](theming.de.md). |
 
 ### Platzhalter für den Dateinamen
 

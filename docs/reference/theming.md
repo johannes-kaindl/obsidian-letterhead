@@ -11,7 +11,7 @@ the style selection alone is enough.
 Quick start: The **Custom CSS** field (Settings → Advanced) is pre-filled with a
 fully commented-out preset — uncomment a line, adjust the value, done. **Reset
 preset** restores the initial state (identical to
-[`presets/letterhead-theme.css`](../../presets/letterhead-theme.css)).
+[`presets/letterhead-theme.css`](../../presets/letterhead-theme.css)) after a confirmation; your previous CSS is saved to `custom-css-backup.css` in the plugin folder first.
 
 > Note: the `--bk-…` token prefix and `.bk-…` classes are historical — `bk` =
 > "Briefkopf", the German word for letterhead and the project's original name.
@@ -70,6 +70,19 @@ match exactly.
 | `--bk-din-content-top` | `98.46mm` | — |
 
 Background: [DIN 5008](../explanation/din5008.md).
+
+## Which tokens the vector PDF reads
+
+The desktop print path and the preview render HTML/CSS, so every token and class rule above applies. The **vector PDF** (mobile, and the command "Export letter as PDF (vector)") is drawn by its own engine. Since 1.9.0 both paths start from the same resolved token set: style defaults, then the settings, then your `--bk-*` declarations in **Custom CSS**. The PDF takes over plain values only:
+
+| Token | Accepted in the PDF |
+|-------|---------------------|
+| `--bk-font-size`, `--bk-name-size`, `--bk-space`, `--bk-block-gap`, `--bk-signature-gap` | lengths in `pt` or `mm` (`--bk-font-size` in `pt`) |
+| `--bk-line-height` | a plain number |
+| `--bk-color-text`, `--bk-color-muted`, `--bk-color-rule`, `--bk-color-hairline` | hex colours (`#rgb` or `#rrggbb`) |
+| `--bk-name-transform` | `none` or `uppercase` |
+
+Everything else stays with print and preview: `var(...)` values, font stacks (`--bk-font-family`, `--bk-name-font`), weights, the Modern layout, and class rules such as `.bk-betreff`. The PDF writes the 14 standard PDF fonts, so a house font cannot be embedded — that limit is by design.
 
 ## Example — custom CSS
 
