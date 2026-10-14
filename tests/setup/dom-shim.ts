@@ -45,6 +45,8 @@ function make(doc: Document, tag: string, o?: ElInfo | string, cb?: (el: HTMLEle
   return el;
 }
 
+type ElCreator = { createEl: (tag: string, o?: ElInfo | string, cb?: (el: HTMLElement) => void) => HTMLElement };
+
 if (typeof globalThis.document !== 'undefined' && typeof globalThis.HTMLElement !== 'undefined') {
   const proto = HTMLElement.prototype as unknown as Record<string, unknown>;
   proto.createEl = function (this: HTMLElement, tag: string, o?: ElInfo | string, cb?: (el: HTMLElement) => void) {
@@ -54,10 +56,10 @@ if (typeof globalThis.document !== 'undefined' && typeof globalThis.HTMLElement 
     return el;
   };
   proto.createDiv = function (this: HTMLElement, o?: ElInfo | string, cb?: (el: HTMLElement) => void) {
-    return (this as unknown as { createEl: typeof proto.createEl }).createEl('div', o, cb);
+    return (this as unknown as ElCreator).createEl('div', o, cb);
   };
   proto.createSpan = function (this: HTMLElement, o?: ElInfo | string, cb?: (el: HTMLElement) => void) {
-    return (this as unknown as { createEl: typeof proto.createEl }).createEl('span', o, cb);
+    return (this as unknown as ElCreator).createEl('span', o, cb);
   };
 
   const g = globalThis as unknown as Record<string, unknown>;

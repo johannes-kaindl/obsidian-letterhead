@@ -97,11 +97,12 @@ nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
 
 ```bash
 npm run typecheck         # tsc --noEmit
+npm run typecheck:test    # tsc -p tsconfig.test.json (src + tests)
 npm run typecheck:scripts # tsc -p tsconfig.scripts.json (GUI-Smoke-Treiber)
 npm test                  # vitest run (reine, Obsidian-freie Specs für src/core + src/vendor)
 npm run build             # tsc --noEmit + esbuild --production → main.js
 npm run check:pure        # kein `from 'obsidian'`-Import in src/core, src/vendor
-npm run gate              # typecheck && typecheck:scripts && test && check:pure && lint && build
+npm run gate              # typecheck && typecheck:test && typecheck:scripts && test && check:pure && lint && build
 npm run smoke:gui         # GUI-Smoke gegen ein laufendes Obsidian — siehe docs/SMOKE.md
 npm run deploy            # build, dann cp manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
 ```
