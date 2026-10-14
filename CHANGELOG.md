@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.9.0] — 2026-10-14
+
 ### Added
 - The vector PDF (iPhone/iPad and "Export letter as PDF (vector)") now reads the same design tokens as print and preview. Colours, font size, line height, spacing and name size set as `--bk-*` values in Custom CSS apply to the PDF as well, so one theme gives the same letter on every device. Font stacks, the Modern layout and class rules still apply to print and preview only, and the PDF keeps the 14 standard fonts. The settings descriptions and the theming reference now say which part applies where.
 - "Reset preset" asks for confirmation first and saves your current Custom CSS to `custom-css-backup.css` in the plugin folder.
