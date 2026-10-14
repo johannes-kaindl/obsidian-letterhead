@@ -19,14 +19,14 @@
  *  offering 'pdf' and the reference's 'print' (HTML/Quick-Look fallback).
  *  1.4.0 dropped the fallback in favour of the Degradation model, which left
  *  a dropdown with a single option that no code path reads. It stays gone;
- *  the settings KEY `mobileExport` is deliberately kept in DEFAULT_SETTINGS
- *  so stored configurations (including 'print') still load without migration.
+ *  the settings KEY `mobileExport` is gone from DEFAULT_SETTINGS; loadSettings
+ *  deletes a stored value (including 'print') on load.
  *
  *  This file lives in src/obsidian/, so importing 'obsidian' is allowed
  *  (check:pure only restricts src/core and src/vendor).
  * ------------------------------------------------------------------ */
 
-import { App, Plugin, PluginSettingTab, Setting, type SettingDefinitionItem } from 'obsidian';
+import { App, Notice, Plugin, PluginSettingTab, Setting, type SettingDefinitionItem } from 'obsidian';
 import { t } from '../i18n/strings';
 import {
   DEFAULT_SETTINGS, STILE, LETTER_LABELS,
@@ -36,6 +36,7 @@ import { PLACEHOLDERS, DEFAULT_FILENAME_TEMPLATE } from '../core/filename';
 import { normStil, normSprache } from '../core/frontmatter';
 import { PRESET_CSS } from './html-engine';
 import { helpDefinition } from './help-row';
+import { confirmAction } from '../vendor/kit-obsidian/confirm';
 import { renderSettingDefinitions, settingBodyHost, refreshSettingsTab } from '../vendor/kit-obsidian/settings_walker';
 
 /** Minimal shape the settings tab needs from the plugin instance. The
@@ -43,6 +44,7 @@ import { renderSettingDefinitions, settingBodyHost, refreshSettingsTab } from '.
  *  interface avoids a circular import between main.ts and settings.ts. */
 export interface LetterheadSettingTabHost {
   settings: LetterheadSettings;
+  manifest: { dir?: string };
   saveSettings(): Promise<void>;
   insertFrontmatterTemplate(): void | Promise<void>;
 }
@@ -90,7 +92,7 @@ export class LetterheadSettingTab extends PluginSettingTab {
           { name: t('set_infoline'), desc: t('set_infoline_desc'),
             control: { type: 'dropdown', key: 'infozeile', options: { vollstaendig: t('opt_info_full'), nurdatum: t('opt_info_date') } } },
           { name: t('set_dinform'), desc: t('set_dinform_desc'),
-            control: { type: 'dropdown', key: 'dinForm', options: { A: 'Form A (27 mm)', B: 'Form B (45 mm)' } } },
+            control: { type: 'dropdown', key: 'dinForm', options: { A: t('opt_dinform_a'), B: t('opt_dinform_b') } } },
         ],
       },
       {
@@ -149,7 +151,7 @@ export class LetterheadSettingTab extends PluginSettingTab {
           // but always visible is a trap (spec: deliberately unlike paperize).
           { name: t('set_outfolder'), desc: t('set_outfolder_desc'),
             visible: () => s.outputMode === 'customFolder',
-            control: { type: 'text', key: 'outputFolder', placeholder: 'Export/Briefe' } },
+            control: { type: 'text', key: 'outputFolder', placeholder: t('ph_outfolder') } },
           // The placeholder list is generated from PLACEHOLDERS rather than
           // written into the description string (yijing-oracle's hand-kept list
           // had drifted from the values it actually substitutes).
@@ -157,12 +159,34 @@ export class LetterheadSettingTab extends PluginSettingTab {
             control: { type: 'text', key: 'filenameTemplate', placeholder: DEFAULT_FILENAME_TEMPLATE } },
           { name: t('set_css'), desc: t('set_css_desc'),
             render: (setting) => { setting.addButton((b) => b.setButtonText(t('btn_preset')).onClick(async () => {
-              s.customCss = PRESET_CSS; await this.plugin.saveSettings(); this.refreshUi();
+              await this.resetPreset();
             })); } },
           { name: '', render: (setting) => this.renderCssTextArea(setting) },
         ],
       },
     ];
+  }
+
+  /** Reset the custom CSS to the commented preset — after a confirm, and only after the
+   *  current CSS is safe in `custom-css-backup.css` next to the plugin (Schnappschuss). */
+  private async resetPreset(): Promise<void> {
+    const s = this.plugin.settings;
+    if (s.customCss === PRESET_CSS) return;
+    const ok = await confirmAction(this.app, {
+      title: t('confirm_preset_title'), message: t('confirm_preset'),
+      confirmLabel: t('btn_preset'), cancelLabel: t('btn_cancel'),
+    });
+    if (!ok) return;
+    try {
+      await this.app.vault.adapter.write(`${this.plugin.manifest.dir ?? ''}/custom-css-backup.css`, s.customCss);
+    } catch {
+      new Notice(t('notice_preset_backup_failed'));
+      return;
+    }
+    s.customCss = PRESET_CSS;
+    await this.plugin.saveSettings();
+    this.refreshUi();
+    new Notice(t('notice_preset_done'));
   }
 
   /* --- bespoke render rows ---------------------------------------- */

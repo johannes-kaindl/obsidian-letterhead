@@ -35,6 +35,7 @@ import { Modal, Notice, type App } from 'obsidian';
 import { esc, escLines, normStil, toLines } from '../core/frontmatter';
 import {
   STILE,
+  resolveTokens,
   LETTER_LABELS,
   type LetterheadSettings,
   type LetterLabelSet,
@@ -50,12 +51,12 @@ import { t } from '../i18n/strings';
 
 export function buildCss(s: LetterheadSettings, stilKey: string | null | undefined): string {
   const stil = STILE[(normStil(stilKey) || 'sachlich') as keyof typeof STILE] || STILE.sachlich;
-  const t2 = stil.tokens;
+  const t2 = resolveTokens(stilKey, s);
   const form = s.dinForm === 'A'
     ? { headTop: '12mm', f1: '87mm', f2: '192mm', addrTop: '27mm', infoTop: '32mm' }
     : { headTop: '14mm', f1: '105mm', f2: '210mm', addrTop: '45mm', infoTop: '50mm' };
   const font = String(s.fontFamily || '').trim() || t2.fontFamily;
-  const fs = Number(s.fontSizePt) || t2.fontSizePt;
+  const fs = t2.fontSizePt;
   const offset = Number(s.printOffsetTopMm) || 0;
 
   return `

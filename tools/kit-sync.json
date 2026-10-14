@@ -37,7 +37,8 @@
       "modules": [
         "settings_walker",
         "folder-suggest",
-        "help-setting"
+        "help-setting",
+        "confirm"
       ]
     }
   ]

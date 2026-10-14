@@ -16,7 +16,7 @@
 import { mmToPt, yTopMmToPt, pageSizePt, PT_PER_MM } from '../vendor/kit/pdf/geometry';
 import { textWidthPt } from '../vendor/kit/pdf/metrics';
 import type { DrawOp } from '../vendor/kit/pdf';
-import { dinGeometry, hexToRgb01, parseLenPt, styleFonts, STILE, type LetterModel, type LetterheadSettings } from './model';
+import { dinGeometry, hexToRgb01, parseLenPt, styleFonts, resolveTokens, STILE, type LetterModel, type LetterheadSettings } from './model';
 import { normStil, asText } from './frontmatter';
 
 // DIN letters are always A4 (matches main.js.reference's PAGE_W_PT=595.28 / PAGE_H_PT=841.89).
@@ -69,8 +69,8 @@ export function layoutHead(model: LetterHeadModel, settings: LetterheadSettings)
   const off = Number(settings.printOffsetTopMm) || 0;
   const stilKey = (normStil(model.stil || settings.stil) || 'sachlich') as keyof typeof STILE;
   const fonts = styleFonts(stilKey);
-  const tokens = (STILE[stilKey] || STILE.sachlich).tokens;
-  const sizePt = Number(settings.fontSizePt) || tokens.fontSizePt;
+  const tokens = resolveTokens(stilKey, settings);
+  const sizePt = tokens.fontSizePt;
   const nameSizePt = parseLenPt(tokens.nameSize, sizePt + 5);
   const contactPt = sizePt - 1.5;
   const upperName = String(tokens.nameTransform || '').indexOf('upper') >= 0;

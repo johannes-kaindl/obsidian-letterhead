@@ -19,6 +19,7 @@ import { mmToPt, yTopMmToPt, pageSizePt } from '../vendor/kit/pdf/geometry';
 import {
   styleFonts,
   STILE,
+  resolveTokens,
   parseLenPt,
   bodyLayoutOptions,
   dinGeometry,
@@ -59,11 +60,10 @@ export function layoutBody(
   contentTopMm: number
 ): { ops: DrawOp[]; pageCount: number } {
   const stilKey = (STILE[model.stil as keyof typeof STILE] ? model.stil : 'sachlich') as keyof typeof STILE;
-  const stil = STILE[stilKey] || STILE.sachlich;
-  const tokens = stil.tokens;
+  const tokens = resolveTokens(stilKey, settings);
   const fonts = styleFonts(model.stil);
   const g = dinGeometry(settings.dinForm);
-  const sizePt = Number(settings.fontSizePt) || tokens.fontSizePt;
+  const sizePt = tokens.fontSizePt;
   const lineH = parseFloat(tokens.lineHeight) || 1.45;
   const spacePt = parseLenPt(tokens.space, mmToPt(2.6));
   const blockGapPt = parseLenPt(tokens.blockGap, mmToPt(6));

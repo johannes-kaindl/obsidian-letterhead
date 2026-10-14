@@ -156,6 +156,8 @@ export default class LetterheadPlugin extends Plugin {
        Infozeile dropdown; font settings were always-on and now mean
        "override the style default" (old defaults => unset). */
     let migrated = false;
+    /* `mobileExport` (bis 1.4.0 ein Dropdown, seitdem ohne Leser) fällt weg; alte Werte werden beim Laden abgeräumt. */
+    if ('mobileExport' in this.settings) { delete (this.settings as unknown as Record<string, unknown>).mobileExport; migrated = true; }
     /* Filename scheme (1.4.2, spec A3): only FRESH installs get the new
        '{datum} {empfaenger}' default. An existing install keeps naming files
        after the note — letterhead has been in the community directory since
@@ -274,6 +276,9 @@ export default class LetterheadPlugin extends Plugin {
     let ruecksende = (s.returnAddressLine || '').trim();
     if (!ruecksende) ruecksende = [senderName, senderStrasse, senderPlzOrt].filter(Boolean).join(' · ');
 
+    const sprache = normSprache(getField(idx, ALIASES.sprache)) || normSprache(s.briefSprache) || 'de';
+    const labels = (LETTER_LABELS as Record<string, typeof LETTER_LABELS.de>)[sprache] || LETTER_LABELS.de;
+
     /* free-form info-block rows: flat info_1..info_4 ("Label: Wert"), then the
        `info:` map of label -> value. */
     const infoExtra: Array<[string, string]> = [];
@@ -283,7 +288,7 @@ export default class LetterheadPlugin extends Plugin {
       const sv = raw instanceof Date ? this.formatDate(raw) : asText(raw);
       const ci = sv.indexOf(':');
       if (ci > 0) infoExtra.push([sv.slice(0, ci).trim(), sv.slice(ci + 1).trim()]);
-      else infoExtra.push(['Info', sv.trim()]);
+      else infoExtra.push([labels.infoFallback, sv.trim()]);
     }
     const infoRaw = getField(idx, ALIASES.info);
     if (infoRaw && typeof infoRaw === 'object' && !Array.isArray(infoRaw)) {
@@ -295,9 +300,6 @@ export default class LetterheadPlugin extends Plugin {
     }
 
     const ihrSchreibenRaw = getField(idx, ALIASES.ihrSchreiben);
-
-    const sprache = normSprache(getField(idx, ALIASES.sprache)) || normSprache(s.briefSprache) || 'de';
-    const labels = (LETTER_LABELS as Record<string, typeof LETTER_LABELS.de>)[sprache] || LETTER_LABELS.de;
 
     const model: LetterModelResolved = {
       recipient: toLines(getField(idx, ALIASES.recipient)),

@@ -53,7 +53,6 @@ export interface LetterheadSettings {
   defaultGruss: string;
   printOffsetTopMm: number;
   customCss: string;
-  mobileExport: string;
   /** Filename scheme for exported/printed letters — see core/filename.ts. */
   filenameTemplate: string;
   /** Where an exported PDF goes — see obsidian/output.ts (OutputMode). */
@@ -90,7 +89,6 @@ export const DEFAULT_SETTINGS: LetterheadSettings = {
   customCss: '',
   // Legacy key, kept so stored configs (incl. the old 'print' value) still load.
   // No code branches on it: mobile export has been vector-PDF-only since 1.4.0.
-  mobileExport: 'pdf',
   filenameTemplate: DEFAULT_FILENAME_TEMPLATE,  // existing installs migrate to '{notiz}' (spec A3)
   outputMode: 'nextToNote',   // existing installs migrate to 'share' (their current behaviour)
   outputFolder: ''
@@ -109,6 +107,8 @@ export interface LetterLabelSet {
   unserZeichen: string;
   telefon: string;
   datum: string;
+  /* Rückfall-Etikett für eine Infozeile ohne `Label:`-Teil (gedruckt, daher hier). */
+  infoFallback: string;
   telPrefix: string;
   closing: string;
   salutation: string;
@@ -131,7 +131,7 @@ export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
   de: {
     anlage: 'Anlage', anlagen: 'Anlagen',
     steuernummer: 'Steuernummer', ihrZeichen: 'Ihr Zeichen', ihrSchreiben: 'Ihr Schreiben',
-    unserZeichen: 'Unser Zeichen', telefon: 'Telefon', datum: 'Datum',
+    unserZeichen: 'Unser Zeichen', telefon: 'Telefon', datum: 'Datum', infoFallback: 'Info',
     telPrefix: 'Tel. ',
     closing: 'Mit freundlichen Grüßen',
     salutation: 'Sehr geehrte Damen und Herren,',
@@ -141,7 +141,7 @@ export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
   en: {
     anlage: 'Enclosure', anlagen: 'Enclosures',
     steuernummer: 'Tax number', ihrZeichen: 'Your ref.', ihrSchreiben: 'Your letter',
-    unserZeichen: 'Our ref.', telefon: 'Phone', datum: 'Date',
+    unserZeichen: 'Our ref.', telefon: 'Phone', datum: 'Date', infoFallback: 'Info',
     telPrefix: 'Phone ',
     closing: 'Kind regards',
     salutation: 'Dear Sir or Madam,',
@@ -237,6 +237,76 @@ export const STILE: Record<'sachlich' | 'klassisch' | 'technisch', StyleDef> = {
     `
   }
 };
+
+/* ------------------------------------------------------------------ *
+ *  Resolved tokens — ONE source for the HTML/CSS path and the vector-PDF path.
+ *
+ *  Precedence, lowest first: style defaults (STILE) < settings (font size)
+ *  < `--bk-*` declarations in the Custom CSS field. The HTML path got the
+ *  last step for free from the cascade; the PDF path never saw it, so the same
+ *  theme gave a different letter on iOS. Both now start from this object.
+ *
+ *  Only values the PDF engine can honour are taken over, and only as literals
+ *  (hex colours, pt/mm lengths, plain numbers): `var(...)`, font stacks and
+ *  weights stay with the cascade. The PDF writes the 14 standard fonts, so a
+ *  custom `--bk-font-family` cannot reach it — that limit is by design.
+ * ------------------------------------------------------------------ */
+
+const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+const LENGTH = /^-?\d+(?:\.\d+)?(?:pt|mm)$/;
+const NUMBER = /^\d+(?:\.\d+)?$/;
+
+/** Drop `/* … *\/` comments in one linear pass (an unclosed comment runs to the end). */
+function stripComments(css: string): string {
+  let out = '';
+  let i = 0;
+  while (i < css.length) {
+    const open = css.indexOf('/*', i);
+    if (open < 0) return out + css.slice(i);
+    out += css.slice(i, open);
+    const close = css.indexOf('*/', open + 2);
+    if (close < 0) return out;
+    i = close + 2;
+  }
+  return out;
+}
+
+/** Last `--bk-name: value` per name; comments stripped, nothing evaluated. Linear: the CSS is
+ *  cut at `;{}` and each piece is read with indexOf, no backtracking pattern over user text. */
+function parseCustomTokens(css: string): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const piece of stripComments(css).split(/[;{}]/)) {
+    const at = piece.indexOf('--bk-');
+    const colon = piece.indexOf(':', at + 5);
+    if (at < 0 || colon < 0) continue;
+    const name = piece.slice(at + 5, colon).trim();
+    if (!/^[a-z-]{1,40}$/.test(name)) continue;
+    out.set(name, piece.slice(colon + 1).trim());
+  }
+  return out;
+}
+
+export function resolveTokens(stilKey: string | null | undefined, settings: LetterheadSettings): StyleTokens {
+  const base = (STILE[(normStil(stilKey) || 'sachlich') as keyof typeof STILE] || STILE.sachlich).tokens;
+  const t: StyleTokens = { ...base, fontSizePt: Number(settings.fontSizePt) || base.fontSizePt };
+  const custom = parseCustomTokens(typeof settings.customCss === 'string' ? settings.customCss : '');
+  const take = (name: string, ok: RegExp, set: (v: string) => void) => {
+    const v = custom.get(name);
+    if (v !== undefined && ok.test(v)) set(v);
+  };
+  take('font-size', LENGTH, (v) => { if (v.endsWith('pt')) t.fontSizePt = parseFloat(v); });
+  take('line-height', NUMBER, (v) => { t.lineHeight = v; });
+  take('color-text', HEX_COLOR, (v) => { t.colorText = v; });
+  take('color-muted', HEX_COLOR, (v) => { t.colorMuted = v; });
+  take('color-rule', HEX_COLOR, (v) => { t.colorRule = v; });
+  take('color-hairline', HEX_COLOR, (v) => { t.colorHairline = v; });
+  take('space', LENGTH, (v) => { t.space = v; });
+  take('block-gap', LENGTH, (v) => { t.blockGap = v; });
+  take('signature-gap', LENGTH, (v) => { t.signatureGap = v; });
+  take('name-size', LENGTH, (v) => { t.nameSize = v; });
+  take('name-transform', /^(?:none|uppercase)$/, (v) => { t.nameTransform = v; });
+  return t;
+}
 
 /* ------------------------------------------------------------------ *
  *  Fixed @page margins (main.js:501-503): printers cannot print
@@ -335,9 +405,8 @@ export function bodyLayoutOptions(
 ): LayoutOptions {
   const g = dinGeometry(settings.dinForm);
   const stilKey = (normStil(model.stil || settings.stil) || 'sachlich') as keyof typeof STILE;
-  const stil = STILE[stilKey] || STILE.sachlich;
-  const tokens = stil.tokens;
-  const sizePt = Number(settings.fontSizePt) || tokens.fontSizePt;
+  const tokens = resolveTokens(stilKey, settings);
+  const sizePt = tokens.fontSizePt;
   const lineHeight = parseFloat(tokens.lineHeight) || DEFAULT_OPTIONS.fonts.lineHeight;
   const fontChoice: FontChoice =
     stilKey === 'klassisch' ? 'serif' : stilKey === 'technisch' ? 'mono' : 'sans';
