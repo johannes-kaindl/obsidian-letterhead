@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.60.1, src/obsidian/share-export.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.2, src/obsidian/share-export.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { Notice, type App } from "obsidian";
 import { confirmAction } from "./confirm";
 
@@ -90,14 +90,18 @@ interface ExportAdapter {
 }
 interface AppWithDefaultApp { openWithDefaultApp?: (path: string) => Promise<void> }
 
-/** Ordner, auf die `clearExportDir` nie zeigen darf. Verglichen wird kleingeschrieben (APFS und NTFS unterscheiden die Schreibweise nicht). */
-const PROTECTED_DIRS = new Set([".obsidian", ".trash", ".git", ".github"]);
+/** Feste Ordner, auf die `clearExportDir` nie zeigen darf. Verglichen wird kleingeschrieben (APFS und NTFS unterscheiden die Schreibweise
+ *  nicht). **Der Konfigurationsordner steht nicht hier, sondern kommt aus `app.vault.configDir`:** er heißt nicht zwingend `.obsidian`, und ein
+ *  Literal dafür löst im Lint jedes Konsumenten und im Store-Scanner `obsidianmd/hardcoded-config-path` aus (0.60.1 trug es hier). */
+const PROTECTED_DIRS = new Set([".trash", ".git", ".github"]);
 
 /** Der Helfer LÖSCHT im Ordner. Deshalb nur ein verstecktes Verzeichnis direkt im Vault-Stamm, dessen Name auf `-export` endet
  *  (alle drei bisherigen tun es: `.epub-export`, `.paperize-export`, `.letterhead-export`): so kann ein Tippfehler im Aufrufer
  *  (`""`, `"/"`, `"notes"`) oder ein fremder Dot-Ordner (`.smart-env`, `.claude`) keine Nutzerdaten treffen. */
-function assertExportDir(dir: string): void {
-  if (!/^\.[A-Za-z0-9][A-Za-z0-9._-]*-export$/.test(dir) || dir.includes("..") || PROTECTED_DIRS.has(dir.toLowerCase())) {
+function assertExportDir(dir: string, configDir: string | undefined): void {
+  const lower = dir.toLowerCase();
+  if (!/^\.[A-Za-z0-9][A-Za-z0-9._-]*-export$/.test(dir) || dir.includes("..") || PROTECTED_DIRS.has(lower)
+    || (configDir !== undefined && configDir !== "" && lower === configDir.toLowerCase())) {
     throw new Error(`share-export: ungültiger Export-Ordner „${dir}“ (erwartet: ein verstecktes Verzeichnis im Vault-Stamm, Name endet auf -export)`);
   }
 }
@@ -174,7 +178,7 @@ function runExclusive<T>(key: string, job: () => Promise<T>): Promise<T> {
 
 /** Schreibt `bytes` in `<dir>/<fileName>` (vorher den Ordner leeren, siehe `clearExportDir`) und übergibt sie dem System. */
 export async function shareExport(app: App, bytes: Uint8Array, opts: ShareExportOptions): Promise<ShareExportResult> {
-  assertExportDir(opts.dir);
+  assertExportDir(opts.dir, (app.vault as { configDir?: string }).configDir);
   assertFileName(opts.fileName);
   const strings = opts.strings ?? SHARE_EXPORT_STRINGS_EN;
   const adapter = app.vault.adapter as unknown as ExportAdapter;

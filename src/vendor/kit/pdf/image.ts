@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.60.1, src/pure/pdf/image.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.2, src/pure/pdf/image.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { dataUrlToBytes } from '../data-url';
 
 /* ------------------------------------------------------------------ *

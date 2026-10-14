@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The DIN form entries and the output-folder hint follow the interface language ("Export/Letters" in English).
 - Test files are now type-checked in the gate.
 - Share export (mobile "share directly" mode): files in the hidden `.letterhead-export` folder that the plugin did not write are no longer deleted without asking. PDFs left by earlier exports are still replaced silently; anything else asks first, and if you say no it stays and the export goes on. Two quick exports in a row no longer delete each other's file.
-- Internal: the plugin now builds on the shared library at obsidian-kit 0.60.1 and code-kit 0.27.1. The PDF engine and the settings helpers are unchanged. One visible detail: an embedded image whose data cannot be decoded is now skipped with a placeholder in the PDF instead of being turned into garbage bytes.
+- Internal: the plugin now builds on the shared library at obsidian-kit 0.60.2 and code-kit 0.27.1. The PDF engine and the settings helpers are unchanged. One visible detail: an embedded image whose data cannot be decoded is now skipped with a placeholder in the PDF instead of being turned into garbage bytes.
 - Exported file names are cut to the same lengths as before (48 characters per recipient or subject, 120 overall), now by the shared library instead of a local copy. Checked identical at the boundaries, including a space exactly at the cut.
 
 ### Removed

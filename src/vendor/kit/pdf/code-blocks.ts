@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.60.1, src/pure/pdf/code-blocks.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.2, src/pure/pdf/code-blocks.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 export interface ExtractedCode {
   lang?: string;
   text: string;

@@ -1,7 +1,7 @@
 {
   "source": "obsidian-kit",
-  "version": "0.60.1",
-  "sha": "4dfbd4e",
+  "version": "0.60.2",
+  "sha": "3029c00",
   "vendored": "pdf/*.ts, vault-path.ts",
   "code_kit_version": "0.27.1",
   "code_kit_sha": "ac89f10",
