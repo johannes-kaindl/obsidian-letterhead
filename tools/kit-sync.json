@@ -34,7 +34,8 @@
       "from": "src/ts/pure",
       "modules": [
         "filename-template",
-        "data-url"
+        "data-url",
+        "local-stamp"
       ]
     },
     {
@@ -45,7 +46,8 @@
         "settings_walker",
         "folder-suggest",
         "help-setting",
-        "confirm"
+        "confirm",
+        "share-export"
       ]
     }
   ]

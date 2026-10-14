@@ -135,15 +135,3 @@ export function esc(s: unknown): string {
 }
 
 export function escLines(lines: string[]): string { return (lines || []).map(esc).join('\n'); }
-
-// Base64-encodes a local vault file (the user's configured logo) for an inline data:
-// URL — the plugin's only btoa() use. No network fetch, no obfuscation; see SECURITY.md.
-export function arrayBufferToBase64(buf: ArrayBuffer): string {
-  let bin = '';
-  const bytes = new Uint8Array(buf);
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
-  }
-  return btoa(bin);
-}

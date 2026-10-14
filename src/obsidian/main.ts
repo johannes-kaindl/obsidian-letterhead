@@ -30,11 +30,13 @@ import { layoutBody } from '../core/body-ir';
 import { domToIrSync, resolveImages } from '../vendor/kit/pdf/dom-to-ir';
 import { extractCodeBlocks, parseCodePlaceholder } from '../vendor/kit/pdf/code-blocks';
 import { imageToJpeg } from '../vendor/kit/pdf/image';
+import { bytesToBase64, mimeForExtension } from '../vendor/kit/data-url';
+import { localDate } from '../vendor/kit/local-stamp';
 import { buildFilename, migrateFilenameTemplate, isoDate, type FilenameValues } from '../core/filename';
 import { dinGeometry, DEFAULT_SETTINGS, LETTER_LABELS, type LetterheadSettings } from '../core/model';
 import {
   buildFmIndex, getField, ALIASES, parseAbsenderLines, toLines,
-  normStil, normInfozeile, normSprache, arrayBufferToBase64, asText,
+  normStil, normInfozeile, normSprache, asText,
 } from '../core/frontmatter';
 
 import { PdfWriter, type PdfPage } from '../vendor/kit/pdf/writer';
@@ -111,9 +113,7 @@ export default class LetterheadPlugin extends Plugin {
     const file = this.app.workspace.getActiveFile();
     if (!file || file.extension !== 'md') { new Notice(t('notice_open_note')); return; }
     const now = new Date();
-    const iso = now.getFullYear() + '-' +
-      String(now.getMonth() + 1).padStart(2, '0') + '-' +
-      String(now.getDate()).padStart(2, '0');
+    const iso = localDate(now);
     const lang = normSprache(this.settings.briefSprache) || 'de';
     const K = lang === 'en'
       ? { recipient: 'recipient', betreff: 'subject', anrede: 'salutation', ort: 'place',
@@ -238,12 +238,9 @@ export default class LetterheadPlugin extends Plugin {
     try {
       const ab = await this.app.vault.adapter.readBinary(normalizePath(p));
       const ext = (p.split('.').pop() || '').toLowerCase();
-      const mime = ext === 'png' ? 'image/png'
-        : ext === 'svg' ? 'image/svg+xml'
-        : ext === 'gif' ? 'image/gif'
-        : ext === 'webp' ? 'image/webp'
-        : 'image/jpeg';
-      return `data:${mime};base64,${arrayBufferToBase64(ab)}`;
+      /* logoPath is free text: an extension the kit table does not know keeps the old JPEG guess. */
+      const mime = mimeForExtension(ext) ?? 'image/jpeg';
+      return `data:${mime};base64,${bytesToBase64(new Uint8Array(ab))}`;
     } catch {
       new Notice(t('notice_logo_failed') + p);
       return '';

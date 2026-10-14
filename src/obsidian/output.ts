@@ -13,12 +13,22 @@
  * ------------------------------------------------------------------ */
 
 import { Notice, type App } from 'obsidian';
-import { t } from '../i18n/strings';
+import { t, detectUiLang } from '../i18n/strings';
 import { joinVaultPath, vaultDirname } from '../vendor/kit/vault-path';
+import {
+  shareExport, shareFile, SHARE_EXPORT_STRINGS_DE, SHARE_EXPORT_STRINGS_EN, type ShareExportStrings,
+} from '../vendor/kit-obsidian/share-export';
 
 /* Hidden scratch dir for the transient share export. Adapter API (not the
    Vault API): this is scratch space, not a tracked vault file. */
 const EXPORT_DIR = '.letterhead-export';
+const PDF_MIME = 'application/pdf';
+
+/** Kit strings per UI language, with letterhead's own failure notice. */
+function shareStrings(): ShareExportStrings {
+  const kit = detectUiLang() === 'de' ? SHARE_EXPORT_STRINGS_DE : SHARE_EXPORT_STRINGS_EN;
+  return { ...kit, failed: t('notice_share_failed') };
+}
 
 /** Strips path separators and filesystem-illegal characters from a base
  *  filename, so a note title like "Re: A/B" becomes a safe "Re_ A_B". */
@@ -70,29 +80,6 @@ export async function uniquePath(
   return `${stem} (999)${ext}`;
 }
 
-/** Hands the PDF to the system: share sheet where available (the one-tap iOS
- *  path), otherwise open with the default app. `File`/`navigator.share` may be
- *  absent, hence the guards. */
-async function shareBytes(bytes: Uint8Array, safe: string, app: App, path: string): Promise<void> {
-  const fileObj = typeof File === 'function'
-    ? new File([bytes as unknown as BlobPart], `${safe}.pdf`, { type: 'application/pdf' })
-    : null;
-  const nav = navigator as unknown as {
-    canShare?: (d: { files: File[] }) => boolean;
-    share?: (d: { files: File[] }) => Promise<void>;
-  };
-  if (fileObj && nav.canShare && nav.canShare({ files: [fileObj] }) && nav.share) {
-    try {
-      await nav.share({ files: [fileObj] });
-      return;
-    } catch (e) {
-      if (e && (e as { name?: string }).name === 'AbortError') return; // user dismissed
-    }
-  }
-  const openDefault = (app as unknown as { openWithDefaultApp?: (p: string) => Promise<void> }).openWithDefaultApp;
-  if (typeof openDefault === 'function') await openDefault.call(app, path);
-}
-
 /** Writes `bytes` as a PDF and hands it to the user. For 'share' (mobile),
  *  the PDF goes into the hidden export dir and is offered via
  *  navigator.share, falling back to openWithDefaultApp. For 'save', it is
@@ -119,20 +106,12 @@ export async function writePdf(
       await adapter.writeBinary(target, bytes.buffer as ArrayBuffer);
       new Notice(t('notice_saved') + target);
       // Mobile has no file manager to reveal it in — offer the share sheet.
-      if (shouldShareAfterSave(mode, opts.isMobile === true)) await shareBytes(bytes, safe, app, target);
+      if (shouldShareAfterSave(mode, opts.isMobile === true)) await shareFile(app, bytes, `${safe}.pdf`, PDF_MIME, target);
       return;
     }
 
-    // 'share': reset the scratch dir, then write the single current export.
-    const path = `${EXPORT_DIR}/${safe}.pdf`;
-    if (await adapter.exists(EXPORT_DIR)) {
-      const listing = await adapter.list(EXPORT_DIR);
-      for (const f of listing.files) await adapter.remove(f);
-    } else {
-      await adapter.mkdir(EXPORT_DIR);
-    }
-    await adapter.writeBinary(path, bytes.buffer as ArrayBuffer);
-    await shareBytes(bytes, safe, app, path);
+    // 'share': the kit helper owns the scratch dir (clears its own leftovers, asks before touching anything else).
+    await shareExport(app, bytes, { dir: EXPORT_DIR, fileName: `${safe}.pdf`, mime: PDF_MIME, strings: shareStrings() });
   } catch (e) {
     console.error('Letterhead: PDF export failed', e);
     new Notice(t('notice_share_failed'));

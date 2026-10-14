@@ -22,6 +22,7 @@
  * ------------------------------------------------------------------ */
 
 import { buildFilename as fillTemplate, clipText, sanitizeFilename } from '../vendor/kit/filename-template';
+import { localDate } from '../vendor/kit/local-stamp';
 
 /** Kit-side sanitizer, re-exported so callers and tests keep one import. Its
  *  `INVALID` class is byte-identical to the one that used to live here, and the
@@ -51,8 +52,7 @@ export const PLACEHOLDERS = ['notiz', 'datum', 'datum_lang', 'empfaenger', 'betr
  *  display date stays reachable as {datum_lang}. */
 export function isoDate(raw: unknown): string {
   const pad = (n: number): string => String(n).padStart(2, '0');
-  const fromDate = (d: Date): string =>
-    isNaN(d.getTime()) ? '' : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const fromDate = (d: Date): string => (isNaN(d.getTime()) ? '' : localDate(d));
 
   if (raw instanceof Date) return fromDate(raw);
   if (typeof raw !== 'string') return '';
