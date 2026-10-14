@@ -25,9 +25,10 @@ Letterhead ist so gebaut, dass du durch Lesen überprüfen kannst, was es tut:
 - **Keine dynamische Code-Ausführung.** Kein `eval`, kein `new Function`, kein
   dynamisches `import()`. Die einzige Laufzeit-Fremdabhängigkeit ist die Obsidian-API
   selbst.
-- **Externe Assets nur als `data:`-URL.** Der einzige `btoa()`-Aufruf
-  (`src/core/frontmatter.ts`) bettet dein konfiguriertes Logo (eine lokale
-  Vault-Datei) als `data:`-URL in den Brief ein — es wird nichts aus dem Web geladen.
+- **Externe Assets nur als `data:`-URL.** Der Base64-Kodierer
+  (`bytesToBase64` im gevendorten `src/vendor/kit/data-url.ts`) bettet dein konfiguriertes
+  Logo (eine lokale Vault-Datei) als `data:`-URL in den Brief ein — es wird nichts aus
+  dem Web geladen.
 - **Minimaler Vault-Zugriff.** Liest Notizen über die Obsidian-API und schreibt nur den
   exportierten Brief (HTML oder das erzeugte PDF) in einen dedizierten Export-Ordner
   (der mobile Export-Pfad).

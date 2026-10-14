@@ -63,9 +63,9 @@ nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
   (`domToIrSync`, Nachfolger von `walkBodyNodes`). Tabellen, eingebettete Bilder, Code-Blöcke und
   mehrseitige Paginierung werden seit 1.4.0 direkt im Vektor-PDF gerendert (Degradation
   bei nicht unterstützten Elementen). **Kein HTML/Quick-Look-Fallback mehr:** das Setting
-  `mobileExport` wird von keinem Codepfad gelesen und ist als UI-Zeile entfernt; der
-  Schlüssel bleibt nur in `DEFAULT_SETTINGS` stehen, damit alte gespeicherte Werte
-  (inkl. `'print'`) ohne Migration laden. Die Engine selbst zieht keine
+  `mobileExport` wurde von keinem Codepfad gelesen; die UI-Zeile entfiel 1.4.0, der
+  Schlüssel selbst fällt seit 1.9.0 aus `DEFAULT_SETTINGS`, `loadSettings` löscht einen
+  gespeicherten Wert (inkl. `'print'`) beim Laden. Die Engine selbst zieht keine
   Laufzeit-Dependency, aber das Bündeln erfolgt über den `esbuild`-Build — `main.js` ist
   Build-Output, nicht committete Quelle.
 - **Der Vendor-Baum stammt aus ZWEI Quellen (seit 2026-09-02).** `src/vendor/kit/pdf/*` und

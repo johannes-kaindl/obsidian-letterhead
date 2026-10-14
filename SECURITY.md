@@ -23,9 +23,10 @@ Letterhead is built so you can verify what it does by reading it:
   tracking. Everything happens locally in your vault.
 - **No dynamic code execution.** No `eval`, no `new Function`, no dynamic `import()`.
   The only third-party runtime dependency is Obsidian's own API.
-- **External assets only as `data:` URLs.** The single `btoa()` call
-  (`src/core/frontmatter.ts`) embeds your configured logo (a local vault file) into
-  the letter as a `data:` URL — nothing is fetched from the web.
+- **External assets only as `data:` URLs.** The Base64 encoder
+  (`bytesToBase64` in the vendored `src/vendor/kit/data-url.ts`) embeds your configured
+  logo (a local vault file) into the letter as a `data:` URL — nothing is fetched from
+  the web.
 - **Minimal vault access.** Reads notes via the Obsidian API and writes only the
   exported letter (HTML or the generated PDF) into a dedicated export folder
   (the mobile export path).
