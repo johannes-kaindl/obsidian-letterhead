@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.57.0, src/pure/pdf/encoding.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.1, src/pure/pdf/encoding.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/encoding.ts
 // Pure PDF encoding helpers. No Obsidian, no DOM.
 // Ported from obsidian-letterhead/main.js
@@ -26,11 +26,13 @@ export function winAnsiBytes(str: string): number[] {
   const s = String(str == null ? '' : str);
   for (let i = 0; i < s.length; i++) {
     const cp = s.codePointAt(i);
+    const hi = WINANSI_HIGH[cp!];
+    const sym = SYMBOL_ASCII[cp!];
     if (cp! > 0xFFFF) i++; // surrogate pair → ein Codepoint (Emoji etc.)
     if (cp! <= 0x7F) out.push(cp!);
     else if (cp! >= 0xA0 && cp! <= 0xFF) out.push(cp!);     // Latin-1
-    else if (WINANSI_HIGH[cp!] != null) out.push(WINANSI_HIGH[cp!]);
-    else if (SYMBOL_ASCII[cp!] != null) { for (const ch of SYMBOL_ASCII[cp!]) out.push(ch.charCodeAt(0)); }
+    else if (hi != null) out.push(hi);
+    else if (sym != null) { for (const ch of sym) out.push(ch.charCodeAt(0)); }
     // sonst: unmappbar → weglassen (kein '?')
   }
   return out;

@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.57.0, src/pure/pdf/writer.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.1, src/pure/pdf/writer.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/writer.ts
 // Pure PDF byte-writer. No Obsidian, no DOM.
 // Ported from obsidian-letterhead/main.js
@@ -79,6 +79,7 @@ export class PdfWriter {
 
     for (let i = 0; i < this.pages.length; i++) {
       const p = this.pages[i]; const pn = pageNos[i];
+      if (!p || !pn) continue;
       const fontRes = [...p.fonts].map((fk) => `/${fk} ${fontObjNo[fk]} 0 R`).join(' ');
       const imgRes = [...p.images].map((nm) => `/${nm} ${jpegObjNo[nm]} 0 R`).join(' ');
       const res = `<< /Font << ${fontRes} >>` + (imgRes ? ` /XObject << ${imgRes} >>` : '') + ` >>`;
@@ -90,10 +91,12 @@ export class PdfWriter {
     }
     for (const fk of fontKeys) {
       const no = fontObjNo[fk];
+      if (no === undefined) continue;
       set(no, strBytes(`${no} 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /${BASE_FONTS[fk]} /Encoding /WinAnsiEncoding >>\nendobj\n`));
     }
     for (const j of this.jpegs) {
       const no = jpegObjNo[j.name];
+      if (no === undefined) continue;
       const header = strBytes(
         `${no} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${j.wPx} /Height ${j.hPx} ` +
         `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${j.u8.length} >>\nstream\n`);
@@ -106,7 +109,7 @@ export class PdfWriter {
     const offsets: number[] = [];
     for (let no = 1; no <= objs.length; no++) {
       offsets[no] = out.length;
-      for (const b of objs[no - 1]) out.push(b);
+      for (const b of objs[no - 1] ?? []) out.push(b);
     }
     const xrefStart = out.length;
     let xref = `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;

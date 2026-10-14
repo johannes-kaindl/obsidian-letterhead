@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.57.0, src/pure/pdf/code-blocks.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.1, src/pure/pdf/code-blocks.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 export interface ExtractedCode {
   lang?: string;
   text: string;
@@ -25,18 +25,21 @@ export function extractCodeBlocks(md: string, prefix: string): { markdown: strin
   let i = 0;
 
   while (i < lines.length) {
-    const open = OPEN_RE.exec(lines[i]);
-    if (!open) { out.push(lines[i]); i++; continue; }
+    const line = lines[i] ?? '';
+    const open = OPEN_RE.exec(line);
+    if (!open) { out.push(line); i++; continue; }
 
-    const [, indent, fence, lang] = open;
+    const indent = open[1] ?? '';
+    const fence = open[2] ?? '';
+    const lang = open[3];
     // Closing fence: same char, at least as long, nothing else on the line. This is what
     // keeps a ``` inside a ````-block from ending it early.
-    const close = new RegExp(`^\\s*${fence[0]}{${fence.length},}\\s*$`);
+    const close = new RegExp(`^\\s*${fence.charAt(0)}{${fence.length},}\\s*$`);
     let j = i + 1;
-    while (j < lines.length && !close.test(lines[j])) j++;
+    while (j < lines.length && !close.test(lines[j] ?? '')) j++;
 
     // Unclosed fence: not a code block. Leave the line as-is so the renderer decides.
-    if (j >= lines.length) { out.push(lines[i]); i++; continue; }
+    if (j >= lines.length) { out.push(line); i++; continue; }
 
     const body = lines.slice(i + 1, j).map((l) => (l.startsWith(indent) ? l.slice(indent.length) : l));
     codes.push({ lang: lang || undefined, text: body.join('\n') });

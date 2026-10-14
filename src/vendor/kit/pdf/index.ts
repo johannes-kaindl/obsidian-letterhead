@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.57.0, src/pure/pdf/index.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.1, src/pure/pdf/index.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/index.ts
 import { pageSizePt } from './geometry';
 import { PdfWriter } from './writer';
@@ -24,6 +24,7 @@ export function renderPdf(doc: Block[], options: LayoutOptions): Uint8Array {
   const imgNames = new Map<Uint8Array, string>();
   for (const op of ops) {
     const pg = pages[op.page] || pages[pages.length - 1];
+    if (!pg) continue;
     if (op.kind === 'text') pg.text(op.x, op.y, op.str, op.fontKey, op.sizePt, op.rgb);
     else if (op.kind === 'line') pg.line(op.x1, op.y1, op.x2, op.y2, op.wPt, op.rgb);
     else if (op.kind === 'rect') pg.rect(op.x, op.y, op.w, op.h, op.rgb);

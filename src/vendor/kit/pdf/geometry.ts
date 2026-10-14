@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.57.0, src/pure/pdf/geometry.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.1, src/pure/pdf/geometry.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/geometry.ts
 // Pure PDF geometry helpers. No Obsidian, no DOM.
 export const PT_PER_MM = 2.8346456693;
@@ -21,6 +21,6 @@ export function yTopMmToPt(yMm: number, pageHPt: number): number {
 export function hexToRgb01(hex: string): [number, number, number] {
   const m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim());
   if (!m) return [0, 0, 0];
-  const n = parseInt(m[1], 16);
+  const n = parseInt(m[1] ?? '000000', 16);
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 }

@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.57.0, src/pure/pdf/wrap.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.1, src/pure/pdf/wrap.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/wrap.ts
 // Pure PDF line wrapping (AFM-accurate). No Obsidian, no DOM.
 // Ported from obsidian-letterhead/main.js
@@ -33,7 +33,7 @@ export function wrapRuns(runs: WrapRun[], maxWidthPt: number, sizePt: number): W
   const toks: Tok[] = [];
   for (const t of raw) {
     if (!t.space && widthOf(t) === 0) continue;
-    if (t.space && (toks.length === 0 || toks[toks.length - 1].space)) continue;
+    if (t.space && (toks.length === 0 || toks[toks.length - 1]?.space)) continue;
     toks.push(t);
   }
   const lines = [];
@@ -42,12 +42,12 @@ export function wrapRuns(runs: WrapRun[], maxWidthPt: number, sizePt: number): W
     const tw = widthOf(t);
     if (t.space) { if (cur.length === 0) continue; cur.push(t); curW += tw; continue; }
     if (curW + tw > maxWidthPt && cur.length > 0) {
-      while (cur.length && cur[cur.length - 1].space) curW -= widthOf(cur.pop()!);
+      while (cur.length && cur[cur.length - 1]?.space) curW -= widthOf(cur.pop()!);
       lines.push(cur); cur = []; curW = 0;
     }
     cur.push(t); curW += tw;
   }
-  if (cur.length) { while (cur.length && cur[cur.length - 1].space) cur.pop(); lines.push(cur); }
+  if (cur.length) { while (cur.length && cur[cur.length - 1]?.space) cur.pop(); lines.push(cur); }
   return lines.map((lineToks) => {
     const segs = []; let x = 0;
     for (const t of lineToks) {

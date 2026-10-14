@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.57.0, src/pure/pdf/layout.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.1, src/pure/pdf/layout.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/layout.ts
 import { mmToPt, pageSizePt, hexToRgb01 } from './geometry';
 import { textWidthPt } from './metrics';
@@ -103,9 +103,11 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
     for (let i = 0; i < items.length; i++) {
       const marker = ordered ? `${i + 1}.` : '•';
       const markerRun: Inline = { text: marker + '  ' };
-      const runs = [markerRun, ...items[i].inlines];
+      const item = items[i];
+      if (!item) continue;
+      const runs = [markerRun, ...item.inlines];
       emitInlines(runs, baseSize, null, TEXT, baseSize * 0.25, indent - mmToPt(6));
-      for (const child of (items[i].children || [])) {
+      for (const child of (item.children || [])) {
         if (child.type === 'list') renderListItems(child.items, child.ordered, level + 1);
         else renderBlockIndented(child, indent, TEXT);
       }
@@ -124,7 +126,7 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
     const byPage = new Map<number, { top: number; bot: number }>();
     for (let i = fromOp; i < ops.length; i++) {
       const o = ops[i];
-      if (o.kind !== 'text') continue;
+      if (!o || o.kind !== 'text') continue;
       const cur = byPage.get(o.page) || { top: -Infinity, bot: Infinity };
       cur.top = Math.max(cur.top, o.y + ASCENT * o.sizePt);
       cur.bot = Math.min(cur.bot, o.y);
@@ -162,7 +164,7 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
     const measure = (cells: { inlines: Inline[] }[]) => {
       for (let c = 0; c < cols; c++) {
         const txt = inlineText((cells[c] || { inlines: [] }).inlines);
-        natural[c] = Math.max(natural[c], textWidthPt(F.body, sz, txt) + mmToPt(4));
+        natural[c] = Math.max(natural[c] ?? 0, textWidthPt(F.body, sz, txt) + mmToPt(4));
       }
     };
     measure(header);
@@ -297,16 +299,16 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
           const rowBotY = rowTopY - rowH;
           let x = leftPt;
           for (let c = 0; c < cols.length; c++) {
-            if (headerRow) ops.push({ page, kind: 'rect', x, y: rowBotY, w: cols[c], h: rowH, rgb: hexToRgb01(options.colors.codeBg) });
+            if (headerRow) ops.push({ page, kind: 'rect', x, y: rowBotY, w: cols[c] ?? 0, h: rowH, rgb: hexToRgb01(options.colors.codeBg) });
             // cell text lines
-            const lines = wrapped[c];
+            const lines = wrapped[c] ?? [];
             for (let li = 0; li < lines.length; li++) {
               const ly = rowTopY - padPt - ASCENT * sz - li * sz * lineH;
-              for (const seg of lines[li].segments) T(x + padPt + seg.xPt, ly, seg.text, seg.fontKey, sz, TEXT);
+              for (const seg of lines[li]?.segments ?? []) T(x + padPt + seg.xPt, ly, seg.text, seg.fontKey, sz, TEXT);
             }
             // vertical border
             ops.push({ page, kind: 'line', x1: x, y1: rowBotY, x2: x, y2: rowTopY, wPt: 0.4, rgb: TBORDER });
-            x += cols[c];
+            x += cols[c] ?? 0;
           }
           // right border + horizontal borders
           ops.push({ page, kind: 'line', x1: x, y1: rowBotY, x2: x, y2: rowTopY, wPt: 0.4, rgb: TBORDER });
@@ -346,7 +348,7 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
           for (let li = 0; li < lns.length; li++) {
             const yy = advance(lineHt);
             if (li === 0) T(leftPt, yy, e.key, F.body, sz, MUTED); // key (muted) only on the first wrapped line
-            for (const seg of lns[li].segments) T(leftPt + keyW + seg.xPt, yy, seg.text, F.body, sz, TEXT);
+            for (const seg of lns[li]?.segments ?? []) T(leftPt + keyW + seg.xPt, yy, seg.text, F.body, sz, TEXT);
           }
         }
         // hairline rule separating metadata from the body
@@ -382,7 +384,10 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
     emitInlines([{ text: options.frame.title }], sz, () => F.bold, TEXT, baseSize * 0.7, 0);
   }
 
-  for (let i = 0; i < doc.length; i++) renderBlock(doc[i], doc[i + 1]);
+  for (let i = 0; i < doc.length; i++) {
+    const blk = doc[i];
+    if (blk) renderBlock(blk, doc[i + 1]);
+  }
 
   // Page numbers (footer, centred) — drawn after content so pageCount is known.
   if (options.frame.pageNumbers) {

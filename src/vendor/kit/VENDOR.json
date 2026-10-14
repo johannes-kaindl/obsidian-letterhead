@@ -1,10 +1,10 @@
 {
   "source": "obsidian-kit",
-  "version": "0.57.0",
-  "sha": "004fdb1",
+  "version": "0.60.1",
+  "sha": "4dfbd4e",
   "vendored": "pdf/*.ts, vault-path.ts",
-  "code_kit_version": "0.24.0",
-  "code_kit_sha": "c3117a3",
-  "code_kit_vendored": "filename-template.ts",
+  "code_kit_version": "0.27.1",
+  "code_kit_sha": "ac89f10",
+  "code_kit_vendored": "filename-template.ts, data-url.ts",
   "note": "Verbatim snapshot aus ZWEI Quellen. Never hand-edit. Re-vendor via tools/sync-kit.sh (liest aus den Tag-Refs 0.30.0 bzw. 0.5.0, gepeelt mit ^{commit}). Seit obsidian-kit 2ab1bb5 liegt die domaenenfreie pure-Teilmenge in code-kit; der Kopf jeder Datei nennt ihre Herkunft."
 }

@@ -1,4 +1,6 @@
-// vendored from obsidian-kit@0.57.0, src/pure/pdf/image.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.60.1, src/pure/pdf/image.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+import { dataUrlToBytes } from '../data-url';
+
 /* ------------------------------------------------------------------ *
  *  Image · Rasterung (Runtime: Image/canvas) → JPEG-Bytes
  * ------------------------------------------------------------------ */
@@ -38,10 +40,7 @@ export async function imageToJpeg(
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, wPx, hPx);
     ctx.drawImage(img, 0, 0, wPx, hPx);
-    const b64 = canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
-    const bin = atob(b64);
-    const data = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) data[i] = bin.charCodeAt(i);
+    const data = dataUrlToBytes(canvas.toDataURL('image/jpeg', 0.92));
     return { data, wPx, hPx };
   } catch (e) {
     console.error('obsidian-kit: image rasterization failed', e);

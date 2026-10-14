@@ -1,10 +1,10 @@
 {
   "sources": {
     "obsidian-kit": {
-      "ref": "0.57.0"
+      "ref": "0.60.1"
     },
     "code-kit": {
-      "ref": "0.24.0"
+      "ref": "0.27.1"
     }
   },
   "targets": [
@@ -12,7 +12,13 @@
       "dir": "src/vendor/kit/pdf",
       "source": "obsidian-kit",
       "fromDir": "src/pure/pdf",
-      "vendorJson": "src/vendor/kit"
+      "vendorJson": "src/vendor/kit",
+      "rewrite": [
+        [
+          "../../vendor/code-kit/pure/",
+          "../"
+        ]
+      ]
     },
     {
       "dir": "src/vendor/kit",
@@ -27,7 +33,8 @@
       "source": "code-kit",
       "from": "src/ts/pure",
       "modules": [
-        "filename-template"
+        "filename-template",
+        "data-url"
       ]
     },
     {
