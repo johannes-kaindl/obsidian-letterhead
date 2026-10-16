@@ -104,6 +104,7 @@ const PUNKTE = [
   'G2 zweiter Export überschreibt nicht, sondern zählt hoch',
   'G3 Dateiname folgt dem Schema {datum} {empfaenger}',
   'G4 customFolder legt den Zielordner an und schreibt hinein',
+  'G5 Ausgabeordner-Feld schlägt vorhandene Ordner vor',
   'H1 Vorschau-Modal öffnet',
   'H2 Vorschau paginiert in Blätter',
   'H3 Falz- und Lochmarken sind gezeichnet',
@@ -561,7 +562,40 @@ async function pruefeMehrseitig(cdp: Cdp, vaultDir: string): Promise<void> {
   record('F2 erster, mittlerer und letzter Absatz sind da', bilanz.ok, bilanz.detail);
 }
 
-async function pruefeAblage(cdp: Cdp, vaultDir: string): Promise<void> {
+/** Öffnet den Einstellungs-Tab und liest die Vorschläge des Ausgabeordner-Felds. Unter Obsidian 1.13+ steht der
+ *  Tab je nach Lage im Hauptfenster (`.modal.mod-settings`) oder in einem eigenen Fenster (`about:blank`);
+ *  im zweiten Fall sieht das Hauptfenster ihn nicht. */
+async function messeOrdnerFeld(cdp: Cdp, port: number, vault: string): Promise<{ feld: boolean; items: string[] }> {
+  await cdp.evaluate(`
+    app.setting.open();
+    await new Promise((r) => setTimeout(r, 500));
+    app.setting.openTabById(${JSON.stringify(PLUGIN_ID)});
+    await new Promise((r) => setTimeout(r, 1200));
+    return true;
+  `);
+  const alsModal = await cdp.evaluate<boolean>(`return Boolean(document.querySelector('.modal.mod-settings'));`);
+  const fenster = alsModal ? cdp : await attachTo('settings', port, vault);
+  try {
+    if (!fenster) return { feld: false, items: [] };
+    const findeFeld = `[...document.querySelectorAll('input[type="text"]')].find((i) => i.placeholder.startsWith('Export/'))`;
+    const feldDa = await pollUntil<boolean>(fenster, `return ${findeFeld} ? true : null;`, 8_000, 250);
+    if (feldDa !== true) return { feld: false, items: [] };
+    return await fenster.evaluate<{ feld: boolean; items: string[] }>(`
+      const feld = ${findeFeld};
+      feld.focus();
+      feld.value = '';
+      feld.dispatchEvent(new Event('input'));
+      await new Promise((r) => setTimeout(r, 400));
+      const items = [...document.querySelectorAll('.suggestion-container .suggestion-item')].map((e) => e.textContent);
+      return { feld: true, items };
+    `);
+  } finally {
+    if (fenster && fenster !== cdp) fenster.close();
+    await cdp.evaluate(`app.setting.close(); await new Promise((r) => setTimeout(r, 300)); return true;`).catch(() => undefined);
+  }
+}
+
+async function pruefeAblage(cdp: Cdp, vaultDir: string, port: number, vault: string): Promise<void> {
   console.log('\nG · Ablage und Dateiname');
 
   // nextToNote aus einem Unterordner — die Pfad-Fügung, die seit 1.6.5 aus dem Kit kommt.
@@ -608,6 +642,16 @@ async function pruefeAblage(cdp: Cdp, vaultDir: string): Promise<void> {
     'G4 customFolder legt den Zielordner an und schreibt hinein',
     daC,
     daC ? 'Export/Briefe/Smoke.pdf' : `nicht angelegt · Notice: ${noticeC || '(keine)'}`,
+  );
+
+  // Das Feld „Custom folder“ ist ein Ordner-Feld mit Vorschlägen (Kit-FolderSuggest), kein freies
+  // Textfeld. G4 hat `Export/Briefe` eben angelegt: leeres Feld fokussieren, der Vorschlag muss ihn nennen.
+  // Erst die Existenz des Feldes belegen, dann die Vorschläge messen.
+  const vorschlag = await messeOrdnerFeld(cdp, port, vault);
+  record(
+    'G5 Ausgabeordner-Feld schlägt vorhandene Ordner vor',
+    vorschlag.feld && vorschlag.items.includes('Export/Briefe'),
+    vorschlag.feld ? `${vorschlag.items.length} Vorschläge: ${vorschlag.items.slice(0, 5).join(', ')}` : 'Feld mit Platzhalter "Export/…" nicht gefunden (8 s)',
   );
 }
 
@@ -763,7 +807,7 @@ async function main(): Promise<void> {
     await pruefeFrontmatter(cdp, vaultDir);
     await pruefeDegradation(cdp, vaultDir);
     await pruefeMehrseitig(cdp, vaultDir);
-    await pruefeAblage(cdp, vaultDir);
+    await pruefeAblage(cdp, vaultDir, port, vaultFilter);
     await pruefeVorschau(cdp);
 
     skipped(

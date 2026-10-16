@@ -151,7 +151,7 @@ export class LetterheadSettingTab extends PluginSettingTab {
           // but always visible is a trap (spec: deliberately unlike paperize).
           { name: t('set_outfolder'), desc: t('set_outfolder_desc'),
             visible: () => s.outputMode === 'customFolder',
-            control: { type: 'text', key: 'outputFolder', placeholder: t('ph_outfolder') } },
+            control: { type: 'folder', key: 'outputFolder', placeholder: t('ph_outfolder') } },
           // The placeholder list is generated from PLACEHOLDERS rather than
           // written into the description string (yijing-oracle's hand-kept list
           // had drifted from the values it actually substitutes).

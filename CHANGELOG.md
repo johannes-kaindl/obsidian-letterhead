@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- **"Custom folder" suggests folders.** The output folder field (mode "Custom folder") offers the folders of your vault while you type, like the same setting in the other plugins. Typing a path that does not exist yet still works.
+
 ## [1.9.0] — 2026-10-14
 
 ### Added
