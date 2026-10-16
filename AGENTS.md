@@ -1,7 +1,7 @@
 # AGENTS.md — obsidian-letterhead
 
 > **Workspace-Standards (maintainer-lokal):** Die verbindliche Leitkonvention steht in `_docs/CONVENTIONS.md`
-> im Multi-Projekt-Workspace des Maintainers, `../../_docs` relativ zu diesem Repo — nicht Teil dieses Repos,
+> im Multi-Projekt-Workspace des Maintainers, `../../workspace/_docs` relativ zu diesem Repo — nicht Teil dieses Repos,
 > ignorieren falls im Klon nicht vorhanden. Modell comply-or-explain. Begründete Abweichungen
 > stehen unten unter „Abweichungen von der Leitkonvention".
 
@@ -139,7 +139,7 @@ dem getaggten Commit, nicht eine committete Kopie.
 - Frontmatter-Felder deutsch-first mit Aliassen (`docs/reference/frontmatter.md`).
 - Doku ist zweisprachig: Änderungen immer in **beiden** Sprachen pflegen
   (EN `*.md` + DE `*.de.md`), sonst driften die Versionen auseinander.
-- Workspace-weite Standards: `_docs/CONVENTIONS.md` im Maintainer-Workspace (`../../_docs`, siehe Kopf dieser Datei).
+- Workspace-weite Standards: `_docs/CONVENTIONS.md` im Maintainer-Workspace (`../../workspace/_docs`, siehe Kopf dieser Datei).
 
 ## Gotchas
 
