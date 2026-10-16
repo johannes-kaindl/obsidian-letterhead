@@ -54,7 +54,15 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 
 Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead) (canonical: [git.jkaindl.de/jkaindl/obsidian-letterhead](https://git.jkaindl.de/jkaindl/obsidian-letterhead))
 
-### With AnySource Sideloader (recommended)
+### From Obsidian's Community plugins browser (recommended)
+
+Letterhead is listed in the Community plugins browser:
+
+1. Open **Settings → Community plugins → Browse**.
+2. Search for **"Letterhead"** and select **Install**.
+3. **Enable** Letterhead, then fill in your sender profile in the settings.
+
+### Alternative: AnySource Sideloader
 
 [AnySource Sideloader](https://github.com/johannes-kaindl/anysource-sideloader) installs and
 updates plugins from any git forge, independent of the Community Store.
@@ -70,14 +78,6 @@ updates plugins from any git forge, independent of the Community Store.
 3. Install Letterhead, then fill in your sender profile in the settings.
 
 Updates then arrive the same way any other plugin update does.
-
-### From Obsidian's Community plugins browser
-
-Once Letterhead is listed in the Community plugins browser:
-
-1. Open **Settings → Community plugins → Browse**.
-2. Search for **"Letterhead"** and select **Install**.
-3. **Enable** Letterhead, then fill in your sender profile in the settings.
 
 ### Manual install
 

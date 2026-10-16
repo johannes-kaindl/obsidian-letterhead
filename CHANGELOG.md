@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Changed
+- **README: the install section no longer says Letterhead is not yet listed.** Letterhead is in the Community plugins browser, which is now the recommended way; AnySource Sideloader stays as an alternative. Same change in the German README.
 - **"Custom folder" suggests folders.** The output folder field (mode "Custom folder") offers the folders of your vault while you type, like the same setting in the other plugins. Typing a path that does not exist yet still works.
 
 ## [1.9.0] — 2026-10-14

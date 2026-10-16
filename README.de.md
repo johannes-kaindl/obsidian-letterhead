@@ -53,7 +53,15 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 
 Repository: [github.com/johannes-kaindl/obsidian-letterhead](https://github.com/johannes-kaindl/obsidian-letterhead) (kanonisch: [git.jkaindl.de/jkaindl/obsidian-letterhead](https://git.jkaindl.de/jkaindl/obsidian-letterhead))
 
-### Mit AnySource Sideloader (empfohlen)
+### Aus dem Community-Plugin-Verzeichnis (empfohlen)
+
+Letterhead ist im Community-Plugin-Verzeichnis gelistet:
+
+1. **Einstellungen → Community-Plugins → Durchsuchen** öffnen.
+2. Nach **„Letterhead"** suchen und **Installieren** wählen.
+3. Letterhead **aktivieren**, dann das Absender-Profil in den Einstellungen ausfüllen.
+
+### Alternative: AnySource Sideloader
 
 [AnySource Sideloader](https://github.com/johannes-kaindl/anysource-sideloader) installiert und
 aktualisiert Plugins von beliebigen Git-Forges, unabhängig vom Community-Store.
@@ -69,14 +77,6 @@ aktualisiert Plugins von beliebigen Git-Forges, unabhängig vom Community-Store.
 3. Letterhead installieren, dann das Absender-Profil in den Einstellungen ausfüllen.
 
 Updates kommen danach wie bei jedem anderen Plugin.
-
-### Aus dem Community-Plugin-Verzeichnis
-
-Sobald Letterhead im Community-Plugin-Verzeichnis gelistet ist:
-
-1. **Einstellungen → Community-Plugins → Durchsuchen** öffnen.
-2. Nach **„Letterhead"** suchen und **Installieren** wählen.
-3. Letterhead **aktivieren**, dann das Absender-Profil in den Einstellungen ausfüllen.
 
 ### Manuelle Installation
 
