@@ -60,6 +60,7 @@ import { cwd } from 'node:process';
 
 import { createBilanz, parseArgs, runDriver } from '../../tools/obsidian-cdp/bilanz.js';
 import { Cdp, attachTo, beimAbbruch, bereiteInstanzVor, clearNotices, closeExtraLeaves, istAbgebrochen, notices, openExisting, pollUntil, requireVisible, schliesseDialog } from '../../tools/obsidian-cdp/cdp.js';
+import { beurteileTeilen, gegenprobeAntwort, loeseExportAus, raeumeOrdnerAuf, stelleOrdnerHer, stubAn, stubAus, type TeilenBeobachtung, type TeilenTeilurteil } from '../../tools/obsidian-cdp/teilen.js';
 import { buildVault, requireEigenerBuild, stagingVaultDir } from '../../tools/obsidian-cdp/vault.js';
 
 const REPO_NAME = 'obsidian-letterhead';
@@ -108,6 +109,10 @@ const PUNKTE = [
   'H1 Vorschau-Modal öffnet',
   'H2 Vorschau paginiert in Blätter',
   'H3 Falz- und Lochmarken sind gezeichnet',
+  'I1 Teilen: Fremddatei im Export-Ordner löst die Rückfrage aus, „Keep them“ lässt sie liegen',
+  'I2 Teilen: „Delete them“ löscht die Fremddatei, eigene Reste verschwinden in beiden Fällen',
+  'I3 Teilen: ohne Fremddatei keine Rückfrage, die Datei geht an die Standard-App (Stub)',
+  'I4 Teilen: die Antwort auf die Rückfrage entscheidet (Gegenprobe zu I1 und I2)',
   'Desktop-Druckpfad (letterhead:export-letter)',
   'iOS-Share-Kaskade (navigator.canShare → share → openWithDefaultApp)',
   'SVG-Logo im Briefkopf',
@@ -728,6 +733,58 @@ function setupVault(): void {
   console.log(`  open "obsidian://open?path=${encodeURIComponent(join(vaultDir, 'Smoke.md'))}"`);
 }
 
+/* ------------------------------------------------------------------ Teilen */
+
+const TEILEN_ORDNER = '.letterhead-export';
+
+/** Urteil der Brücke (`gruen`/`rot`/`nichts-gemessen`) in die Bilanz übertragen: „nichts gemessen“ ist kein Rot und kein Grün. */
+function zeichne(name: (typeof PUNKTE)[number], u: TeilenTeilurteil): void {
+  if (u.urteil === 'nichts-gemessen') unmeasured(name, u.detail);
+  else record(name, u.urteil === 'gruen', u.detail);
+}
+
+/** Der Teilen-Weg (`outputMode: 'share'`): die Datei geht in den versteckten Export-Ordner und dann an die Standard-App. Auf dem
+ *  Desktop wäre das ein fremdes Fenster; der Stub aus der Brücke fängt den Aufruf ab. Prüfung und Stub liegen in
+ *  `tools/obsidian-cdp/teilen.ts` (Dach, Welle 24), hier bleiben Notiz, Befehl und erwarteter Dateiname. */
+async function pruefeTeilen(cdp: Cdp, vaultDir: string): Promise<void> {
+  console.log('\nI · Teilen-Modus (Fremddatei im Export-Ordner)');
+
+  const notiz = 'Smoke.md';
+  const erwartung = { exportName: 'Smoke.pdf', exportPfad: `${TEILEN_ORDNER}/Smoke.pdf` };
+  const fall = async (mitFremd: boolean, antwort: 'loeschen' | 'behalten'): Promise<TeilenBeobachtung> => {
+    // Ausgangszustand VOR dem Lauf, nicht erst im `finally` (CORE-TEST-21).
+    const stand = stelleOrdnerHer(vaultDir, TEILEN_ORDNER, { mitFremddatei: mitFremd });
+    await clearNotices(cdp);
+    const offen = await openExisting(cdp, notiz, 'preview');
+    if (!offen) throw new Error(`Notiz ließ sich nicht öffnen oder rendern: ${notiz}`);
+    await closeExtraLeaves(cdp);
+    const lauf = await loeseExportAus(cdp, { befehl: `${PLUGIN_ID}:export-letter-pdf`, antwort });
+    await new Promise((r) => setTimeout(r, 400));
+    return { vorher: stand.vorher, nachher: readdirSync(stand.ordner).sort(), lauf };
+  };
+
+  const stub = await stubAn(cdp);
+  try {
+    await setSettings(cdp, { outputMode: 'share', filenameTemplate: '{notiz}' });
+    if (!stub.aktiv) {
+      const grund = 'Stub für openWithDefaultApp/canShare nicht aktiv — Fälle nicht hergestellt';
+      for (const n of PUNKTE.filter((p) => p.startsWith('I'))) unmeasured(n, grund);
+      return;
+    }
+    const behalten = await fall(true, 'behalten');
+    const loeschen = await fall(true, 'loeschen');
+    const still = await fall(false, 'loeschen');
+    zeichne('I1 Teilen: Fremddatei im Export-Ordner löst die Rückfrage aus, „Keep them“ lässt sie liegen', beurteileTeilen('behalten', behalten, erwartung));
+    zeichne('I2 Teilen: „Delete them“ löscht die Fremddatei, eigene Reste verschwinden in beiden Fällen', beurteileTeilen('loeschen', loeschen, erwartung));
+    zeichne('I3 Teilen: ohne Fremddatei keine Rückfrage, die Datei geht an die Standard-App (Stub)', beurteileTeilen('still', still, erwartung));
+    zeichne('I4 Teilen: die Antwort auf die Rückfrage entscheidet (Gegenprobe zu I1 und I2)', gegenprobeAntwort(behalten, loeschen, {}));
+  } finally {
+    const ende = await stubAus(cdp);
+    if (!ende.wiederhergestellt) warnungen.push('Teilen-Stub nicht wiederhergestellt (openWithDefaultApp/canShare)');
+    if (!raeumeOrdnerAuf(vaultDir, TEILEN_ORDNER)) warnungen.push(`${TEILEN_ORDNER} ließ sich nicht entfernen`);
+  }
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.has('setup')) {
@@ -809,6 +866,7 @@ async function main(): Promise<void> {
     await pruefeMehrseitig(cdp, vaultDir);
     await pruefeAblage(cdp, vaultDir, port, vaultFilter);
     await pruefeVorschau(cdp);
+    await pruefeTeilen(cdp, vaultDir);
 
     skipped(
       'Desktop-Druckpfad (letterhead:export-letter)',
@@ -816,7 +874,7 @@ async function main(): Promise<void> {
     );
     skipped(
       'iOS-Share-Kaskade (navigator.canShare → share → openWithDefaultApp)',
-      'plattformgebunden, auf dem Desktop nicht erreichbar — Geräte-Gegenprobe',
+      'der Desktop-Teil der Kaskade (canShare falsch → openWithDefaultApp) läuft in I1–I4 gegen einen Stub; `navigator.share()` und das System-Share-Sheet gibt es nur auf dem Gerät — Geräte-Gegenprobe',
     );
     skipped(
       'SVG-Logo im Briefkopf',

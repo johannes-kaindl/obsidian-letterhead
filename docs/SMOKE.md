@@ -49,8 +49,8 @@ weitere CDP-Kommunikation; der Lauf hinge, und niemand sähe warum. Gemessen wir
 stattdessen `letterhead:export-letter-pdf` (`exportViaPdf`) — dieselbe Vektor-Engine, ohne
 Dialog. Der Druckpfad bleibt Handarbeit und steht als übersprungener Punkt im Protokoll.
 
-Ebenfalls übersprungen und im Lauf begründet: die iOS-Share-Kaskade
-(`navigator.canShare` → `share` → `openWithDefaultApp`, plattformgebunden) und das
+Ebenfalls übersprungen und im Lauf begründet: die iOS-Share-Kaskade (`navigator.share()` und das System-Share-Sheet,
+plattformgebunden; der Desktop-Teil `canShare` falsch → `openWithDefaultApp` läuft in I1–I4 gegen einen Stub) und das
 SVG-Logo im Briefkopf — auf iOS taintet WebKit dort das Canvas (bekannter, vorbestehender
 Bug), auf dem Desktop rastert Chromium korrekt. Ein grüner Punkt auf dem Desktop würde die
 Grenze verdecken statt sie zu messen.
@@ -93,6 +93,7 @@ instanzgebunden. Dann warten.
 | **F · Mehrseitigkeit** | Umbruch auf mehrere Seiten · erster, mittlerer und letzter Absatz sind da |
 | **G · Ablage** | `nextToNote` im Unterordner · zweiter Export zählt hoch statt zu überschreiben · Dateiname folgt `{datum} {empfaenger}` · `customFolder` legt den Zielordner an |
 | **H · Vorschau** | Modal öffnet · paginiert in `.bk-sheet` · Falz- und Lochmarken gezeichnet |
+| **I · Teilen** | Fremddatei im Export-Ordner löst die Rückfrage aus, „Keep them“ lässt sie liegen · „Delete them“ löscht sie · ohne Fremddatei keine Rückfrage, die Datei geht einmal an die (Stub-)Standard-App · Gegenprobe: die Antwort entscheidet. Prüfung und Stub liegen in `tools/obsidian-cdp/teilen.ts` im Dach |
 
 **Nicht mechanisch geprüft und deshalb weiter Handarbeit:** wie der Brief *aussieht* — die
 DIN-Maße am Fensterkuvert, Grauwert, Umbruchästhetik, Logo-Platzierung. Dafür bleibt der
@@ -104,6 +105,7 @@ Blick aufs Papier (siehe `tools/render-hero.sh`).
 |---|---|---|---|
 | 2026-09-02 | 1.13.7 | **33/33 grün**, 3 begründet übersprungen | **32/33 — genau E4 rot** |
 | 2026-09-02 (Kit 0.30.0) | 1.13.7 | **34/34 grün** | **33/34 — genau D4 rot** |
+| 2026-10-18 (Teilen I1–I4) | 1.14.4 | **40 grün · 0 rot · 3 übersprungen · 0 nichts gemessen** von 43 (davor 36 von 39) | **38 grün · 2 rot — genau I1 und I4** (in `share-export.ts` die Zeile `if (!clear) return;` ausgebaut, danach zurückgesetzt und neu gebaut: wieder 40 grün) |
 
 **Zur Gegenprobe vom 2026-09-02:** ausgebaut wurde die Leerzeilen-Polsterung in
 `extractCodeBlocks` (`src/vendor/kit/pdf/code-blocks.ts`) — der Fix, der den
