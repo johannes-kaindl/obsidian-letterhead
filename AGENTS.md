@@ -1,97 +1,23 @@
 # AGENTS.md — obsidian-letterhead
 
-> **Workspace-Standards (maintainer-lokal):** Die verbindliche Leitkonvention steht in `_docs/CONVENTIONS.md`
-> im Multi-Projekt-Workspace des Maintainers, `../../workspace/_docs` relativ zu diesem Repo — nicht Teil dieses Repos,
-> ignorieren falls im Klon nicht vorhanden. Modell comply-or-explain. Begründete Abweichungen
-> stehen unten unter „Abweichungen von der Leitkonvention".
+> **Workspace-Standards (maintainer-lokal):** Die verbindliche Leitkonvention steht in `_docs/CONVENTIONS.md` im Multi-Projekt-Workspace des Maintainers, `../../workspace/_docs` relativ zu diesem Repo — nicht Teil dieses Repos, ignorieren falls im Klon nicht vorhanden. Modell comply-or-explain. Begründete Abweichungen stehen unten unter „Abweichungen von der Leitkonvention".
 
 Conventions for AI agents (Claude Code, Codex, …) working on this repository.
 
 ## Project character
 
-Obsidian-Plugin „Letterhead": macht aus der aktiven Notiz einen formatierten
-Geschäftsbrief (DIN 5008 Form A/B + „Modern"-Theme) und exportiert ihn über den
-OS-Druckdialog als PDF — Desktop **und iOS**. TypeScript + `esbuild`-Build (`src/`
-→ `main.js`), ohne Laufzeit-Abhängigkeiten; `main.js` ist Build-Output (gitignored,
-nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
+Obsidian-Plugin „Letterhead": macht aus der aktiven Notiz einen formatierten Geschäftsbrief (DIN 5008 Form A/B + „Modern"-Theme) und exportiert ihn über den OS-Druckdialog als PDF — Desktop **und iOS**. TypeScript + `esbuild`-Build (`src/` → `main.js`), ohne Laufzeit-Abhängigkeiten; `main.js` ist Build-Output (gitignored, nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
 
 - **Plugin-ID:** `letterhead` (deployed unter `.obsidian/plugins/letterhead/`).
 - **Test-Vault:** `$VAULT/` (Obsidian-Vault des Maintainers, CORE-META-14-Platzhalter).
 
 ## Architecture principles
 
-- Kein Electron-/Node-API zur Laufzeit → mobil-tauglich. Nur Obsidian-API +
-  Browser-APIs im gebauten `main.js`.
-- Reine Funktionen (`src/core/*`, `src/vendor/kit/pdf/*`) sind frei von
-  Obsidian-Imports und damit isoliert mit `vitest` testbar (PROF-OBS-04). Die Grenze
-  wird von `npm run check:pure` erzwungen (kein `obsidian`-Import in `src/core` oder
-  `src/vendor`). **Das ist ein Script (`scripts/check-pure.mjs`), kein grep-Einzeiler:**
-  der frühere Einzeiler matchte nur `from 'obsidian'` mit einfachen Anführungszeichen —
-  dem Repo-Stil. Das vendored Kit schreibt teils doppelte, womit das Gate blind war für
-  genau den Fremdcode, den es prüft (gemessen im drift-audit 2026-08-05: Verstoß mit
-  doppelten Quotes lief grün durch). Wer es anfasst: gegen einen echten Verstoß in
-  **beiden** Quote-Stilen laufen lassen und den Exit-Code prüfen.
-- Styling ausschließlich über CSS Custom Properties (Design-Tokens): Geometrie ist
-  DIN-kritisch (Fensterkuvert), Typo/Farbe/Spacing frei. Token-Referenz:
-  `docs/reference/theming.md`.
-- Export ist plattformabhängig (`Platform.isDesktopApp`, die **einzige** Platform-Abfrage
-  in `src/`): **Desktop** = `doPrint()` → `window.print()` + `@media print` (blendet die
-  Obsidian-DOM aus, schreibt keine Datei — der OS-Druckdialog übernimmt). **iOS/iPad** =
-  `window.print()` ist dort wirkungslos, daher baut `exportViaPdf()` das Vektor-PDF und
-  `writePdf()` (`src/obsidian/output.ts`) reicht es weiter: Datei in den versteckten
-  Export-Ordner `.letterhead-export/`, dann **capability**-gegatete Kaskade
-  `navigator.canShare({files})` → `navigator.share()` (Ein-Tipp-Share-Sheet) → sonst
-  `app.openWithDefaultApp()`. Keine Netzwerkzugriffe, keine Telemetrie, externe Assets
-  nur als `data:`-URL (Logo).
-  > **Historisch:** Bis 1.3.0 schrieb `exportViaShare()` hier ein eigenständiges HTML
-  > (`buildStandaloneDoc`) für den Quick-Look-Umweg. Die Methode **existiert seit 1.4.0
-  > nicht mehr**; Mobile ist seither immer Vektor-PDF (Degradation statt Fallback).
-  > ⚠️ `buildStandaloneDoc` ist deshalb **kein Löschkandidat** — hier stand bis 2026-09-02
-  > das Gegenteil („wird von keinem Export-Pfad mehr aufgerufen"). Der Satz stimmte für
-  > genau eine Version: 1.4.1 hat den **Desktop**-Druck darauf umgestellt
-  > (`html-engine.ts:456`, `frame.srcdoc = buildStandaloneDoc(...)`, plus zwei Tests) —
-  > der Gotcha zum iframe-Druck weiter unten beschreibt denselben Aufruf. Eine
-  > Herkunftsnotiz altert mit dem Code, den sie beschreibt.
-- **Vektor-PDF-Export (ab 1.3.0, seit 1.4.0 mit reichen Bodies):** Die Engine ist das
-  vendorte, geteilte Kit `src/vendor/kit/pdf/` (nicht mehr ein In-`main.js`-Writer) —
-  erzeugt ein echtes, textselektierbares Vektor-PDF (PDF 1.7, Adobe-Core-14-
-  Standardschriften, WinAnsi mit Umlauten/€) ohne Fremdbibliothek für PDF. Auf Mobile
-  teilt `exportViaPdf()` es per `navigator.share()` (ein Tipp), sonst
-  `openWithDefaultApp()`. Reine, Obsidian-freie Schichten unter `src/vendor/kit/pdf/`:
-  `writer`/`encoding` (Byte-Writer), `layout`/`geometry` (DIN-Geometrie → Draw-Ops,
-  AFM-Metriken via `metrics`), `ir` (Body-IR) — gefüttert aus `src/vendor/kit/pdf/dom-to-ir.ts`
-  (`domToIrSync`, Nachfolger von `walkBodyNodes`). Tabellen, eingebettete Bilder, Code-Blöcke und
-  mehrseitige Paginierung werden seit 1.4.0 direkt im Vektor-PDF gerendert (Degradation
-  bei nicht unterstützten Elementen). **Kein HTML/Quick-Look-Fallback mehr:** das Setting
-  `mobileExport` wurde von keinem Codepfad gelesen; die UI-Zeile entfiel 1.4.0, der
-  Schlüssel selbst fällt seit 1.9.0 aus `DEFAULT_SETTINGS`, `loadSettings` löscht einen
-  gespeicherten Wert (inkl. `'print'`) beim Laden. Die Engine selbst zieht keine
-  Laufzeit-Dependency, aber das Bündeln erfolgt über den `esbuild`-Build — `main.js` ist
-  Build-Output, nicht committete Quelle.
-- **Der Vendor-Baum stammt aus ZWEI Quellen (seit 2026-09-02).** `src/vendor/kit/pdf/*` und
-  `vault-path.ts` kommen aus `obsidian-kit`, `filename-template.ts` aus **`code-kit`** — seit
-  obsidian-kit `2ab1bb5` liegt die domänenfreie pure-Teilmenge in einem eigenen Repo, und ein
-  Lauf, der sie weiter unter `obsidian-kit/src/pure/` sucht, findet sie nicht mehr.
-  `src/vendor/kit/VENDOR.json` führt deshalb **beide** Pins; der Kopf jeder vendorten Datei
-  nennt ihre Herkunft. `tools/sync-kit.sh` liest per `git show <ref>:<pfad>` aus den Tag-Refs
-  (CORE-META-22), nie aus dem Arbeitsstand des Nachbar-Repos, und prüft **alle** Quellpfade,
-  bevor es die erste Datei schreibt — sonst bliebe bei einem Abbruch mitten im Lauf eine Datei
-  zurück, die den „do not hand-edit"-Kopf trägt und darunter leer ist.
-  ⚠️ **`^{commit}` ist bei code-kit nicht optional:** dessen Tags sind **annotiert**, ein
-  ungepeeltes `rev-parse 0.5.0` liefert die SHA des Tag-Objekts, die in `git log` der Quelle
-  null mal vorkommt. obsidian-kit taggt leichtgewichtig, dort fällt das Fehlen nicht auf —
-  genau deshalb ist es in einem Nachbar-Repo einmal untergegangen.
-- **Der Degradations-Platzhalter folgt der BRIEFsprache, nicht der Oberflächensprache.**
-  `[Formel]`/`[Grafik]` bzw. `[Formula]`/`[Graphic]` stehen in `LETTER_LABELS`
-  (`src/core/model.ts`) neben „Anlagen"/„Enclosures", nicht in `src/i18n/strings.ts`: sie
-  werden **gedruckt**. Ein deutsches Obsidian kann einen englischen Brief setzen — dort wäre
-  ein `[Grafik]` neben `Enclosures` ein Sprachbruch. Kit 0.30.0 reicht die Texte über
-  `domToIrSync(el, { placeholders })` durch, statt sie in der puren Schicht festzuschreiben;
-  ein i18n-Import dort hätte genau die Kopplung hereingeholt, gegen die `check:pure` läuft.
-  **Bedingung, an der das hängt:** Prüfpunkt **D4** des GUI-Smoke ist der einzige, der die
-  Verdrahtung misst — im deutschen Brief liefert der Kit-Default denselben Text, ein
-  weggefallenes `placeholders` bliebe dort unsichtbar. Wer das Fixture `Smoke-Englisch.md`
-  um sein rohes SVG erleichtert, nimmt dem Punkt seinen Gegenstand.
+- Kein Electron-/Node-API zur Laufzeit → mobil-tauglich. Nur Obsidian-API + Browser-APIs im gebauten `main.js`.
+- Reine Funktionen (`src/core/*`, `src/vendor/kit/pdf/*`) sind frei von Obsidian-Imports und damit isoliert mit `vitest` testbar (PROF-OBS-04). `npm run check:pure` (Script `scripts/check-pure.mjs`) erzwingt die Grenze.
+- Styling ausschließlich über CSS Custom Properties (Design-Tokens): Geometrie ist DIN-kritisch (Fensterkuvert), Typo/Farbe/Spacing frei. Token-Referenz: `docs/reference/theming.md`.
+- Der Export ist plattformabhängig: **Desktop** druckt über `doPrint()` aus einem eigenen iframe (OS-Druckdialog, keine Datei), **iOS/iPad** baut mit `exportViaPdf()` ein Vektor-PDF. `Platform.isDesktopApp` ist das Gate für `doPrint` (die einzige Stelle, die zwischen Druckdialog und Vektor-PDF wählt; `Platform.isMobile` steuert nur das anschließende Teilen in `writePdf`), und `doPrint` darf nur hinter ihr aufgerufen werden. Die Vektor-Engine ist das vendorte Kit `src/vendor/kit/pdf/`. Aufbau beider Wege: `docs/internal/architecture.md`.
+- Keine Netzwerkzugriffe, keine Telemetrie, externe Assets nur als `data:`-URL (Logo).
 
 ## Commands
 
@@ -105,109 +31,50 @@ npm run check:pure        # kein `from 'obsidian'`-Import in src/core, src/vendo
 npm run gate              # typecheck && typecheck:test && typecheck:scripts && test && check:pure && lint && build
 npm run smoke:gui         # GUI-Smoke gegen ein laufendes Obsidian — siehe docs/SMOKE.md
 npm run deploy            # build, dann cp manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
+sh tools/sync-kit.sh      # Kit neu vendoren (Pins in tools/kit-sync.json); --check vergleicht nur
 ```
 
 Manuelles Deploy-Ziel: `<vault>/.obsidian/plugins/letterhead/`.
 
-**`smoke:gui` braucht ein laufendes Obsidian und den CDP-Lock** (`--exclusive focus`, weil
-der Treiber das Fenster nach vorn holt). Der Staging-Vault entsteht aus dem getrackten
-Fixture: `npm run build && npm run smoke:gui -- --setup`. Prüfpunkte, übersprungene Punkte
-und die Durchlauf-Tabelle stehen in `docs/SMOKE.md`. Der Treiber löst ausschließlich
-`letterhead:export-letter-pdf` aus — nie `letterhead:export-letter`, der auf dem Desktop
-den OS-Druckdialog öffnet und damit jede weitere CDP-Kommunikation blockiert.
+**`smoke:gui` braucht ein laufendes Obsidian und den CDP-Lock** (`--exclusive focus`, weil der Treiber das Fenster nach vorn holt). Der Staging-Vault entsteht aus dem getrackten Fixture: `npm run build && npm run smoke:gui -- --setup`. Prüfpunkte, übersprungene Punkte und die Durchlauf-Tabelle stehen in `docs/SMOKE.md`. Der Treiber löst ausschließlich `letterhead:export-letter-pdf` aus — nie `letterhead:export-letter`, der auf dem Desktop den OS-Druckdialog öffnet und damit jede weitere CDP-Kommunikation blockiert.
 
 ## Releasing
 
-Releases erzeugt **GitHub Actions** (`.github/workflows/release.yml`), getriggert durch
-einen Tag-Push, der GitHub erreicht: `git push github <tag>` (Tag ohne v-Präfix). Der
-Workflow checkt den Tag aus, führt `npm ci` + `npm run gate` aus (baut also `main.js`
-frisch aus `src/`) und erstellt das GitHub-Release **und** eine
-Sigstore-Artifact-Attestation (SLSA-Provenance) auf die dabei gebauten
-`main.js`/`manifest.json`/`styles.css` — das attestierte Subjekt ist Build-Output aus
-dem getaggten Commit, nicht eine committete Kopie.
-
-- **Nicht mehr** manuell `gh release create` aufrufen: Die Attestation kann nur der
-  Actions-Lauf signieren (OIDC-Identität = Workflow, nicht Laptop); ein manuelles
-  Release für denselben Tag hätte keine Provenance und kollidiert mit dem Workflow.
-- `origin` bleibt Forgejo; nur der Tag muss zusätzlich auf den `github`-Remote, damit
-  der Workflow feuert. Voraussetzung: Actions sind im Mirror-Repo aktiviert.
+Releases erzeugt **GitHub Actions** (`.github/workflows/release.yml`), getriggert durch einen SemVer-Tag (ohne v-Präfix). Der Workflow baut `main.js` frisch aus dem getaggten Commit (`npm ci` + `npm run gate`) und erstellt das GitHub-Release **und** eine Sigstore-Artifact-Attestation (SLSA-Provenance) auf den Build-Output. Voraussetzung: GitHub Actions sind im Mirror-Repo aktiviert. `npm run release -- <version>` ruft das zentrale Tooling im Dach; Mirror, Tag-Push und Store: `../.claude/rules/release-und-store.md`. **Nicht** manuell `gh release create`: Die Attestation kann nur der Actions-Lauf signieren (OIDC-Identität = Workflow, nicht Laptop); ein manuelles Release für denselben Tag hätte keine Provenance und kollidiert mit dem Workflow.
 
 ## Conventions
 
 - Conventional Commits; SemVer-Tags **ohne** v-Präfix; nur berührte Dateien stagen.
-- Remotes: Forgejo `origin`, GitHub-Mirror für Obsidian-Verzeichnis/BRAT.
+- Remotes: Forgejo `origin`; `github` (Obsidian-Verzeichnis/BRAT) bekommt Branch und Tag nur über `release.mjs`, nie von Hand.
 - Frontmatter-Felder deutsch-first mit Aliassen (`docs/reference/frontmatter.md`).
-- Doku ist zweisprachig: Änderungen immer in **beiden** Sprachen pflegen
-  (EN `*.md` + DE `*.de.md`), sonst driften die Versionen auseinander.
+- Doku ist zweisprachig: Änderungen immer in **beiden** Sprachen pflegen (EN `*.md` + DE `*.de.md`), sonst driften die Versionen auseinander.
 - Workspace-weite Standards: `_docs/CONVENTIONS.md` im Maintainer-Workspace (`../../workspace/_docs`, siehe Kopf dieser Datei).
+- **Nie im Repo:** absolute Pfade außerhalb des Repos (`/Users/…`, Vault-Pfade) — Platzhalter nutzen (`$VAULT/…`, `~/…`, repo-relativ). Herkunftsnachweise als Repo-Name + `Datei:Zeile` sind dagegen erwünscht. Gate: `scripts/check-no-abs-paths.mjs` (Teil von `npm test`). SDD-Artefakte (Specs, Pläne, Task-Reports) leben im Coding-Cockpit des Maintainers, nicht hier (CORE-META-14).
 
 ## Gotchas
 
-- Der Desktop-Druck läuft seit 1.4.1 über ein **eigenes iframe** (`doPrint`,
-  `srcdoc` = `buildStandaloneDoc`) statt über `@media print` + Ausblenden der
-  Obsidian-DOM. Grund: der Store-Review von 1.4.0 verbot beides (`<style>` in
-  `document.head`, `innerHTML` auf der App-DOM).
-  **Bedingung, an der das hängt:** `doPrint` darf ausschließlich hinter
-  `Platform.isDesktopApp` aufgerufen werden (aktuell genau eine Stelle,
-  `main.ts` in `exportLetter`). Auf iOS druckt iframe-`print()` das
-  Eltern-Dokument — dort geht der Export über `exportViaPdf`, nie über `doPrint`.
-  Wer einen zweiten `doPrint`-Aufrufer ergänzt, muss dieses Gate mitziehen.
-- `MarkdownRenderer.render(app, …)` vs. ältere `renderMarkdown` — Feature-Detection
-  beibehalten (siehe `renderMarkdownToHtml`).
-- DIN-Maße (Kopf 45/27 mm, Falz 105/210 bzw. 87/192 mm, Loch 148,5 mm) sind
-  kuvert-kritisch; Änderungen nur mit Render-Check (siehe `tools/render-hero.sh`).
-- Gedruckt wird mit festen `@page`-Rändern (Seite 1 oben 10 mm, Folgeseiten oben
-  25 mm, unten 20 mm — Drucker-Beschnitt + Seitenumbruch-Ränder). Die
-  `--bk-din-*`-Tokens bleiben trotzdem **papierbezogen**: die Komponenten ziehen
-  `--bk-print-margin-top` per `calc()` ab. Die Vorschau paginiert den Brief in
-  `.bk-sheet`-Blätter mit denselben Schnitthöhen (Modal `paginate()`). Beim
-  Ändern von Positionen immer dieses Schema beibehalten.
-- `main.js`/`main.js.map` sind Build-Output (gitignored) — **nicht** committen; Quelle
-  ist `src/`.
-- **`createEl` im iframe-Realm gibt es nicht.** Die Vorschau-Paginierung (`html-engine.ts`
-  `paginate()`) arbeitet auf `frame.contentDocument` — einer eigenen Realm, in der Obsidian
-  weder `createEl`/`createDiv` noch `doc.win`/`setCssProps` augmentiert (dieselbe Grenze wie beim
-  `<style id="bk-fit">`-Trick). `obsidianmd/prefer-create-el` schlägt dort `doc.win.createDiv()`
-  vor — das wäre ein stiller `TypeError` im `catch`. Korrekt: in der Hauptseite mit `createDiv()`
-  erzeugen und per `doc.adoptNode()` übernehmen. In `core/` gilt zusätzlich das Verbot von
-  Obsidian-Globals (PROF-OBS-04) → dort Elemente injizieren (Canvas-Factory in `imageToJpeg`),
-  nicht `createEl` aufrufen.
-- **SVG-Bilder werden auf iOS nicht ins Vektor-PDF gerastert** (bekannter Bug, vorbestehend seit
-  1.4.0): WebKit taintet das Canvas beim `drawImage` eines SVG → `toDataURL()` wirft `SecurityError`
-  → `imageToJpeg` gibt `null` → `[Bild: …]`-Platzhalter. Betrifft SVG-Logos/-Body-Bilder nur auf
-  iOS; PNG/JPEG sind unbetroffen. Desktop (Chromium) rastert SVG korrekt.
+- `main.js`/`main.js.map` sind Build-Output (gitignored) — **nicht** committen; Quelle ist `src/`.
+
+## Context index
+
+- Bevor du den Export, den Druck (`doPrint`, `buildStandaloneDoc`), `output.ts`, die Bild-Rasterung oder die Markdown-Renderung änderst: `.claude/rules/export-und-druck.md`.
+- Bevor du DIN-Maße, Seitenränder, Paginierung oder die Vorschau im iframe anfasst: `.claude/rules/layout-und-seitenraender.md`.
+- Bevor du Platzhalter für Formeln und Grafiken, `LETTER_LABELS` oder das Fixture `fixtures/vault/notes/Smoke-Englisch.md` anfasst: `.claude/rules/degradations-platzhalter.md`.
+- Bevor du etwas unter `src/vendor/` änderst, das Kit hebst oder `scripts/check-pure.mjs` anfasst: `.claude/rules/vendor-kit.md`.
+- Vor Änderungen an Modul-Layout, Export-Wegen oder Engine-Schichten: `docs/internal/architecture.md`.
+- Bevor du eine Altentscheidung (TypeScript-Umbau, kein HTML-Fallback, iframe-Druck, Briefsprache, SDD-Ablage) übernimmst: `docs/internal/decisions.md`.
+- Vor dem GUI-Smoke: `docs/SMOKE.md`; Treiber-Regeln, Instanz und Lock des Dachs in `../.claude/rules/gui-smoke-treiber.md`, `../.claude/rules/obsidian-instanz.md`, `../.claude/rules/cdp-lock.md`.
+- Vor einem Release oder Store-Rescan: `../.claude/rules/release-und-store.md`, Skills `plugin-release-setup` und `store-rescan`.
+- Vor UI-Arbeit: `../UI-STANDARD.md`, `../.claude/rules/ui-bausteine.md`.
 
 ## Memory
 
-Projekt-Memory unter `~/.claude/projects/<slug>/memory/` (Index: `MEMORY.md`).
-Session-Handoff unter `.remember/` (gitignored).
-
-- **SDD-Artefakte (seit 2026-07-16): Cockpit, nicht Repo** — Specs/Plans/Task-Reports leben im
-  Coding-Cockpit des Maintainers (`$VAULT/25_Coding/obsidian-letterhead/_SDD/`, CORE-META-14, maintainer-lokal).
-  Sie tragen Arbeitskontext (Vault-Pfade, Schwester-Repo-Interna), der in einem public Repo niemandem nützt.
-  Das Repo behält die Design-Essenz in dieser Datei + `CHANGELOG.md`.
-- **Alt-Bestand:** Specs und Pläne liegen im Vault-Cockpit unter `_SDD/` (CORE-META-14); `docs/superpowers/` gibt es im Repo nicht mehr.
-- **Nie im Repo:** absolute Pfade außerhalb des Repos (`/Users/…`, Vault-Pfade) — Platzhalter nutzen
-  (`$VAULT/…`, `~/…`, repo-relativ). Herkunftsnachweise als Repo-Name + `Datei:Zeile` sind dagegen erwünscht.
-  Gate: `scripts/check-no-abs-paths.mjs` (Teil von `npm test`).
+Projekt-Memory unter `~/.claude/projects/<slug>/memory/` (Index: `MEMORY.md`). Session-Handoff unter `.remember/` (gitignored).
 
 ## Abweichungen von der Leitkonvention
 
-- **PROF-TS-01..04** — entfällt seit dem Umbau auf TypeScript + `esbuild` + `vitest`
-  (`src/` → `main.js`, Tests via `npm test`, Gate via `npm run gate`): das Plugin
-  entspricht jetzt dem Standardprofil `ts-node · obsidian-plugin`, keine Abweichung
-  mehr. Grund für den Umbau: der PDF-Engine-Kern wird als geteiltes Kit
-  (`src/vendor/kit/`) vendored statt pro Plugin neu geschrieben — das ist mit reinem
-  Zero-Build nicht mehr praktikabel (siehe `CHANGELOG.md` → 1.4.0).
-- **CORE-META-03** — Hero/Screenshot reproduzierbar via `tools/render-hero.sh`
-  (benötigt `weasyprint` + `poppler`/`pdftoppm`) statt eines npm-Screenshot-Tools.
+- **CORE-META-03** — Hero/Screenshot reproduzierbar via `tools/render-hero.sh` (benötigt `weasyprint` + `poppler`/`pdftoppm`) statt eines npm-Screenshot-Tools.
 
 ## Dach-Kontext (obsidian-plugins)
 
-Dieses Repo liegt unter dem Koordinations-Dach `obsidian-plugins/` (`..` vom Repo-Root).
-**Vor dem Lösen eines Problems:** `../AGENTS.md` (Kit-first-Regel) und `../REGISTRY.md`
-(Lösungs-Registry) prüfen — viele Probleme sind in Nachbar-Plugins oder im
-`obsidian-kit` bereits gelöst.
-
-**Vor jeder UI-Arbeit** (Views, Modals, Settings-Tabs, CSS): `../UI-STANDARD.md` ist
-verbindlich (Obsidian-nativ first, ein Frontend pro Plugin, nur Theme-CSS-Variablen).
+Dieses Repo liegt unter dem Koordinations-Dach `obsidian-plugins/` (`..` vom Repo-Root). **Vor dem Lösen eines Problems:** `../AGENTS.md` (Kit-first-Regel) und `../REGISTRY.md` (Lösungs-Registry) prüfen — viele Probleme sind in Nachbar-Plugins oder im `obsidian-kit` bereits gelöst. **Vor jeder UI-Arbeit** (Views, Modals, Settings-Tabs, CSS): `../UI-STANDARD.md` ist verbindlich.

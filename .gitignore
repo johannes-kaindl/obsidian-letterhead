@@ -8,7 +8,8 @@ build/
 data.json
 
 # Agent-/Session-State (CORE-AGENT-03/05)
-.claude/
+.claude/*
+!.claude/rules/
 .remember/
 docs/superpowers/
 
