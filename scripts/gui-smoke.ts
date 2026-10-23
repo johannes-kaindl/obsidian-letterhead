@@ -59,7 +59,7 @@ import { join } from 'node:path';
 import { cwd } from 'node:process';
 
 import { createBilanz, parseArgs, runDriver } from '../../tools/obsidian-cdp/bilanz.js';
-import { Cdp, attachTo, beimAbbruch, bereiteInstanzVor, clearNotices, closeExtraLeaves, istAbgebrochen, notices, openExisting, pollUntil, requireVisible, schliesseDialog } from '../../tools/obsidian-cdp/cdp.js';
+import { Cdp, attachTo, beimAbbruch, bereiteInstanzVor, clearNotices, closeExtraLeaves, istAbgebrochen, notices, openExisting, pollUntil, requireVisible, schliesseDialog, schliesseEinstellungen } from '../../tools/obsidian-cdp/cdp.js';
 import { beurteileTeilen, gegenprobeAntwort, loeseExportAus, raeumeOrdnerAuf, stelleOrdnerHer, stubAn, stubAus, type TeilenBeobachtung, type TeilenTeilurteil } from '../../tools/obsidian-cdp/teilen.js';
 import { buildVault, requireEigenerBuild, stagingVaultDir } from '../../tools/obsidian-cdp/vault.js';
 
@@ -596,7 +596,7 @@ async function messeOrdnerFeld(cdp: Cdp, port: number, vault: string): Promise<{
     `);
   } finally {
     if (fenster && fenster !== cdp) fenster.close();
-    await cdp.evaluate(`app.setting.close(); await new Promise((r) => setTimeout(r, 300)); return true;`).catch(() => undefined);
+    await schliesseEinstellungen(cdp).catch(() => undefined);
   }
 }
 
