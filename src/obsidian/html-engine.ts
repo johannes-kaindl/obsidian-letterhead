@@ -432,7 +432,7 @@ export const PRINT_FRAME_CLASS = 'letterhead-print-frame';
 
    DESKTOP ONLY. On iOS an iframe print() targets the parent document — mobile
    goes through exportViaPdf and must never reach doPrint. The single caller in
-   main.ts is gated on Platform.isDesktopApp; keep it that way (see AGENTS.md). */
+   main.ts is gated on Platform.isDesktopApp; keep it that way (see .claude/rules/export-und-druck.md). */
 /* Cleanup of the print currently in flight. A second print must finish the
    first one properly instead of just dropping its frame: otherwise the second
    run captures the FIRST run's filename as the title to restore, and the first
