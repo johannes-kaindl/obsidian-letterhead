@@ -40,7 +40,7 @@ Manuelles Deploy-Ziel: `<vault>/.obsidian/plugins/letterhead/`.
 
 ## Releasing
 
-Releases erzeugt **GitHub Actions** (`.github/workflows/release.yml`), getriggert durch einen SemVer-Tag (ohne v-Präfix). Der Workflow baut `main.js` frisch aus dem getaggten Commit (`npm ci` + `npm run gate`) und erstellt das GitHub-Release **und** eine Sigstore-Artifact-Attestation (SLSA-Provenance) auf den Build-Output. Voraussetzung: GitHub Actions sind im Mirror-Repo aktiviert. `npm run release -- <version>` ruft das zentrale Tooling im Dach; Mirror, Tag-Push und Store: `../.claude/rules/release-und-store.md`. **Nicht** manuell `gh release create`: Die Attestation kann nur der Actions-Lauf signieren (OIDC-Identität = Workflow, nicht Laptop); ein manuelles Release für denselben Tag hätte keine Provenance und kollidiert mit dem Workflow.
+Releases erzeugt **GitHub Actions** (`.github/workflows/release.yml`), getriggert durch einen SemVer-Tag (ohne v-Präfix). Der Workflow baut `main.js` frisch aus dem getaggten Commit (`npm ci` + `npm run gate`) und erstellt das GitHub-Release **und** eine Sigstore-Artifact-Attestation (SLSA-Provenance) auf den Build-Output. Voraussetzung: GitHub Actions sind im GitHub-Repo `johannes-kaindl/obsidian-letterhead` aktiviert. `npm run release -- <version>` ruft das zentrale Tooling im Dach; Dual-Push über `release.mjs`, Tag-Push und Store: `../.claude/rules/release-und-store.md`. **Nicht** manuell `gh release create`: Die Attestation kann nur der Actions-Lauf signieren (OIDC-Identität = Workflow, nicht Laptop); ein manuelles Release für denselben Tag hätte keine Provenance und kollidiert mit dem Workflow.
 
 ## Conventions
 
