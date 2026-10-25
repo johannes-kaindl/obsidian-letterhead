@@ -155,7 +155,7 @@ TypeScript, per `esbuild` zu `main.js` gebündelt. `main.js` ist Build-Output (g
 npm install
 npm run build     # Typecheck + esbuild → main.js
 npm test          # vitest
-npm run gate      # Typecheck + Test + check:pure + Build
+npm run gate      # Typecheck (src, Tests, Skripte) + Test + check:pure + Lint + Build
 npm run deploy    # bauen, dann manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR kopieren
 ```
 

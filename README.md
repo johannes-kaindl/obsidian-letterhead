@@ -156,7 +156,7 @@ TypeScript, bundled to `main.js` with `esbuild`. `main.js` is build output (giti
 npm install
 npm run build     # typecheck + esbuild → main.js
 npm test          # vitest
-npm run gate      # typecheck + test + check:pure + build
+npm run gate      # typecheck (src, tests, scripts) + test + check:pure + lint + build
 npm run deploy    # build, then copy manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
 ```
 
