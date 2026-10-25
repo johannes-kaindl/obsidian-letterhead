@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- README points to `docs/internal/architecture.md` and `docs/internal/decisions.md` for the architecture notes.
+
 ## [1.10.0] — 2026-10-16
 
 ### Changed

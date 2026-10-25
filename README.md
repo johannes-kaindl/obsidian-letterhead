@@ -160,7 +160,7 @@ npm run gate      # typecheck + test + check:pure + build
 npm run deploy    # build, then copy manifest.json main.js styles.css versions.json → $OBSIDIAN_PLUGIN_DIR
 ```
 
-See `AGENTS.md` for the full architecture notes and remaining deliberate deviations from the workspace `ts-node · obsidian-plugin` profile.
+See [`docs/internal/architecture.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/internal/architecture.md) for the full architecture notes and [`docs/internal/decisions.md`](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/internal/decisions.md) for the reasons behind them; the remaining deliberate deviations from the workspace `ts-node · obsidian-plugin` profile are listed in `AGENTS.md`.
 
 ## Privacy & security
 
