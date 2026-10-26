@@ -1,7 +1,7 @@
 name: Release
 
 # Builds the plugin, attests the built assets, and publishes a GitHub release.
-# Runs on the GitHub side (mirror of Codeberg) on a SemVer tag (no v-prefix) or
+# Runs on the GitHub side (mirror of Forgejo, git.jkaindl.de) on a SemVer tag (no v-prefix) or
 # manually. Unlike a zero-build plugin, Letterhead's `main.js` is esbuild-bundled
 # from `src/` — this workflow builds it fresh from the tagged source and attests
 # the resulting bundle (not a committed file: main.js is gitignored, see
@@ -54,7 +54,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Gate (typecheck + test + check:pure + build)
+      - name: Gate
         run: npm run gate
 
       - name: Verify tag == package.json == manifest.json and versions.json covers it
