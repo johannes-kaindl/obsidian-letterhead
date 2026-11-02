@@ -67,6 +67,7 @@ export function buildCss(s: LetterheadSettings, stilKey: string | null | undefin
     --bk-page-width:210mm; --bk-page-height:297mm;
     --bk-margin-left:25mm; --bk-margin-right:20mm;
     --bk-print-margin-top:${PRINT_MARGIN_TOP_MM}mm;
+    --bk-print-margin-top-follow:${PRINT_MARGIN_TOP_FOLLOW_MM}mm;
     --bk-print-margin-bottom:${PRINT_MARGIN_BOTTOM_MM}mm;
     --bk-print-offset:${offset}mm;
     --bk-din-head-top:calc(${form.headTop} + var(--bk-print-offset));
@@ -181,10 +182,15 @@ export function buildCss(s: LetterheadSettings, stilKey: string | null | undefin
 
    It replaces the former PRINT_WRAPPER_CSS, whose `body > *:not(...)` hiding
    trick only existed because the letter used to share Obsidian's document.
+   The @page margins come from the --bk-print-margin-* tokens (var() works in
+   @page margins), so Custom CSS can set them by overriding the tokens — a plain
+   @page rule in Custom CSS loses: this block comes after it, and
+   `@page:first` is more specific than `@page` anyway. The fallbacks keep the
+   margins valid if the tokens are missing (buildStandaloneDoc with bare css).
    main.js.reference:645-655 */
 export const STANDALONE_WRAPPER_CSS = `
-  @page{ size:A4; margin:${PRINT_MARGIN_TOP_FOLLOW_MM}mm 0 ${PRINT_MARGIN_BOTTOM_MM}mm 0; }
-  @page:first{ margin-top:${PRINT_MARGIN_TOP_MM}mm; }
+  @page{ size:A4; margin:var(--bk-print-margin-top-follow, ${PRINT_MARGIN_TOP_FOLLOW_MM}mm) 0 var(--bk-print-margin-bottom, ${PRINT_MARGIN_BOTTOM_MM}mm) 0; }
+  @page:first{ margin-top:var(--bk-print-margin-top, ${PRINT_MARGIN_TOP_MM}mm); }
   html, body{ margin:0; padding:0; background:#fff; }
   .bk-body p{ orphans:2; widows:2; }
   .bk-signature, .bk-enclosures, .bk-closing{ break-inside:avoid; }
@@ -557,17 +563,32 @@ export class LetterheadPreviewModal extends Modal {
         doc.body.appendChild(probe);
         const mm = probe.offsetHeight / 100;
         probe.remove();
-        const h1 = Math.round((297 - PRINT_MARGIN_TOP_MM - PRINT_MARGIN_BOTTOM_MM) * mm);
-        const hN = Math.round((297 - PRINT_MARGIN_TOP_FOLLOW_MM - PRINT_MARGIN_BOTTOM_MM) * mm);
+        /* The margins are the --bk-print-margin-* tokens, as in the print
+           wrapper, so Custom CSS that moves them moves the preview sheets too.
+           A probe element resolves var()/calc() to px; a missing or absurd
+           result falls back to the built-in margins. */
+        const tokenPx = (token: string, fallbackMm: number): number => {
+          const t = mkDiv('bk-mm-probe');
+          t.style.height = `var(${token}, ${fallbackMm}mm)`;
+          doc.body.appendChild(t);
+          const px = t.offsetHeight;
+          t.remove();
+          return px >= 0 && px < 148 * mm ? px : fallbackMm * mm;
+        };
+        const mTop1 = tokenPx('--bk-print-margin-top', PRINT_MARGIN_TOP_MM);
+        const mTopN = tokenPx('--bk-print-margin-top-follow', PRINT_MARGIN_TOP_FOLLOW_MM);
+        const mBot = tokenPx('--bk-print-margin-bottom', PRINT_MARGIN_BOTTOM_MM);
+        const h1 = Math.round(297 * mm - mTop1 - mBot);
+        const hN = Math.round(297 * mm - mTopN - mBot);
         const total = (letter as HTMLElement).offsetHeight;
         const pages = total <= h1 ? 1 : 1 + Math.ceil((total - h1) / hN);
         const frag = doc.adoptNode(createFragment());
         for (let i = 0; i < pages; i++) {
           const sheet = mkDiv('bk-sheet');
           const clip = mkDiv('bk-page-clip');
-          clip.style.top = (i === 0 ? PRINT_MARGIN_TOP_MM : PRINT_MARGIN_TOP_FOLLOW_MM) + 'mm';
+          clip.style.top = (i === 0 ? mTop1 : mTopN) + 'px';
           clip.style.height = (i === 0 ? h1 : hN) + 'px';
-          const copy = letter.cloneNode(true) as HTMLElement;
+        const copy = letter.cloneNode(true) as HTMLElement;
           copy.style.marginTop = (i === 0 ? 0 : -(h1 + (i - 1) * hN)) + 'px';
           clip.appendChild(copy);
           sheet.appendChild(clip);

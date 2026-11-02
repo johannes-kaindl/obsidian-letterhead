@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+- **Custom CSS can now set the printed page margins.** The `@page` margins of the print document come from the tokens `--bk-print-margin-top` (page 1), `--bk-print-margin-top-follow` (continuation pages, new) and `--bk-print-margin-bottom`, so a theme that draws a frame or band to the paper edge can set them to `0mm`. Before, the plugin's fixed margins (10/25/20 mm) came after the Custom CSS and overrode its `@page` rules, which shifted such a theme by 10 mm on page 1 and put the text of continuation pages under its frame. The preview sheets read the same tokens. A plain `@page { margin: … }` in Custom CSS still has no effect; use the tokens. Default margins are unchanged.
+
 ## [1.10.1] — 2026-10-25
 
 ### Changed

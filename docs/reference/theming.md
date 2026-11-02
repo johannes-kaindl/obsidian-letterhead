@@ -46,16 +46,24 @@ change them if your envelope differs. The positions also depend on the
 
 All positions are measured **from the paper edge**. Printing uses fixed `@page`
 margins (page 1 top 10 mm, continuation pages top 25 mm, bottom 20 mm
-everywhere — tokens `--bk-print-margin-top`/`-bottom` for page 1), so printers
-don't clip anything and page breaks keep document-standard margins; the
-components subtract the top margin again internally, so the paper positions
-match exactly.
+everywhere), so printers don't clip anything and page breaks keep
+document-standard margins; the components subtract the top margin again
+internally, so the paper positions match exactly.
+
+The margins are the tokens `--bk-print-margin-top` (page 1),
+`--bk-print-margin-top-follow` (continuation pages) and
+`--bk-print-margin-bottom`. Set them in Custom CSS to change the printed margins
+and the preview sheets together, for example `0mm` for all three when your theme
+draws its own frame or band to the paper edge (note that printers cannot print
+borderless). A plain `@page { margin: … }` rule in Custom CSS has **no effect**:
+the plugin's own `@page` rules come after it, and `@page:first` is more
+specific anyway.
 
 | Token | Default (Form B) | Form A |
 |-------|------------------|--------|
 | `--bk-page-width` / `--bk-page-height` | `210mm` / `297mm` | — |
 | `--bk-margin-left` / `--bk-margin-right` | `25mm` / `20mm` | — |
-| `--bk-print-margin-top` / `--bk-print-margin-bottom` | `10mm` / `20mm` (page 1; continuation pages top `25mm`) | — |
+| `--bk-print-margin-top` / `--bk-print-margin-top-follow` / `--bk-print-margin-bottom` | `10mm` (page 1) / `25mm` (continuation pages) / `20mm` | — |
 | `--bk-print-offset` | `0mm` (setting **Print offset top**) | — |
 | `--bk-din-head-top` | `14mm` (+ offset) | `12mm` |
 | `--bk-din-address-top` | `45mm` (+ offset) | `27mm` |

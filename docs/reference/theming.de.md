@@ -47,16 +47,24 @@ Einstellung **DIN-5008-Form** (A/B).
 
 Alle Positionen sind **ab Papierkante** gemessen. Gedruckt wird mit festen
 `@page`-Rändern (Seite 1 oben 10 mm, Folgeseiten oben 25 mm, unten überall
-20 mm — Tokens `--bk-print-margin-top`/`-bottom` für Seite 1), damit Drucker
-nichts abschneiden und Seitenumbrüche dokumentübliche Ränder haben; die
-Komponenten ziehen den oberen Rand intern wieder ab, sodass die
+20 mm), damit Drucker nichts abschneiden und Seitenumbrüche dokumentübliche
+Ränder haben; die Komponenten ziehen den oberen Rand intern wieder ab, sodass die
 Papierpositionen exakt stimmen.
+
+Die Ränder sind die Tokens `--bk-print-margin-top` (Seite 1),
+`--bk-print-margin-top-follow` (Folgeseiten) und `--bk-print-margin-bottom`. Im
+Custom CSS gesetzt, ändern sie den gedruckten Rand und die Vorschaublätter
+zugleich, etwa auf `0mm` für alle drei, wenn dein Theme einen eigenen Rahmen
+oder ein Band bis an die Papierkante zeichnet (Drucker drucken allerdings nicht
+randlos). Eine einfache `@page { margin: … }`-Regel im Custom CSS bleibt
+**wirkungslos**: Die `@page`-Regeln des Plugins stehen dahinter, und
+`@page:first` ist ohnehin spezifischer.
 
 | Token | Default (Form B) | Form A |
 |-------|------------------|--------|
 | `--bk-page-width` / `--bk-page-height` | `210mm` / `297mm` | — |
 | `--bk-margin-left` / `--bk-margin-right` | `25mm` / `20mm` | — |
-| `--bk-print-margin-top` / `--bk-print-margin-bottom` | `10mm` / `20mm` (Seite 1; Folgeseiten oben `25mm`) | — |
+| `--bk-print-margin-top` / `--bk-print-margin-top-follow` / `--bk-print-margin-bottom` | `10mm` (Seite 1) / `25mm` (Folgeseiten) / `20mm` | — |
 | `--bk-print-offset` | `0mm` (Einstellung **Print offset top**) | — |
 | `--bk-din-head-top` | `14mm` (+ Versatz) | `12mm` |
 | `--bk-din-address-top` | `45mm` (+ Versatz) | `27mm` |
