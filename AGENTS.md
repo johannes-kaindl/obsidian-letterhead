@@ -62,7 +62,7 @@ Releases erzeugt **GitHub Actions** (`.github/workflows/release.yml`), getrigger
 - Bevor du Platzhalter für Formeln und Grafiken, `LETTER_LABELS` oder das Fixture `fixtures/vault/notes/Smoke-Englisch.md` anfasst: `.claude/rules/degradations-platzhalter.md`.
 - Bevor du etwas unter `src/vendor/` änderst, das Kit hebst oder `scripts/check-pure.mjs` anfasst: `.claude/rules/vendor-kit.md`.
 - Vor Änderungen an Modul-Layout, Export-Wegen oder Engine-Schichten: `docs/internal/architecture.md`.
-- Bevor du eine Altentscheidung (TypeScript-Umbau, kein HTML-Fallback, iframe-Druck, Briefsprache, SDD-Ablage) übernimmst: `docs/internal/decisions.md`.
+- Bevor du eine Altentscheidung (TypeScript-Umbau, kein HTML-Fallback, iframe-Druck, Briefsprache, Kit-Pin, SDD-Ablage) übernimmst: `docs/internal/decisions.md`.
 - Vor dem GUI-Smoke: `docs/SMOKE.md`; Treiber-Regeln, Instanz und Lock des Dachs in `../.claude/rules/gui-smoke-treiber.md`, `../.claude/rules/obsidian-instanz.md`, `../.claude/rules/cdp-lock.md`.
 - Vor einem Release oder Store-Rescan: `../.claude/rules/release-und-store.md`, Skills `plugin-release-setup` und `store-rescan`.
 - Vor UI-Arbeit: `../UI-STANDARD.md`, `../.claude/rules/ui-bausteine.md`.
