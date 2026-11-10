@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.10.2] — 2026-11-10
+
 ### Fixed
 - **Custom CSS can now set the printed page margins.** The `@page` margins of the print document come from the tokens `--bk-print-margin-top` (page 1), `--bk-print-margin-top-follow` (continuation pages, new) and `--bk-print-margin-bottom`, so a theme that draws a frame or band to the paper edge can set them to `0mm`. Before, the plugin's fixed margins (10/25/20 mm) came after the Custom CSS and overrode its `@page` rules, which shifted such a theme by 10 mm on page 1 and put the text of continuation pages under its frame. The preview sheets read the same tokens. A plain `@page { margin: … }` in Custom CSS still has no effect; use the tokens. Default margins are unchanged.
 - **Formulas in the vector PDF show their LaTeX source instead of garbled glyphs.** With the math renderer of current Obsidian versions, a formula such as `$E = mc^2$` came out as stray characters (`=2`) in the iPhone/iPad PDF and in "Export letter as PDF (vector)". It is now a marker with the source, `[Formula: E = mc^2]` in an English letter and `[Formel: E = mc^2]` in a German one (the letter language decides, like the other markers), and it still counts towards the "simplified" notice. The source is cut at 120 characters. The formula itself is not drawn into the PDF yet.
