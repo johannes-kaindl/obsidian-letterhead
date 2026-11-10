@@ -404,7 +404,7 @@ export default class LetterheadPlugin extends Plugin {
       // importieren — ein Import haette genau die Kopplung hereingeholt, gegen die
       // `check:pure` laeuft.
       const placeholders = {
-        math: model.labels.phFormula, graphic: model.labels.phGraphic,
+        math: model.labels.phFormula, mathSource: model.labels.phFormulaSource, graphic: model.labels.phGraphic,
         image: model.labels.phImage, imageFailed: model.labels.phImageFailed,
       };
       const ex = domToIrSync(holder, {

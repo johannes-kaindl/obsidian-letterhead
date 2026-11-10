@@ -118,6 +118,9 @@ export interface LetterLabelSet {
      Brief. Die Oberflaechensprache ist eine andere Achse — ein deutsches Obsidian
      kann einen englischen Brief setzen. */
   phFormula: string;
+  /* Markierung für eine Formel, deren LaTeX-Quelle bekannt ist (MathJax 4, Kit 0.82.2):
+     `{0}` ersetzt der PDF-Kern durch die Quelle. Gedruckter Text wie phFormula. */
+  phFormulaSource: string;
   phGraphic: string;
   /* Wie phFormula/phGraphic gedruckter Text, kein UI-String (siehe oben): `phImage` ist
      das bloße Wort, aus dem der PDF-Kern `[Wort: alt]` baut (Tabellenzelle, nicht
@@ -135,7 +138,7 @@ export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
     telPrefix: 'Tel. ',
     closing: 'Mit freundlichen Grüßen',
     salutation: 'Sehr geehrte Damen und Herren,',
-    phFormula: '[Formel]', phGraphic: '[Grafik]',
+    phFormula: '[Formel]', phFormulaSource: '[Formel: {0}]', phGraphic: '[Grafik]',
     phImage: 'Bild', phImageFailed: '[Bild konnte nicht eingebettet werden]'
   },
   en: {
@@ -145,7 +148,7 @@ export const LETTER_LABELS: Record<'de' | 'en', LetterLabelSet> = {
     telPrefix: 'Phone ',
     closing: 'Kind regards',
     salutation: 'Dear Sir or Madam,',
-    phFormula: '[Formula]', phGraphic: '[Graphic]',
+    phFormula: '[Formula]', phFormulaSource: '[Formula: {0}]', phGraphic: '[Graphic]',
     phImage: 'Image', phImageFailed: '[Image could not be embedded]'
   }
 };
