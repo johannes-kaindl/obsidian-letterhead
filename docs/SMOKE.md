@@ -88,8 +88,8 @@ instanzgebunden. Dann warten.
 | **A · Grundlage** | Plugin geladen · alle vier Befehle registriert · Ribbon-Knopf |
 | **B · Vektor-PDF** | PDF entsteht neben der Notiz · Datei ist ein PDF · Notice nennt den Pfad · Core-14-Schriften ohne `/FontFile` |
 | **C · Briefinhalt** | Empfängeranschrift (3 Zeilen) · Betreff/Anrede/Gruß/Unterschrift · Infoblock-Bezugszeichen · Anlagenvermerk · Absender aus den Einstellungen · Umlaute und € als WinAnsi · Fließtext samt Auszeichnungen |
-| **D · Frontmatter** | englische Aliasse · Schlüssel case-insensitiv, Trennzeichen egal · `language: en` schaltet die Brief-Etiketten · Degradations-Platzhalter folgt der Briefsprache |
-| **E · Reiche Inhalte** | Tabelle · Task-Zustände unterscheidbar · Codeblock · **klebender Fence** · rohes SVG → `[Grafik]` · PNG als `/DCTDecode` eingebettet · Notice zählt die vereinfachten Elemente |
+| **D · Frontmatter** | englische Aliasse · Schlüssel case-insensitiv, Trennzeichen egal · `language: en` schaltet die Brief-Etiketten · Degradations-Platzhalter folgt der Briefsprache · Formel trägt ihre LaTeX-Quelle in der Briefsprache (`[Formula: …]`) |
+| **E · Reiche Inhalte** | Tabelle · Task-Zustände unterscheidbar · Codeblock · **klebender Fence** · rohes SVG → `[Grafik]` · PNG als `/DCTDecode` eingebettet · Notice zählt die vereinfachten Elemente · Formeln (im Satz und als Block) stehen als `[Formel: <Quelle>]` im PDF, die Quelle genau einmal |
 | **F · Mehrseitigkeit** | Umbruch auf mehrere Seiten · erster, mittlerer und letzter Absatz sind da |
 | **G · Ablage** | `nextToNote` im Unterordner · zweiter Export zählt hoch statt zu überschreiben · Dateiname folgt `{datum} {empfaenger}` · `customFolder` legt den Zielordner an |
 | **H · Vorschau** | Modal öffnet · paginiert in `.bk-sheet` · Falz- und Lochmarken gezeichnet |
@@ -106,6 +106,7 @@ Blick aufs Papier (siehe `tools/render-hero.sh`).
 | 2026-09-02 | 1.13.7 | **33/33 grün**, 3 begründet übersprungen | **32/33 — genau E4 rot** |
 | 2026-09-02 (Kit 0.30.0) | 1.13.7 | **34/34 grün** | **33/34 — genau D4 rot** |
 | 2026-10-18 (Teilen I1–I4) | 1.14.4 | **40 grün · 0 rot · 3 übersprungen · 0 nichts gemessen** von 43 (davor 36 von 39) | **38 grün · 2 rot — genau I1 und I4** (in `share-export.ts` die Zeile `if (!clear) return;` ausgebaut, danach zurückgesetzt und neu gebaut: wieder 40 grün) |
+| 2026-11-10 (Formeln D5/E8, Kit `pdf/*` 0.82.2) | 1.15.1 | **42 grün · 0 rot · 3 übersprungen · 0 nichts gemessen** von 45 (G5 in 2 von 5 Läufen auf dem neuen Build rot, siehe unten) | **40 grün · 2 rot — genau D5 und E8** (Build vom Stand `29cae5a`, Kit 0.60.2, zurückgesetzt und neu gebaut: wieder 42 grün) |
 
 **Zur Gegenprobe vom 2026-09-02:** ausgebaut wurde die Leerzeilen-Polsterung in
 `extractCodeBlocks` (`src/vendor/kit/pdf/code-blocks.ts`) — der Fix, der den
@@ -151,3 +152,9 @@ einer Fixture-Reparatur noch einmal gefahren wurde. **Also: erst committen, dann
 Dann ist `git checkout` im Aufräumpfad eine Rückkehr zum geprüften Stand statt ein
 Datenverlust. Wer nicht committen will, sichert die Datei vorher als Kopie und spielt die
 zurück — der Zustand vor der Sabotage ist der Bezugspunkt, nicht `HEAD`.
+
+## Formeln im Vektor-PDF (2026-11-10)
+
+MathJax 4 schreibt die Glyphen einer Formel als echten Text in `mjx-c`; die Quelle überlebt nur in `mjx-math[data-latex]`. Der Wandler übernahm bis Kit 0.82.2 den Text (`E = mc^2` wurde zu `=2`). D5 (englischer Brief, `[Formula: …]`) und E8 (deutscher Brief, im Satz und als Block) messen die Datei; die Fixtures tragen die Quelle mit einem Marker (`MARKFORMELI`, `MARKFORMELB`, `MARKENFORMEL`), damit ein Glyphenrest vom Treffer unterscheidbar ist. Gegengelesen mit `pdftotext` an den erhaltenen PDFs, unabhängig vom Treiber. Die Verdrahtung `phFormulaSource` → `mathSource` in `main.ts` misst nur dieser Smoke; der Vitest-Test in `tests/vendor-smoke.test.ts` speist die Platzhalter selbst ein.
+
+**G5 ist auf Obsidian 1.15.1 unstet** (0 Vorschläge statt vier): neuer Build 2 von 4 Läufen rot, Stand `29cae5a` 1 von 4 rot, jeweils mit frischem Prozess und demselben Profil. Der Defekt liegt nicht an dieser Änderung; Ursache ungeklärt, als Task im Cockpit erfasst.

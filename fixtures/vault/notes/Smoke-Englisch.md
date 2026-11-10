@@ -22,3 +22,5 @@ Wort vom Platzhalter oder aus dem Fliesstext stammt. Genau das ist in der Gegenp
 2026-09-02 aufgefallen.
 
 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#888"/></svg>
+
+Formel im englischen Brief: $\beta + MARKENFORMEL$ — Prüfpunkt D5 liest die Markierung.

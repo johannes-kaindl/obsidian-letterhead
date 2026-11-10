@@ -31,6 +31,12 @@ Rohes SVG (kein Textknoten, muss zu einem Grafik-Platzhalter degradieren):
 
 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#888"/></svg>
 
+Formeln (MathJax 4 schreibt Glyphen als Text; im Vektor-PDF muss die Markierung mit der LaTeX-Quelle stehen):
+
+Inline $\alpha + MARKFORMELI$ im Satz.
+
+$$E = mc^2 + MARKFORMELB$$
+
 Bild:
 
 ![Probe](assets/probe.png)

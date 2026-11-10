@@ -92,6 +92,7 @@ const PUNKTE = [
   'D2 Schlüssel case-insensitiv, Trennzeichen egal',
   'D3 language: en schaltet die Brief-Etiketten um',
   'D4 Degradations-Platzhalter folgt der Briefsprache',
+  'D5 Formel trägt ihre LaTeX-Quelle in der Briefsprache',
   'E1 Tabellenzellen stehen im PDF',
   'E2 Task-Zustände sind unterscheidbar',
   'E3 Codeblock mit Leerzeile davor',
@@ -99,6 +100,7 @@ const PUNKTE = [
   'E5 rohes SVG degradiert sichtbar zu [Grafik]',
   'E6 PNG ist als Bild eingebettet, nicht als Platzhalter',
   'E7 Notice zählt die vereinfachten Elemente',
+  'E8 Formeln stehen als Markierung mit LaTeX-Quelle im PDF',
   'F1 Brief bricht auf mehrere Seiten um',
   'F2 erster, mittlerer und letzter Absatz sind da',
   'G1 nextToNote legt neben der Notiz ab, nicht in der Wurzel',
@@ -476,6 +478,20 @@ async function pruefeFrontmatter(cdp: Cdp, vaultDir: string): Promise<void> {
       ? (dePh ? '[Graphic] UND [Grafik] im selben Brief' : '[Graphic] im englischen Brief')
       : (dePh ? '[Grafik] im englischen Brief — placeholders kommen nicht an' : 'kein Platzhalter gefunden — SVG spurlos verschwunden?'),
   );
+
+  // Die Formel-Markierung trägt die LaTeX-Quelle (Kit 0.82.2, `mathSource`) und ist wie der
+  // Platzhalter gedruckter Text: im englischen Brief `[Formula: …]`, nie `[Formel: …]`. Das
+  // Fixture trägt die Quelle als Marker, weil MathJax 4 die Glyphen als Text schreibt und
+  // nur die Quelle in `data-latex` überlebt.
+  const enMath = text.includes('[Formula: \\beta + MARKENFORMEL]');
+  const deMath = text.includes('[Formel:');
+  record(
+    'D5 Formel trägt ihre LaTeX-Quelle in der Briefsprache',
+    enMath && !deMath,
+    enMath
+      ? (deMath ? '[Formula: …] UND [Formel: …] im selben Brief' : '[Formula: \\beta + MARKENFORMEL] im englischen Brief')
+      : (deMath ? '[Formel: …] im englischen Brief — mathSource kommt nicht an' : 'keine Formel-Markierung mit Quelle — Glyphenreste statt Markierung?'),
+  );
 }
 
 async function pruefeDegradation(cdp: Cdp, vaultDir: string): Promise<void> {
@@ -544,6 +560,18 @@ async function pruefeDegradation(cdp: Cdp, vaultDir: string): Promise<void> {
     'E7 Notice zählt die vereinfachten Elemente',
     zahl !== null && Number(zahl[1]) >= 1,
     zahl ? `${zahl[1]} Element(e) gemeldet` : `keine Zahl in der Notice: ${notice || '(keine)'}`,
+  );
+
+  // MathJax 4 schreibt die Glyphen als Text in `mjx-c`; der Wandler übernahm sie bis Kit 0.82.2
+  // statt die Formel zu markieren (E = mc^2 wurde zu "=2"). Beide Formen — im Satz und als
+  // Block — müssen als `[Formel: <Quelle>]` im PDF stehen, die Quelle genau einmal.
+  const formelI = text.includes('[Formel: \\alpha + MARKFORMELI]');
+  const formelB = text.includes('[Formel: E = mc^2 + MARKFORMELB]');
+  const einmal = text.split('MARKFORMELI').length - 1 === 1 && text.split('MARKFORMELB').length - 1 === 1;
+  record(
+    'E8 Formeln stehen als Markierung mit LaTeX-Quelle im PDF',
+    formelI && formelB && einmal,
+    `${formelI ? 'Inline-Markierung da' : 'Inline-Markierung FEHLT'} · ${formelB ? 'Block-Markierung da' : 'Block-Markierung FEHLT'} · ${einmal ? 'Quelle je einmal' : 'Quelle fehlt oder doppelt (Glyphenreste?)'}`,
   );
 }
 
