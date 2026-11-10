@@ -18,7 +18,8 @@
           "../../vendor/code-kit/pure/",
           "../"
         ]
-      ]
+      ],
+      "ref": "0.82.2"
     },
     {
       "dir": "src/vendor/kit",

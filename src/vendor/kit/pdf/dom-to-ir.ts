@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.60.2, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.82.2, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { Block, Inline, ListItem, Cell, Align } from './ir';
 import type { ExtractedCode } from './code-blocks';
 
@@ -28,11 +28,17 @@ const isDecorative = (el: Element): boolean =>
 // `imageFailed` is the full text `resolveImages` shows for an image without alt text that could
 // not be decoded (a bare `[image: alt]` would read wrong with nothing to name); with alt text
 // the `image` word is reused, so one options object serves `domToIrSync` and `resolveImages`.
-export interface PdfPlaceholders { math?: string; graphic?: string; image?: string; imageFailed?: string }
-type ResolvedPlaceholders = { math: string; graphic: string; image: string; imageFailed: string };
+//
+// `mathSource` (since 0.82.2) is the marker for a formula whose LaTeX source is known; `{0}` is
+// replaced by the source (`'[Formel: {0}]'`). It is an optional template next to `math` rather
+// than a change of `math`, so a consumer without it keeps the plain `[Formel]` it had. A formula
+// without `data-latex` (the old SVG form) falls back to `math`.
+export interface PdfPlaceholders { math?: string; mathSource?: string; graphic?: string; image?: string; imageFailed?: string }
+type ResolvedPlaceholders = { math: string; mathSource?: string; graphic: string; image: string; imageFailed: string };
 const DEFAULT_PLACEHOLDERS: ResolvedPlaceholders = { math: '[Formel]', graphic: '[Grafik]', image: 'Bild', imageFailed: '[Bild konnte nicht eingebettet werden]' };
 const resolvePlaceholders = (ph?: PdfPlaceholders): ResolvedPlaceholders => ({
   math: ph?.math ?? DEFAULT_PLACEHOLDERS.math,
+  mathSource: ph?.mathSource,
   graphic: ph?.graphic ?? DEFAULT_PLACEHOLDERS.graphic,
   image: ph?.image ?? DEFAULT_PLACEHOLDERS.image,
   imageFailed: ph?.imageFailed ?? DEFAULT_PLACEHOLDERS.imageFailed,
@@ -43,16 +49,40 @@ const resolvePlaceholders = (ph?: PdfPlaceholders): ResolvedPlaceholders => ({
 // counter, so the host's summary notice stayed silent too. Silent loss is worse than visible
 // simplification: the PDF gave no hint that anything was missing. Returns the placeholder to
 // show in the PDF, or null when the element is just an empty layout wrapper or decoration.
+// A marker holds one PDF line: 120 characters is roughly one line of body text in Helvetica 11 pt
+// on A4, and a longer source (an `aligned` block) cannot be read in a marker anyway.
+const MATH_SOURCE_MAX = 120;
+function mathMarker(el: Element, ph: ResolvedPlaceholders): string {
+  if (!ph.mathSource) return ph.math;
+  const holder = nameOf(el) === 'MJX-MATH' ? el : el.querySelector('mjx-math[data-latex]');
+  const raw = (holder?.getAttribute('data-latex') ?? '').replace(/\s+/g, ' ').trim();
+  if (!raw) return ph.math;
+  const src = raw.length > MATH_SOURCE_MAX ? `${raw.slice(0, MATH_SOURCE_MAX - 1)}…` : raw;
+  return ph.mathSource.split('{0}').join(src);
+}
+
+// A wrapper that merely holds a formula is itself the formula; a wrapper with prose around it
+// is not — it is walked, and its formulas are found one by one inside the paragraphs.
+function onlyMath(el: Element): boolean {
+  const copy = el.cloneNode(true) as Element;
+  for (const m of Array.from(copy.querySelectorAll('mjx-container, math, .math'))) m.parentNode?.removeChild(m);
+  return !(copy.textContent || '').trim();
+}
+
 function graphicPlaceholder(el: Element, ph: ResolvedPlaceholders): string | null {
-  if ((el.textContent || '').trim()) return null;
   if (isDecorative(el)) return null;
+  const isMath = isMathEl(el) || (!!el.querySelector('mjx-container, math') && onlyMath(el));
+  // MathJax 4 (CHTML) writes the glyphs as real text, so a formula is recognised before the
+  // text check — otherwise `runsFrom` takes the glyphs over and the PDF shows `=2` (2026-11-09).
+  if (isMath) return mathMarker(el, ph);
+  if ((el.textContent || '').trim()) return null;
   const nm = nameOf(el);
-  const self = nm === 'SVG' || nm === 'CANVAS' || isMathEl(el);
-  const inner = el.querySelector('svg, canvas, mjx-container, math');
+  const self = nm === 'SVG' || nm === 'CANVAS';
+  const inner = el.querySelector('svg, canvas');
   if (!self && !inner) return null;
   // A wrapper whose only graphic is a decorative icon is decorative itself.
   if (!self && inner && isDecorative(inner)) return null;
-  return isMathEl(el) || el.querySelector('mjx-container, math') ? ph.math : ph.graphic;
+  return ph.graphic;
 }
 
 // A rendered task list item keeps its state only in the checkbox element; without a marker
@@ -249,10 +279,10 @@ export function domToIrSync(
         else walk(el);
       }
       else {
-        const t = (el.textContent || '').trim();
-        if (t) { blocks.push({ type: 'unsupported', text: t }); unsupportedCount++; continue; }
         const ph = graphicPlaceholder(el, placeholders);
-        if (ph) { blocks.push({ type: 'unsupported', text: ph }); unsupportedCount++; }
+        if (ph) { blocks.push({ type: 'unsupported', text: ph }); unsupportedCount++; continue; }
+        const t = (el.textContent || '').trim();
+        if (t) { blocks.push({ type: 'unsupported', text: t }); unsupportedCount++; }
       }
     }
   };

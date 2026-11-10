@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.60.2, src/pure/pdf/layout.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.82.2, src/pure/pdf/layout.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/layout.ts
 import { mmToPt, pageSizePt, hexToRgb01 } from './geometry';
 import { textWidthPt } from './metrics';
@@ -118,6 +118,7 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
   // Render a single block with an extra left indent (used by lists/blockquotes).
   const renderBlockIndented = (b: Block, indentPt: number, rgb: [number, number, number]) => {
     if (b.type === 'paragraph') emitInlines(b.inlines, baseSize, null, rgb, baseSize * 0.5, indentPt);
+    else if (b.type === 'image') placeImage(b, indentPt);
     else renderBlock(b); // headings/etc. inside items fall back to normal rendering
   };
 
@@ -176,8 +177,11 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
   // Placed size of an image — single source for the renderer and the orphan lookahead, so the
   // two cannot drift apart. Returns both dimensions rather than deriving width from height
   // afterwards: a degenerate image (hPx 0) has ratio 0, and dividing by it yields NaN.
-  const imageSizePt = (b: Extract<Block, { type: 'image' }>): { wPt: number; hPt: number } => {
-    const maxW = contentWidthPt * (options.image.maxWidthPct / 100);
+  //
+  // `indentPt` is the left indent of the enclosing list item / blockquote: the image sits that far
+  // right, so the available width shrinks by the same amount (it must not run over the right margin).
+  const imageSizePt = (b: Extract<Block, { type: 'image' }>, indentPt = 0): { wPt: number; hPt: number } => {
+    const maxW = (contentWidthPt - indentPt) * (options.image.maxWidthPct / 100);
     const ratio = b.hPx / Math.max(1, b.wPx);
     let wPt = Math.min(maxW, mmToPt(b.wPx * 0.264583)); // px→mm at 96dpi as a natural cap
     if (wPt < mmToPt(10)) wPt = maxW; // tiny natural size → fill available width
@@ -185,6 +189,16 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
     const maxH = (topYFirst - bottomY) * 0.9;
     if (hPt > maxH) { hPt = maxH; wPt = hPt / ratio; }
     return { wPt, hPt };
+  };
+
+  // Place an image `indentPt` right of the left margin (0 at top level; the item's indent in lists and quotes).
+  const placeImage = (b: Extract<Block, { type: 'image' }>, indentPt: number) => {
+    const { wPt, hPt } = imageSizePt(b, indentPt); // same maths the orphan lookahead uses
+    if (PAG.keepImagesTogether) breakBeforeIfNeeded(hPt + baseSize * 0.6);
+    // Reserve the image height (page-break if needed) and place from the top of the slot.
+    const yTop = advance(hPt + baseSize * 0.6);
+    const imgBottom = yTop + ASCENT * baseSize - hPt;
+    ops.push({ page, kind: 'image', data: b.data, wPx: b.wPx, hPx: b.hPx, x: leftPt + indentPt, y: imgBottom, w: wPt, h: hPt });
   };
 
   // Height of the first n wrapped lines of a block — a lookahead heuristic used to decide
@@ -362,15 +376,9 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
       case 'unsupported':
         emitInlines([{ text: b.text }], baseSize, () => F.italic, MUTED, paraGap, 0);
         break;
-      case 'image': {
-        const { wPt, hPt } = imageSizePt(b); // same maths the orphan lookahead uses
-        if (PAG.keepImagesTogether) breakBeforeIfNeeded(hPt + baseSize * 0.6);
-        // Reserve the image height (page-break if needed) and place from the top of the slot.
-        const yTop = advance(hPt + baseSize * 0.6);
-        const imgBottom = yTop + ASCENT * baseSize - hPt;
-        ops.push({ page, kind: 'image', data: b.data, wPx: b.wPx, hPx: b.hPx, x: leftPt, y: imgBottom, w: wPt, h: hPt });
+      case 'image':
+        placeImage(b, 0);
         break;
-      }
       case 'pagebreak':
         forceBreak();
         break;
