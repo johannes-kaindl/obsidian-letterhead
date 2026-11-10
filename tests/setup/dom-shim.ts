@@ -63,6 +63,8 @@ if (typeof globalThis.document !== 'undefined' && typeof globalThis.HTMLElement 
   };
 
   const g = globalThis as unknown as Record<string, unknown>;
+  // Obsidian-Global activeDocument: ohne Popout-Fenster ist es das eine document.
+  g.activeDocument = document;
   g.createEl = (tag: string, o?: ElInfo | string, cb?: (el: HTMLElement) => void) => make(document, tag, o, cb);
   g.createDiv = (o?: ElInfo | string, cb?: (el: HTMLElement) => void) => make(document, 'div', o, cb);
   g.createSpan = (o?: ElInfo | string, cb?: (el: HTMLElement) => void) => make(document, 'span', o, cb);

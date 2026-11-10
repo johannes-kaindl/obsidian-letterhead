@@ -449,8 +449,12 @@ let activeCleanup: (() => void) | null = null;
 /** @returns a cancel function that restores the title and drops the frame. */
 export function doPrint(letterHtml: string, css: string, filename?: string): () => void {
   if (activeCleanup) activeCleanup();
+  /* activeDocument statt document (obsidianmd/prefer-active-doc): ein Popout-Fenster hat sein
+     eigenes Dokument. Einmal gegriffen, damit Titel-Tausch, Rahmen und Wiederherstellung am
+     selben Dokument hängen, auch wenn das aktive Fenster während des Drucks wechselt. */
+  const doc = activeDocument;
   // safety net for frames left behind by a previous plugin load
-  const stale = document.querySelector(`iframe.${PRINT_FRAME_CLASS}`);
+  const stale = doc.querySelector(`iframe.${PRINT_FRAME_CLASS}`);
   if (stale) stale.remove();
 
   /* createEl (Obsidian-Global) statt document.createElement — obsidianmd/prefer-create-el.
@@ -467,14 +471,14 @@ export function doPrint(letterHtml: string, css: string, filename?: string): () 
      showed up. Swapping Obsidian's title for the duration of the print is the
      only lever the platform offers. Restored in cleanup(), which is idempotent
      and also runs from the 60 s safety net, so the app title cannot stay stuck. */
-  const previousTitle = document.title;
-  if (filename) document.title = filename;
+  const previousTitle = doc.title;
+  if (filename) doc.title = filename;
 
   let done = false;
   const cleanup = (): void => {
     if (done) return;
     done = true;
-    if (filename) document.title = previousTitle;
+    if (filename) doc.title = previousTitle;
     frame.remove();
     if (activeCleanup === cleanup) activeCleanup = null;
   };
@@ -493,7 +497,7 @@ export function doPrint(letterHtml: string, css: string, filename?: string): () 
     }
   });
 
-  document.body.appendChild(frame);
+  doc.body.appendChild(frame);
   // safety net for platforms that never fire 'afterprint' (some iOS cases)
   window.setTimeout(cleanup, 60000);
   return cleanup;
