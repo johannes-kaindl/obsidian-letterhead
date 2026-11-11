@@ -9,14 +9,15 @@ Modul-Layout und Export-Wege. Das Warum steht in `docs/internal/decisions.md`, d
 - `src/vendor/kit/` ist die vendorte pure Schicht (PDF-Engine, `vault-path`, `filename-template`, `data-url`, `local-stamp`), `src/vendor/kit-obsidian/` die Obsidian-gekoppelte (`confirm`, `folder-suggest`, `help-setting`, `settings_walker`, `share-export`). `npm run check:pure` erzwingt: kein `obsidian`-Import in `src/core` oder `src/vendor`, außer in `src/vendor/kit-obsidian` (einziger Eintrag in `EXCLUDED` von `scripts/check-pure.mjs`).
 - Styling läuft ausschließlich über CSS Custom Properties (Design-Tokens): Geometrie ist DIN-kritisch (Fensterkuvert), Typo/Farbe/Spacing frei. Token-Referenz: `docs/reference/theming.md`.
 
-## Zwei Export-Wege
+## Drei Befehle, zwei PDF-Wege
 
-Der Export ist plattformabhängig. `Platform.isDesktopApp` ist die einzige Abfrage, die zwischen Druckdialog und Vektor-PDF wählt; `Platform.isMobile` steuert nur das Teilen nach dem Speichern in `writePdf`.
+Der Export ist plattformabhängig. `exportLetter` (`main.ts`) wählt über `renderPdfBytes` (`src/obsidian/pdf-route.ts`) den Weg: `Platform.isDesktopApp && isDesktopPrintAvailable()` führt zum Druckmodul, sonst zur Vektor-Engine; scheitert das Druckmodul, fällt `renderPdfBytes` mit einem Hinweis auf das Vektor-PDF zurück. `Platform.isMobile` steuert nur das Teilen nach dem Speichern in `writePdf`.
 
-- **Desktop:** `doPrint()` baut ein eigenes iframe (`srcdoc` = `buildStandaloneDoc`) und ruft `window.print()`; der OS-Druckdialog übernimmt, es entsteht keine Datei.
+- **Desktop, Haupt-Befehl `export-letter`:** `buildChromiumPdfBytes` rendert den Body neu mit inlinierten Bildern (`inlineImages`, das `<webview>` hat kein `app://`), baut `buildChromiumDoc` (= `buildStandaloneDoc` plus CSP) und übergibt es dem vendorten Kit-Modul `printHtmlToPdf` (`src/vendor/kit-obsidian/print-to-pdf.ts`, unsichtbares `<webview>`, `printToPDF`); das PDF geht über `savePdf` in `writePdf`, also ins eingestellte Ausgabeziel. `PRINT_TO_PDF_CSS` steht wortgleich in `styles.css`.
+- **Desktop, `print-letter`:** `doPrint()` baut ein eigenes iframe (`srcdoc` = `buildStandaloneDoc`) und ruft `window.print()`; der OS-Druckdialog übernimmt, es entsteht keine Datei. Der Befehl ist auf Mobile nicht registriert (`checkCallback`).
 - **iOS/iPad:** `window.print()` ist dort wirkungslos, daher baut `exportViaPdf()` das Vektor-PDF und `writePdf()` (`src/obsidian/output.ts`) reicht es weiter. Im Ausgabemodus `share` landet die Datei im versteckten Export-Ordner `.letterhead-export/`; in den Speichermodi (`nextToNote`, `attachmentFolder`, `customFolder`) wird gespeichert und auf Mobile anschließend geteilt. Geteilt wird über eine nach Fähigkeit gewählte Kaskade `navigator.canShare({files})` → `navigator.share()` (Ein-Tipp-Share-Sheet) → sonst `app.openWithDefaultApp()`.
 - Keine Netzwerkzugriffe, keine Telemetrie, externe Assets nur als `data:`-URL (Logo).
-- Der Befehl `letterhead:export-letter-pdf` (`exportViaPdf`) fährt auf beiden Plattformen dieselbe Vektor-Engine; der GUI-Smoke löst nur ihn aus.
+- Der Befehl `letterhead:export-letter-pdf` (`exportViaPdf`) fährt auf beiden Plattformen dieselbe Vektor-Engine; der GUI-Smoke löst ihn und `letterhead:export-letter` (Gruppe J) aus, nie `print-letter`.
 
 ## Vektor-PDF-Engine
 

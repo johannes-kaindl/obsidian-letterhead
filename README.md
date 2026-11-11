@@ -2,7 +2,7 @@
 
 > 🇬🇧 English · [🇩🇪 Deutsch](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/README.de.md)
 
-An Obsidian plugin that turns a note into a professionally formatted business letter — German **DIN 5008** or a clean **modern** layout — and exports it to PDF: on desktop via the OS print dialog, on **iPhone/iPad** as a real, text-selectable PDF shared with one tap.
+An Obsidian plugin that turns a note into a professionally formatted business letter — German **DIN 5008** or a clean **modern** layout — and exports it to PDF: on desktop as a PDF file straight from the rendered letter (the OS print dialog stays available for paper), on **iPhone/iPad** as a real, text-selectable PDF shared with one tap.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE)
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE-DOCS)
@@ -30,7 +30,7 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 ## Features
 
 - **Letters from your notes:** a note's frontmatter holds the metadata, the note body (Markdown) becomes the letter text — one command turns it into a finished, formatted business letter.
-- **PDF export & printing, everywhere:** Desktop (macOS/Windows/Linux) → OS print dialog → “Save as PDF”; **iPhone/iPad** → a real, text-selectable **vector PDF** generated inside the plugin and shared with **one tap** (system share sheet → “Save to Files” or send anywhere). The built-in PDF engine has no runtime dependencies and works fully offline — no network, no Electron, no Node — and renders rich letter bodies (tables, embedded images, code blocks, multi-page pagination), not just plain text. Anything it cannot represent is reported as a notice rather than silently dropped. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact. The mobile PDF uses the standard PDF typefaces (Helvetica/Times/Courier), so files stay tiny and open identically in any viewer.
+- **PDF export & printing, everywhere:** one command, **Export letter as PDF**, picks the way itself. Desktop (macOS/Windows/Linux) → the letter is rendered as HTML/CSS and printed to a PDF file by the browser engine inside Obsidian — no print dialog, and your Custom CSS applies; **iPhone/iPad** → a real, text-selectable **vector PDF** generated inside the plugin and shared with **one tap** (system share sheet → “Save to Files” or send anywhere). The built-in PDF engine has no runtime dependencies and works fully offline — no network, no Electron, no Node — and renders rich letter bodies (tables, embedded images, code blocks, multi-page pagination), not just plain text. Anything it cannot represent is reported as a notice rather than silently dropped. Two more commands: **Export letter as PDF (vector, fixed DIN layout)** builds that vector PDF on any platform (it reads only the plain `--bk-*` values from your Custom CSS), and **Print letter (print dialog)** opens the operating system's print dialog for paper (desktop only). If the browser PDF fails, the export falls back to the vector PDF and tells you. Page margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, bottom: 20 mm) — DIN positions stay paper-exact. The mobile PDF uses the standard PDF typefaces (Helvetica/Times/Courier), so files stay tiny and open identically in any viewer.
 - **Two layouts:** `DIN 5008` (German standard, ready for a window envelope) and `Modern` (international) — choose in **Settings → Layout**.
 - **Three styles via dropdown:** matter-of-fact (sans), classic (serif), technical (monospaced accents) — plus a full info block or a plain date line; both overridable per letter in frontmatter.
 - **Bilingual:** the plugin UI follows the Obsidian app language (English/German); the letter language is a separate setting — German or English letter labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), switchable per letter via the `sprache` frontmatter field.
@@ -39,13 +39,13 @@ An Obsidian plugin that turns a note into a professionally formatted business le
 - **Paginated preview:** shows the final A4 sheets including page breaks.
 - **DIN extras:** fold marks (105/210 mm or 87/192 mm), hole mark (148.5 mm), print-offset fine-tuning for the envelope window.
 - **No CSS required** — style and info line are plain settings; for fine-tuning there are documented CSS design tokens + a one-click commented preset.
-- **Fully offline** — no network calls, no telemetry; rendering happens locally via the OS print engine.
+- **Fully offline** — no network calls, no telemetry; rendering happens locally (Obsidian's built-in browser engine on desktop, the plugin's own PDF engine on mobile).
 - TypeScript, esbuild-bundled, no runtime dependencies, mobile-ready (`isDesktopOnly: false`), AGPL-3.0.
 
 ## Requirements
 
 - **Obsidian 1.8.7 or newer** (desktop and mobile — the plugin is not desktop-only).
-- **Desktop:** macOS, Windows or Linux. Export goes through the operating system's print dialog.
+- **Desktop:** macOS, Windows or Linux. Export writes a PDF file with Obsidian's built-in browser engine; the operating system's print dialog is a separate command for paper.
 - **iPhone/iPad:** iOS/iPadOS. Export produces a vector PDF inside the plugin and hands it to the system share sheet.
 - **Nothing else.** No runtime dependencies, no network access, no Node or Electron APIs — the plugin works fully offline.
 - For building from source: **Node.js** and npm (see [Development](#development)).
@@ -101,8 +101,8 @@ Then: Obsidian → Settings → Community plugins → reload → enable **Letter
 ## Usage
 
 1. Open a note and scaffold the fields with **Insert letter frontmatter into note** (or see the [example](examples/example-letter.md)), then fill them in.
-2. Run **Export letter as PDF / print** (command palette or the envelope ribbon icon). Use **Open letter preview** for a paginated preview first.
-3. **Desktop:** In the print dialog choose **Save as PDF** (macOS: PDF dropdown bottom-left); keep scaling at 100%. **iPhone/iPad:** the finished PDF is saved to your **Output target** and, where that target is *share directly*, handed to the system share sheet — tap **Save to Files** or send it anywhere.
+2. Run **Export letter as PDF** (command palette or the envelope ribbon icon). Use **Open letter preview** for a paginated preview first.
+3. **Desktop:** the PDF is written to your **Output target** (next to the note by default) — no dialog. For paper run **Print letter (print dialog)** instead and keep scaling at 100%. **iPhone/iPad:** the finished PDF is saved to your **Output target** and, where that target is *share directly*, handed to the system share sheet — tap **Save to Files** or send it anywhere.
 
 The note body below the frontmatter is the letter text and is rendered as Markdown.
 
@@ -120,7 +120,7 @@ Everything is configured in **Settings → Letterhead**; nothing requires CSS. T
 
 Two settings decide where your PDF ends up and what it is called:
 
-- **Output target** — where the exported PDF is written: **next to the note**, into **Obsidian's attachment folder**, into a **folder of your choice**, or not saved at all and **shared directly**. An existing file is never overwritten; a `" (2)"` is appended instead. Applies to the vector PDF export, not to the desktop print dialog.
+- **Output target** — where the exported PDF is written: **next to the note**, into **Obsidian's attachment folder**, into a **folder of your choice**, or not saved at all and **shared directly**. An existing file is never overwritten; a `" (2)"` is appended instead. Applies to both PDF exports, not to the print dialog.
 - **Filename scheme** — the name of the exported PDF, and the one the print dialog proposes. Placeholders `{notiz}` `{datum}` `{datum_lang}` `{empfaenger}` `{betreff}` `{unserzeichen}`; anything else in the field is kept literally. `{datum}` yields **YYYY-MM-DD** so letters sort chronologically in a file manager, `{datum_lang}` prints the date as it appears in the letter.
 
 Existing installations keep their previous behaviour (share directly, `{notiz}`); only fresh installations start with the new defaults. Full reference: [docs/reference/settings.md](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/settings.md).
@@ -131,8 +131,8 @@ A letter is an ordinary note. Its **frontmatter carries the metadata** (recipien
 
 Export then takes one of two deliberately different routes:
 
-- **Desktop** renders the letter as HTML/CSS into an isolated iframe and hands it to the **operating system's print dialog** — where you choose "Save as PDF". The OS does the rendering, so the result matches what any other application on your machine would print.
-- **iPhone/iPad** cannot print this way, so the plugin builds the PDF itself: a real, text-selectable **vector PDF** (PDF 1.7, standard PDF typefaces), generated on device and passed to the share sheet with one tap. Tables, embedded images, code blocks and multi-page pagination are rendered directly into the PDF. Anything the engine cannot represent is reported as a notice rather than silently dropped.
+- **Desktop** renders the letter as HTML/CSS and prints it to a PDF file with the browser engine inside Obsidian (the same engine as the print dialog), without a dialog; the result matches what any other application on your machine would print. **Print letter (print dialog)** hands the same letter to the **operating system's print dialog** for paper. If printing to a file fails, the plugin builds the vector PDF instead and shows a notice.
+- **iPhone/iPad** cannot print this way, so the plugin builds the PDF itself (on desktop the command **Export letter as PDF (vector, fixed DIN layout)** does the same): a real, text-selectable **vector PDF** (PDF 1.7, standard PDF typefaces), generated on device and passed to the share sheet with one tap. Tables, embedded images, code blocks and multi-page pagination are rendered directly into the PDF. Anything the engine cannot represent is reported as a notice rather than silently dropped.
 
 Both routes share the same geometry. DIN 5008 positions — address field, fold marks at 105/210 mm (or 87/192 mm), hole mark at 148.5 mm — are placed as absolute paper coordinates so the recipient address lines up with a window envelope. Print margins are set automatically (page 1: 10 mm top, continuation pages: 25 mm, 20 mm bottom).
 

@@ -82,7 +82,7 @@ Hintergrund: [DIN 5008](../explanation/din5008.de.md).
 
 ## Welche Tokens das Vektor-PDF liest
 
-Der Desktop-Druck und die Vorschau rendern HTML/CSS, dort gilt jedes Token und jede Klassenregel von oben. Das **Vektor-PDF** (mobil und der Befehl „Brief als PDF exportieren (Vektor)“) zeichnet eine eigene Engine. Seit 1.9.0 gehen beide Wege von demselben aufgelösten Token-Satz aus: Stil-Defaults, dann die Einstellungen, dann deine `--bk-*`-Angaben im Feld **Custom CSS**. Das PDF übernimmt nur einfache Werte:
+Das Desktop-Browser-PDF (der Befehl „Brief als PDF exportieren“), der Druckdialog und die Vorschau rendern HTML/CSS, dort gilt jedes Token und jede Klassenregel von oben. Das **Vektor-PDF** (mobil und der Befehl „Brief als PDF exportieren (Vektor, feste DIN-Gestaltung)“) zeichnet eine eigene Engine. Seit 1.9.0 gehen beide Wege von demselben aufgelösten Token-Satz aus: Stil-Defaults, dann die Einstellungen, dann deine `--bk-*`-Angaben im Feld **Custom CSS**. Das PDF übernimmt nur einfache Werte:
 
 | Token | Im PDF akzeptiert |
 |-------|-------------------|

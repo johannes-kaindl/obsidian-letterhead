@@ -34,7 +34,15 @@ The command **Insert letter frontmatter into note** scaffolds the main fields. A
 
 **Cause:** on the desktop the letter is handed to the operating system's print dialog through a hidden frame, and opening that dialog failed.
 
-**Fix:** run **Export letter as PDF / print** again. If it keeps failing, use **Export letter as PDF (vector)**, which writes the PDF itself and does not need the print dialog.
+**Fix:** run **Print letter (print dialog)** again. If it keeps failing, use **Export letter as PDF**, which writes the PDF file without the dialog (and falls back to the vector PDF if the browser engine fails).
+
+## The browser PDF failed, using the vector PDF instead
+
+> Letterhead: The browser PDF failed, using the vector PDF instead.
+
+**Cause:** on the desktop, **Export letter as PDF** prints the letter to a file with Obsidian's built-in browser engine. That step timed out, found nothing to print or is not available, so the plugin built the vector PDF instead. The file is still written to your **Output target**. Details are in the developer console (Ctrl+Shift+I, or Cmd+Option+I on macOS).
+
+**Fix:** nothing is lost, but the vector PDF ignores class and font rules from your Custom CSS (see [theming](reference/theming.md)). Run the command again; if it keeps falling back, tell us the console message.
 
 ## The file could not be handed to the system
 
@@ -62,9 +70,9 @@ The command **Insert letter frontmatter into note** scaffolds the main fields. A
 
 > Letterhead: 2 element(s) were simplified for the PDF.
 
-**Cause:** when the plugin builds the PDF itself — always on iPhone and iPad, on the desktop through **Export letter as PDF (vector)** — what its engine cannot represent is reduced to plain text. The notice counts them.
+**Cause:** when the plugin builds the PDF itself — always on iPhone and iPad, on the desktop through **Export letter as PDF (vector, fixed DIN layout)** or as the fallback of **Export letter as PDF** — what its engine cannot represent is reduced to plain text. The notice counts them.
 
-**Fix:** check the letter against the PDF. On the desktop, **Export letter as PDF / print** renders through the operating system and does not have this limit.
+**Fix:** check the letter against the PDF. On the desktop, **Export letter as PDF** renders with Obsidian's browser engine and does not have this limit (unless the notice named the fallback).
 
 ## Getting help
 

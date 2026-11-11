@@ -43,11 +43,11 @@ meldet den Fehler beim Prüfling.
 
 ## Was der Treiber bewusst NICHT auslöst
 
-`letterhead:export-letter` — der Haupt- und Ribbon-Befehl — ruft auf dem Desktop
-`doPrint()` und öffnet den **OS-Druckdialog**. Ein modaler Systemdialog blockiert jede
+`letterhead:print-letter` ruft auf dem Desktop `doPrint()` und öffnet den
+**OS-Druckdialog**. Ein modaler Systemdialog blockiert jede
 weitere CDP-Kommunikation; der Lauf hinge, und niemand sähe warum. Gemessen wird
-stattdessen `letterhead:export-letter-pdf` (`exportViaPdf`) — dieselbe Vektor-Engine, ohne
-Dialog. Der Druckpfad bleibt Handarbeit und steht als übersprungener Punkt im Protokoll.
+stattdessen `letterhead:export-letter-pdf` (`exportViaPdf`, Vektor-Engine, Gruppen B–I) und der Haupt-Befehl `letterhead:export-letter` (Kit-Druckmodul, Gruppe J) — beide ohne
+Dialog. Der Druckdialog bleibt Handarbeit und steht als übersprungener Punkt im Protokoll.
 
 Ebenfalls übersprungen und im Lauf begründet: die iOS-Share-Kaskade (`navigator.share()` und das System-Share-Sheet,
 plattformgebunden; der Desktop-Teil `canShare` falsch → `openWithDefaultApp` läuft in I1–I4 gegen einen Stub) und das
@@ -85,7 +85,7 @@ instanzgebunden. Dann warten.
 
 | Gruppe | Punkte |
 |---|---|
-| **A · Grundlage** | Plugin geladen · alle vier Befehle registriert · Ribbon-Knopf |
+| **A · Grundlage** | Plugin geladen · alle fünf Befehle registriert · Ribbon-Knopf |
 | **B · Vektor-PDF** | PDF entsteht neben der Notiz · Datei ist ein PDF · Notice nennt den Pfad · Core-14-Schriften ohne `/FontFile` |
 | **C · Briefinhalt** | Empfängeranschrift (3 Zeilen) · Betreff/Anrede/Gruß/Unterschrift · Infoblock-Bezugszeichen · Anlagenvermerk · Absender aus den Einstellungen · Umlaute und € als WinAnsi · Fließtext samt Auszeichnungen |
 | **D · Frontmatter** | englische Aliasse · Schlüssel case-insensitiv, Trennzeichen egal · `language: en` schaltet die Brief-Etiketten · Degradations-Platzhalter folgt der Briefsprache · Formel trägt ihre LaTeX-Quelle in der Briefsprache (`[Formula: …]`) |
@@ -94,6 +94,7 @@ instanzgebunden. Dann warten.
 | **G · Ablage** | `nextToNote` im Unterordner · zweiter Export zählt hoch statt zu überschreiben · Dateiname folgt `{datum} {empfaenger}` · `customFolder` legt den Zielordner an |
 | **H · Vorschau** | Modal öffnet · paginiert in `.bk-sheet` · Falz- und Lochmarken gezeichnet |
 | **I · Teilen** | Fremddatei im Export-Ordner löst die Rückfrage aus, „Keep them“ lässt sie liegen · „Delete them“ löscht sie · ohne Fremddatei keine Rückfrage, die Datei geht einmal an die (Stub-)Standard-App · Gegenprobe: die Antwort entscheidet. Prüfung und Stub liegen in `tools/obsidian-cdp/teilen.ts` im Dach |
+| **J · Browser-PDF** | `export-letter` schreibt am Desktop ein Chromium-PDF (Producer `Skia/PDF`, Marker per Poppler `pdftotext` gelesen, nicht mit dem Vektor-Leser des Treibers) · Rückfall: ist `plugin.desktopPrint` durch einen Wurf ersetzt, entsteht das Vektor-PDF (kein Skia-Producer, Marker im Vektor-Text) und der Hinweis «The browser PDF failed …» erscheint. Beide Punkte tragen die Gegenprobe im jeweils anderen |
 
 **Nicht mechanisch geprüft und deshalb weiter Handarbeit:** wie der Brief *aussieht* — die
 DIN-Maße am Fensterkuvert, Grauwert, Umbruchästhetik, Logo-Platzierung. Dafür bleibt der

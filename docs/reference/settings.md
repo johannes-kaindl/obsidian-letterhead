@@ -11,7 +11,7 @@ the English labels. The language of the **letter** is independent of this
 
 | Setting | Values | Meaning |
 |---------|--------|---------|
-| **Layout** | `DIN 5008 (German standard)` · `Modern / international` | Base letter layout. DIN = German standard, window-envelope-ready; Modern = free, international layout. Print and preview only: the vector PDF always uses DIN. |
+| **Layout** | `DIN 5008 (German standard)` · `Modern / international` | Base letter layout. DIN = German standard, window-envelope-ready; Modern = free, international layout. Browser PDF, print dialog and preview only: the vector PDF always uses DIN. |
 | **Style** | `A · Neutral (sans-serif)` · `B · Classic (serif)` · `C · Technical (monospaced accents)` | The complete look (font, colours, spacing, letterhead typography). Overridable per letter via the `style` frontmatter field. |
 | **Info line** | `Full (info block)` · `Date only` | Full: info block to the right of the address (tax number, references, … date). Date only: a plain right-aligned place/date line — for employer and private correspondence. Overridable per letter via the `info line` frontmatter field. |
 | **DIN 5008 form** | `Form A (27 mm)` · `Form B (45 mm)` | Position of the address field and the fold marks. Form B is the default. |
@@ -51,7 +51,7 @@ the left of the letterhead, the contact details on the right.
 
 | Setting | Meaning |
 |---------|---------|
-| **Font (CSS font-family)** | Optional override. Empty = the default of the chosen style; the placeholder shows the effective value. Print and preview only: the vector PDF uses the standard PDF font of the style. |
+| **Font (CSS font-family)** | Optional override. Empty = the default of the chosen style; the placeholder shows the effective value. Browser PDF, print dialog and preview only: the vector PDF uses the standard PDF font of the style. |
 | **Font size (pt)** | Optional override. Empty = style default (10 pt); the placeholder shows the effective value. |
 | **Date locale** | e.g. `de-DE`, `en-GB`, `en-US` — format of the date output. |
 | **Letter language** | Language of the printed labels: `Deutsch` (Anlagen, Ihr Zeichen, Datum, Tel.) or `English` (Enclosures, Your ref., Date, Phone). Overridable per letter via the `language` frontmatter field. |
@@ -69,7 +69,7 @@ overwriting existing values. Full reference: [frontmatter fields](frontmatter.md
 
 | Setting | Meaning |
 |---------|---------|
-| **Output target** | Where the exported PDF is written: **Next to the note** · **Obsidian's attachment folder** · **Custom folder** · **Do not save, share directly**. Applies to the vector PDF export, not to the desktop print dialog — there the OS decides where the file goes. An existing file is never overwritten: a `" (2)"` is appended instead. |
+| **Output target** | Where the exported PDF is written: **Next to the note** · **Obsidian's attachment folder** · **Custom folder** · **Do not save, share directly**. Applies to both PDF exports (**Export letter as PDF** and its vector variant), not to the print dialog — there the OS decides where the file goes. An existing file is never overwritten: a `" (2)"` is appended instead. |
 | **Custom folder** | Vault-relative target folder, e.g. `Export/Letters`. Only shown when **Output target** is set to *Custom folder* — a field that is inert in the other three modes would be a trap. |
 | **Filename scheme** | Name of the exported PDF, and the name the print dialog proposes. See the placeholder table below. |
 | **Custom CSS (optional)** | Your own CSS for details beyond style + info line; loaded last and wins. The field is pre-filled with a **fully commented-out** (inactive) preset that documents all tokens — uncomment a line to activate it. **Reset preset** restores the initial state after a confirmation and saves your previous CSS to `custom-css-backup.css` in the plugin folder. The vector PDF reads only the plain `--bk-*` values (colours, sizes, gaps). See [theming](theming.md). |

@@ -58,10 +58,15 @@ A4 sheets including page breaks — so you can see the layout without printing.
 
 ## 5. Export as PDF
 
-Command palette or the envelope icon → **Export letter as PDF / print**.
+Command palette or the envelope icon → **Export letter as PDF**.
 
-- **Desktop (macOS/Windows/Linux):** The operating system's print dialog opens.
-  PDF dropdown or destination → **"Save as PDF"**; keep scaling at **100%**.
+- **Desktop (macOS/Windows/Linux):** The plugin renders the letter and prints it to a PDF
+  file with Obsidian's browser engine — no dialog. The file goes to whatever you set as
+  **Output target** (Settings → Advanced), next to the note by default. For paper, use
+  **Print letter (print dialog)** instead: the operating system's print dialog opens;
+  keep scaling at **100%**. If printing to a file fails, the plugin builds the vector
+  PDF instead and shows a notice. **Export letter as PDF (vector, fixed DIN layout)**
+  builds that vector PDF on purpose; it ignores class and font rules from your Custom CSS.
 - **iPhone/iPad:** The plugin builds the finished PDF itself — a real,
   text-selectable vector PDF — and writes it to whatever you set as
   **Output target** (Settings → Advanced). Where that target is *Do not save,

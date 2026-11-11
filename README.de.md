@@ -2,7 +2,7 @@
 
 > 🇩🇪 Deutsch · [🇬🇧 English](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/README.md)
 
-Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Geschäftsbrief macht — deutscher **DIN 5008** oder ein klares **modernes** Layout — und ihn als PDF exportiert: auf dem Desktop per Druckdialog, auf **iPhone/iPad** als echtes, textselektierbares PDF mit einem Tipp.
+Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Geschäftsbrief macht — deutscher **DIN 5008** oder ein klares **modernes** Layout — und ihn als PDF exportiert: auf dem Desktop als PDF-Datei direkt aus dem gerenderten Brief (der Druckdialog des Betriebssystems bleibt für Papier erhalten), auf **iPhone/iPad** als echtes, textselektierbares PDF mit einem Tipp.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE)
 [![Docs: CC BY-SA 4.0](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-lightgrey.svg)](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/LICENSE-DOCS)
@@ -29,7 +29,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 ## Funktionen
 
 - **Briefe aus deinen Notizen:** Das Frontmatter einer Notiz hält die Metadaten, der Notiztext (Markdown) wird zum Brieftext — ein Befehl macht daraus einen fertig formatierten Geschäftsbrief.
-- **PDF-Export & Druck, überall:** Desktop (macOS/Windows/Linux) → Druckdialog → „Als PDF sichern"; **iPhone/iPad** → ein echtes, textselektierbares **Vektor-PDF**, das im Plugin erzeugt und mit **einem Tipp** geteilt wird (System-Teilen-Menü → „In Dateien sichern" oder beliebig weiterleiten). Die eingebaute PDF-Engine hat keine Laufzeit-Abhängigkeiten und arbeitet vollständig offline — kein Netz, kein Electron, kein Node — und rendert reiche Briefinhalte (Tabellen, eingebettete Bilder, Code-Blöcke, mehrseitige Paginierung), nicht nur reinen Text. Was die Engine nicht darstellen kann, wird als Hinweis gemeldet statt still verschluckt. Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau. Das mobile PDF nutzt die Standard-PDF-Schriften (Helvetica/Times/Courier), bleibt dadurch winzig und öffnet in jedem Viewer identisch.
+- **PDF-Export & Druck, überall:** ein Befehl, **Export letter as PDF**, wählt den Weg selbst. Desktop (macOS/Windows/Linux) → der Brief wird als HTML/CSS gerendert und von der Browser-Engine in Obsidian in eine PDF-Datei gedruckt — ohne Druckdialog, dein Custom CSS gilt; **iPhone/iPad** → ein echtes, textselektierbares **Vektor-PDF**, das im Plugin erzeugt und mit **einem Tipp** geteilt wird (System-Teilen-Menü → „In Dateien sichern" oder beliebig weiterleiten). Die eingebaute PDF-Engine hat keine Laufzeit-Abhängigkeiten und arbeitet vollständig offline — kein Netz, kein Electron, kein Node — und rendert reiche Briefinhalte (Tabellen, eingebettete Bilder, Code-Blöcke, mehrseitige Paginierung), nicht nur reinen Text. Was die Engine nicht darstellen kann, wird als Hinweis gemeldet statt still verschluckt. Zwei weitere Befehle: **Export letter as PDF (vector, fixed DIN layout)** baut dieses Vektor-PDF auf jeder Plattform (es liest aus deinem Custom CSS nur die einfachen `--bk-*`-Werte), und **Print letter (print dialog)** öffnet den Druckdialog des Betriebssystems für Papier (nur Desktop). Scheitert das Browser-PDF, fällt der Export auf das Vektor-PDF zurück und sagt es dir. Druckränder werden automatisch gesetzt (Seite 1 oben 10 mm, Folgeseiten 25 mm, unten 20 mm) — DIN-Positionen bleiben papiergenau. Das mobile PDF nutzt die Standard-PDF-Schriften (Helvetica/Times/Courier), bleibt dadurch winzig und öffnet in jedem Viewer identisch.
 - **Zwei Layouts:** `DIN 5008` (deutscher Standard, fensterkuvert-tauglich) und `Modern` (international) — wählbar unter **Einstellungen → Layout**.
 - **Drei Stile per Dropdown:** Sachlich-modern, Klassisch-seriös, Technisch-präzise — plus Infozeile „Vollständig" (Infoblock) oder „Nur Datum"; beides pro Brief im Frontmatter überschreibbar.
 - **Zweisprachig:** Plugin-UI folgt der Obsidian-App-Sprache (Englisch/Deutsch); die Briefsprache ist separat einstellbar — deutsche oder englische Brief-Labels (Anlagen/Enclosures, Ihr Zeichen/Your ref., …), pro Brief per Frontmatter `sprache` umschaltbar.
@@ -44,7 +44,7 @@ Ein Obsidian-Plugin, das aus einer Notiz einen professionell formatierten Gesch�
 ## Voraussetzungen
 
 - **Obsidian 1.8.7 oder neuer** (Desktop und Mobile — das Plugin ist nicht desktop-only).
-- **Desktop:** macOS, Windows oder Linux. Der Export läuft über den Druckdialog des Betriebssystems.
+- **Desktop:** macOS, Windows oder Linux. Der Export schreibt eine PDF-Datei mit der Browser-Engine in Obsidian; der Druckdialog des Betriebssystems ist ein eigener Befehl für Papier.
 - **iPhone/iPad:** iOS/iPadOS. Der Export erzeugt ein Vektor-PDF im Plugin und übergibt es dem System-Teilen-Menü.
 - **Sonst nichts.** Keine Laufzeit-Abhängigkeiten, keine Netzwerkzugriffe, keine Node- oder Electron-APIs — das Plugin arbeitet vollständig offline.
 - Zum Bauen aus dem Quelltext: **Node.js** und npm (siehe [Entwicklung](#entwicklung)).
@@ -100,8 +100,8 @@ Dann: Obsidian → Einstellungen → Community-Plugins → neu laden → **Lette
 ## Nutzung
 
 1. Notiz öffnen und mit dem Befehl **Insert letter frontmatter into note** die Felder anlegen (oder siehe [Beispiel](examples/example-letter.md)), dann ausfüllen.
-2. Befehl **Export letter as PDF / print** (Befehlspalette oder Briefumschlag-Icon). Mit **Open letter preview** vorab seitenecht prüfen.
-3. **Desktop:** Im Druckdialog **„Als PDF sichern"** wählen (macOS: PDF-Dropdown unten links), Skalierung auf 100 % lassen. **iPhone/iPad:** Die fertige PDF wird ins eingestellte **Ausgabeziel** geschrieben; steht dieses auf *direkt teilen*, öffnet sich das System-Teilen-Menü — **„In Dateien sichern"** tippen oder beliebig weiterleiten.
+2. Befehl **Export letter as PDF** (Befehlspalette oder Briefumschlag-Icon). Mit **Open letter preview** vorab seitenecht prüfen.
+3. **Desktop:** Die PDF wird ins eingestellte **Ausgabeziel** geschrieben (standardmäßig neben die Notiz) — ohne Dialog. Für Papier stattdessen **Print letter (print dialog)** ausführen und die Skalierung auf 100 % lassen. **iPhone/iPad:** Die fertige PDF wird ins eingestellte **Ausgabeziel** geschrieben; steht dieses auf *direkt teilen*, öffnet sich das System-Teilen-Menü — **„In Dateien sichern"** tippen oder beliebig weiterleiten.
 
 Der Notiztext unter dem Frontmatter ist der Brieftext und wird als Markdown gerendert.
 
@@ -119,7 +119,7 @@ Alles wird unter **Einstellungen → Letterhead** eingestellt; CSS ist für nich
 
 Zwei Einstellungen entscheiden, wo die PDF landet und wie sie heißt:
 
-- **Ausgabeziel** — wohin die exportierte PDF geschrieben wird: **neben die Notiz**, in **Obsidians Anhang-Ordner**, in einen **eigenen Ordner** oder gar nicht speichern und **direkt teilen**. Eine vorhandene Datei wird nie überschrieben, sondern um `" (2)"` ergänzt. Gilt für den Vektor-PDF-Export, nicht für den Desktop-Druckdialog.
+- **Ausgabeziel** — wohin die exportierte PDF geschrieben wird: **neben die Notiz**, in **Obsidians Anhang-Ordner**, in einen **eigenen Ordner** oder gar nicht speichern und **direkt teilen**. Eine vorhandene Datei wird nie überschrieben, sondern um `" (2)"` ergänzt. Gilt für beide PDF-Exporte, nicht für den Druckdialog.
 - **Dateinamen-Schema** — wie die exportierte PDF heißt und was der Druckdialog vorschlägt. Platzhalter `{notiz}` `{datum}` `{datum_lang}` `{empfaenger}` `{betreff}` `{unserzeichen}`; alles andere im Feld bleibt wörtlich stehen. `{datum}` liefert **YYYY-MM-DD**, damit Briefe im Dateimanager chronologisch sortieren; `{datum_lang}` gibt das Datum so aus, wie es im Brief steht.
 
 Bestehende Installationen behalten ihr bisheriges Verhalten (direkt teilen, `{notiz}`); nur Neuinstallationen starten mit den neuen Vorgaben. Vollständige Referenz: [docs/reference/settings.md](https://github.com/johannes-kaindl/obsidian-letterhead/blob/main/docs/reference/settings.md).
@@ -130,8 +130,8 @@ Ein Brief ist eine ganz normale Notiz. Ihr **Frontmatter trägt die Metadaten** 
 
 Der Export nimmt danach einen von zwei bewusst verschiedenen Wegen:
 
-- **Desktop** rendert den Brief als HTML/CSS in ein isoliertes iframe und übergibt ihn dem **Druckdialog des Betriebssystems** — dort wählst du „Als PDF sichern". Das Rendern übernimmt das OS, das Ergebnis entspricht also dem, was jedes andere Programm auf deinem Rechner drucken würde.
-- **iPhone/iPad** können so nicht drucken, deshalb baut das Plugin die PDF selbst: ein echtes, textselektierbares **Vektor-PDF** (PDF 1.7, PDF-Standardschriften), auf dem Gerät erzeugt und mit einem Tipp ans Teilen-Menü übergeben. Tabellen, eingebettete Bilder, Code-Blöcke und mehrseitige Paginierung werden direkt ins PDF gerendert. Was die Engine nicht darstellen kann, wird als Hinweis gemeldet statt still verschluckt.
+- **Desktop** rendert den Brief als HTML/CSS und druckt ihn mit der Browser-Engine in Obsidian (derselben wie im Druckdialog) ohne Dialog in eine PDF-Datei; das Ergebnis entspricht dem, was jedes andere Programm auf deinem Rechner drucken würde. **Print letter (print dialog)** übergibt denselben Brief für Papier dem **Druckdialog des Betriebssystems**. Scheitert das Drucken in eine Datei, baut das Plugin stattdessen das Vektor-PDF und zeigt einen Hinweis.
+- **iPhone/iPad** können so nicht drucken, deshalb baut das Plugin die PDF selbst (auf dem Desktop tut das der Befehl **Export letter as PDF (vector, fixed DIN layout)**): ein echtes, textselektierbares **Vektor-PDF** (PDF 1.7, PDF-Standardschriften), auf dem Gerät erzeugt und mit einem Tipp ans Teilen-Menü übergeben. Tabellen, eingebettete Bilder, Code-Blöcke und mehrseitige Paginierung werden direkt ins PDF gerendert. Was die Engine nicht darstellen kann, wird als Hinweis gemeldet statt still verschluckt.
 
 Beide Wege teilen sich dieselbe Geometrie. Die DIN-5008-Positionen — Anschriftfeld, Falzmarken bei 105/210 mm (bzw. 87/192 mm), Lochmarke bei 148,5 mm — werden als absolute Papierkoordinaten gesetzt, damit die Empfängeranschrift im Fensterkuvert sitzt. Die Druckränder setzt das Plugin automatisch (Seite 1: 10 mm oben, Folgeseiten: 25 mm, unten überall 20 mm).
 

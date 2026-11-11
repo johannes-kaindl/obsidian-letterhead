@@ -81,7 +81,7 @@ Background: [DIN 5008](../explanation/din5008.md).
 
 ## Which tokens the vector PDF reads
 
-The desktop print path and the preview render HTML/CSS, so every token and class rule above applies. The **vector PDF** (mobile, and the command "Export letter as PDF (vector)") is drawn by its own engine. Since 1.9.0 both paths start from the same resolved token set: style defaults, then the settings, then your `--bk-*` declarations in **Custom CSS**. The PDF takes over plain values only:
+The desktop browser PDF (the command "Export letter as PDF"), the print dialog and the preview render HTML/CSS, so every token and class rule above applies. The **vector PDF** (mobile, and the command "Export letter as PDF (vector, fixed DIN layout)") is drawn by its own engine. Since 1.9.0 both paths start from the same resolved token set: style defaults, then the settings, then your `--bk-*` declarations in **Custom CSS**. The PDF takes over plain values only:
 
 | Token | Accepted in the PDF |
 |-------|---------------------|

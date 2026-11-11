@@ -6,7 +6,7 @@ Conventions for AI agents (Claude Code, Codex, …) working on this repository.
 
 ## Project character
 
-Obsidian-Plugin „Letterhead": macht aus der aktiven Notiz einen formatierten Geschäftsbrief (DIN 5008 Form A/B + „Modern"-Theme) und exportiert ihn über den OS-Druckdialog als PDF — Desktop **und iOS**. TypeScript + `esbuild`-Build (`src/` → `main.js`), ohne Laufzeit-Abhängigkeiten; `main.js` ist Build-Output (gitignored, nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
+Obsidian-Plugin „Letterhead": macht aus der aktiven Notiz einen formatierten Geschäftsbrief (DIN 5008 Form A/B + „Modern"-Theme) und exportiert ihn als PDF — Desktop (Kit-Druckmodul, Datei ohne Dialog) **und iOS** (eigene Vektor-Engine). TypeScript + `esbuild`-Build (`src/` → `main.js`), ohne Laufzeit-Abhängigkeiten; `main.js` ist Build-Output (gitignored, nicht committet) und läuft auf Mobile ohne Node/Electron-APIs.
 
 - **Plugin-ID:** `letterhead` (deployed unter `.obsidian/plugins/letterhead/`).
 - **Test-Vault:** `$VAULT/` (Obsidian-Vault des Maintainers, CORE-META-14-Platzhalter).
@@ -16,7 +16,7 @@ Obsidian-Plugin „Letterhead": macht aus der aktiven Notiz einen formatierten G
 - Kein Electron-/Node-API zur Laufzeit → mobil-tauglich. Nur Obsidian-API + Browser-APIs im gebauten `main.js`.
 - Reine Funktionen (`src/core/*`, `src/vendor/kit/pdf/*`) sind frei von Obsidian-Imports und damit isoliert mit `vitest` testbar (PROF-OBS-04). `npm run check:pure` (Script `scripts/check-pure.mjs`) erzwingt die Grenze.
 - Styling ausschließlich über CSS Custom Properties (Design-Tokens): Geometrie ist DIN-kritisch (Fensterkuvert), Typo/Farbe/Spacing frei. Token-Referenz: `docs/reference/theming.md`.
-- Der Export ist plattformabhängig: **Desktop** druckt über `doPrint()` aus einem eigenen iframe (OS-Druckdialog, keine Datei), **iOS/iPad** baut mit `exportViaPdf()` ein Vektor-PDF. `Platform.isDesktopApp` ist das Gate für `doPrint` (die einzige Stelle, die zwischen Druckdialog und Vektor-PDF wählt; `Platform.isMobile` steuert nur das anschließende Teilen in `writePdf`), und `doPrint` darf nur hinter ihr aufgerufen werden. Die Vektor-Engine ist das vendorte Kit `src/vendor/kit/pdf/`. Aufbau beider Wege: `docs/internal/architecture.md`.
+- Der Export ist plattformabhängig, drei Befehle: `export-letter` (Haupt-/Ribbon-Befehl, `renderPdfBytes`) druckt am **Desktop** den HTML-Brief über das Kit-Druckmodul `printHtmlToPdf` in eine Datei (kein Dialog, Rückfall mit Hinweis auf das Vektor-PDF) und baut auf **iOS/iPad** mit `exportViaPdf()` das Vektor-PDF; `export-letter-pdf` fährt auf beiden Plattformen die Vektor-Engine; `print-letter` öffnet über `doPrint()` den OS-Druckdialog für Papier. `Platform.isDesktopApp` ist das Gate für `doPrint` und für den Druckmodul-Weg (`Platform.isMobile` steuert nur das anschließende Teilen in `writePdf`), und `doPrint` darf nur hinter ihr aufgerufen werden. Die Vektor-Engine ist das vendorte Kit `src/vendor/kit/pdf/`. Aufbau beider Wege: `docs/internal/architecture.md`.
 - Keine Netzwerkzugriffe, keine Telemetrie, externe Assets nur als `data:`-URL (Logo).
 
 ## Commands
@@ -36,7 +36,7 @@ sh tools/sync-kit.sh      # Kit neu vendoren (Pins in tools/kit-sync.json); --ch
 
 Manuelles Deploy-Ziel: `<vault>/.obsidian/plugins/letterhead/`.
 
-**`smoke:gui` braucht ein laufendes Obsidian und den CDP-Lock** (`--exclusive focus`, weil der Treiber das Fenster nach vorn holt). Der Staging-Vault entsteht aus dem getrackten Fixture: `npm run build && npm run smoke:gui -- --setup`. Prüfpunkte, übersprungene Punkte und die Durchlauf-Tabelle stehen in `docs/SMOKE.md`. Der Treiber löst ausschließlich `letterhead:export-letter-pdf` aus — nie `letterhead:export-letter`, der auf dem Desktop den OS-Druckdialog öffnet und damit jede weitere CDP-Kommunikation blockiert.
+**`smoke:gui` braucht ein laufendes Obsidian und den CDP-Lock** (`--exclusive focus`, weil der Treiber das Fenster nach vorn holt). Der Staging-Vault entsteht aus dem getrackten Fixture: `npm run build && npm run smoke:gui -- --setup`. Prüfpunkte, übersprungene Punkte und die Durchlauf-Tabelle stehen in `docs/SMOKE.md`. Der Treiber löst `letterhead:export-letter-pdf` (Gruppen B–I) und `letterhead:export-letter` (Gruppe J, ohne Dialog) aus — nie `letterhead:print-letter`, der auf dem Desktop den OS-Druckdialog öffnet und damit jede weitere CDP-Kommunikation blockiert.
 
 ## Releasing
 
@@ -57,7 +57,7 @@ Releases erzeugt **GitHub Actions** (`.github/workflows/release.yml`), getrigger
 
 ## Context index
 
-- Bevor du den Export, den Druck (`doPrint`, `buildStandaloneDoc`), `output.ts`, die Bild-Rasterung oder die Markdown-Renderung änderst: `.claude/rules/export-und-druck.md`.
+- Bevor du den Export, den Druck (`doPrint`, `buildStandaloneDoc`, `buildChromiumDoc`, `pdf-route.ts`), `output.ts`, die Bild-Rasterung oder die Markdown-Renderung änderst: `.claude/rules/export-und-druck.md`.
 - Bevor du DIN-Maße, Seitenränder, Paginierung oder die Vorschau im iframe anfasst: `.claude/rules/layout-und-seitenraender.md`.
 - Bevor du Platzhalter für Formeln und Grafiken, `LETTER_LABELS` oder das Fixture `fixtures/vault/notes/Smoke-Englisch.md` anfasst: `.claude/rules/degradations-platzhalter.md`.
 - Bevor du etwas unter `src/vendor/` änderst, das Kit hebst oder `scripts/check-pure.mjs` anfasst: `.claude/rules/vendor-kit.md`.

@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- **One command, "Export letter as PDF", picks the way itself.** On the desktop it renders the letter as HTML/CSS and prints it to a PDF file with the browser engine inside Obsidian, without a print dialog and with your Custom CSS (classes, fonts, frame) applied; the file goes to your **Output target** like the vector PDF always did. On iPhone/iPad it builds the vector PDF as before. The ribbon icon runs the same command. Before, this command opened the operating system's print dialog on the desktop.
+- **If the desktop PDF cannot be printed to a file** (timeout, an empty document, no browser view available), the export builds the vector PDF instead and shows "The browser PDF failed, using the vector PDF instead." A document with nothing visible on it is caught before printing, so no blank page is saved.
+- **The vector command is renamed to "Export letter as PDF (vector, fixed DIN layout)"** and still works on both platforms. It ignores class and font rules from your Custom CSS (only the plain `--bk-*` values count), which is the difference from the main command.
+
+### Added
+- **"Print letter (print dialog)"** (desktop only) opens the operating system's print dialog, as "Export letter as PDF / print" used to, for printing on paper.
+
 ## [1.10.2] — 2026-11-10
 
 ### Fixed

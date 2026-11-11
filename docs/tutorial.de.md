@@ -58,11 +58,16 @@ A4-Seiten inklusive Seitenumbrüchen — so siehst du das Layout, ohne zu drucke
 
 ## 5. Als PDF exportieren
 
-Befehlspalette oder Briefumschlag-Icon → **Export letter as PDF / print**.
+Befehlspalette oder Briefumschlag-Icon → **Export letter as PDF**.
 
-- **Desktop (macOS/Windows/Linux):** Es öffnet sich der Druckdialog des
-  Betriebssystems. PDF-Dropdown bzw. Ziel → **„Als PDF sichern"**; Skalierung
-  auf **100 %** lassen.
+- **Desktop (macOS/Windows/Linux):** Das Plugin rendert den Brief und druckt ihn mit der
+  Browser-Engine von Obsidian in eine PDF-Datei — ohne Dialog. Die Datei landet dort, wo
+  du das **Ausgabeziel** eingestellt hast (Einstellungen → Erweitert), standardmäßig
+  neben der Notiz. Für Papier nimmst du stattdessen **Print letter (print dialog)**:
+  Es öffnet sich der Druckdialog des Betriebssystems; Skalierung auf **100 %** lassen.
+  Scheitert das Drucken in eine Datei, baut das Plugin stattdessen das Vektor-PDF und
+  zeigt einen Hinweis. **Export letter as PDF (vector, fixed DIN layout)** baut dieses
+  Vektor-PDF mit Absicht; es ignoriert Klassen- und Schriftregeln aus deinem Custom CSS.
 - **iPhone/iPad:** Das Plugin baut die fertige PDF selbst — ein echtes,
   textselektierbares Vektor-PDF — und schreibt sie dorthin, wo du das
   **Ausgabeziel** eingestellt hast (Einstellungen → Erweitert). Steht es auf
