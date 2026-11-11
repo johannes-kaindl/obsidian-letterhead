@@ -46,6 +46,7 @@ the left of the letterhead, the contact details on the right.
 | **Hole mark** | Hole mark at 148.5 mm for filing. |
 | **Print offset top (mm)** | Print-offset fine-tuning (default 0): shifts the entire letter content downwards if the address sits too high in the envelope window; try 2–4 mm. Fold/hole marks stay paper-relative and unchanged, so the fold remains correct. The plugin always sets the print margins automatically: page 1 top 10 mm (the DIN letterhead sits high by design), continuation pages top 25 mm, bottom 20 mm everywhere. |
 | **Show logo** + **Logo path** | Image instead of the name in the letterhead; a vault-relative path (e.g. `assets/logo.png`), embedded as a data URL. |
+| **Show name next to the logo** | DIN layout, with a logo: also shows the sender name (and addition) to the right of the logo, centred on its height. Off by default — the logo alone, as before. Applies to the browser PDF, the print dialog, the preview and the vector PDF alike. Keep the name short: it sits between the logo and the contact lines. |
 
 ## Typography & language
 

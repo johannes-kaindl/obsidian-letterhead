@@ -119,6 +119,7 @@ export function buildCss(s: LetterheadSettings, stilKey: string | null | undefin
   .bk-din .bk-head-name{ font-family:var(--bk-name-font); font-size:var(--bk-name-size);
     font-weight:var(--bk-name-weight); letter-spacing:var(--bk-name-spacing);
     text-transform:var(--bk-name-transform); line-height:1.1; white-space:nowrap; }
+  .bk-din .bk-head-brand{ display:flex; align-items:center; gap:4mm; }
   .bk-din .bk-head-zusatz{ font-size:9pt; color:var(--bk-color-muted); margin-top:1mm; }
   .bk-din .bk-head-contact{ text-align:right; font-size:8.5pt; line-height:1.5; color:var(--bk-color-muted); }
 
@@ -376,11 +377,12 @@ export function buildLetterHtml(m: LetterHtmlModel, s: LetterheadSettings, bodyH
     m.senderWeb || ''
   ].filter(Boolean).map((x) => `<div>${esc(x)}</div>`).join('');
 
+  const nameBlock = m.senderName
+    ? `<div><div class="bk-head-name">${esc(m.senderName)}</div>${m.senderZusatz ? `<div class="bk-head-zusatz">${esc(m.senderZusatz)}</div>` : ''}</div>`
+    : '';
   const headLeft = m.logo
-    ? `<img src="${m.logo}" alt="">`
-    : (m.senderName
-      ? `<div><div class="bk-head-name">${esc(m.senderName)}</div>${m.senderZusatz ? `<div class="bk-head-zusatz">${esc(m.senderZusatz)}</div>` : ''}</div>`
-      : '<div></div>');
+    ? (s.showNameWithLogo && nameBlock ? `<div class="bk-head-brand"><img src="${m.logo}" alt="">${nameBlock}</div>` : `<img src="${m.logo}" alt="">`)
+    : (nameBlock || '<div></div>');
 
   const head = (m.logo || m.senderName || contactLines)
     ? `<header class="bk-head">${headLeft}${contactLines ? `<div class="bk-head-contact">${contactLines}</div>` : ''}</header>`

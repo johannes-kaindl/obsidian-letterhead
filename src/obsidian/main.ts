@@ -392,22 +392,30 @@ export default class LetterheadPlugin extends Plugin {
   async buildPdfBytes(model: LetterModelResolved): Promise<Uint8Array> {
     const settings = this.settings;
 
-    // 1. Head pass — absolute ops on page 0 + the content-top hand-off.
-    const head = layoutHead(model, settings);
+    // 1. Logo first: its drawn size places the sender name next to it (showNameWithLogo).
+    //    Scaling VERBATIM from main.js.reference:1119-1130 (logoToJpeg is now imageToJpeg).
+    const jp = model.logo ? await imageToJpeg(model.logo, () => createEl('canvas'), 1200) : null;
+    const g = dinGeometry(settings.dinForm);
+    let logoWmm = 0;
+    let logoHmm = 0;
+    if (jp) {
+      const maxHmm = Math.max(8, g.addrTopMm - g.headTopMm - 8);
+      const ratio = jp.wPx / jp.hPx;
+      logoHmm = Math.min(maxHmm, 22);
+      logoWmm = logoHmm * ratio;
+      if (logoWmm > 90) { logoWmm = 90; logoHmm = logoWmm / ratio; }
+    }
+
+    // 2. Head pass — absolute ops on page 0 + the content-top hand-off.
+    const head = layoutHead({ ...model, logoWidthMm: logoWmm, logoHeightMm: logoHmm }, settings);
     const headOps: DrawOp[] = head.ops.slice();
 
-    // 2. Logo image op (page 0) — scaling/position VERBATIM from
-    //    main.js.reference:1119-1130 (logoToJpeg is now imageToJpeg).
+    // 3. Logo image op (page 0).
     if (model.logo) {
-      const jp = await imageToJpeg(model.logo, () => createEl('canvas'), 1200);
       if (jp) {
-        const g = dinGeometry(settings.dinForm);
         const off = Number(settings.printOffsetTopMm) || 0;
-        const maxHmm = Math.max(8, g.addrTopMm - g.headTopMm - 8);
-        const ratio = jp.wPx / jp.hPx;
-        let hmm = Math.min(maxHmm, 22);
-        let wmm = hmm * ratio;
-        if (wmm > 90) { wmm = 90; hmm = wmm / ratio; }
+        const hmm = logoHmm;
+        const wmm = logoWmm;
         headOps.push({
           page: 0, kind: 'image', data: jp.data, wPx: jp.wPx, hPx: jp.hPx,
           x: mmToPt(g.marginLeftMm), y: yTopMmToPt(g.headTopMm + off + hmm, PAGE_H_PT),
@@ -416,7 +424,7 @@ export default class LetterheadPlugin extends Plugin {
       }
     }
 
-    // 3. Body: Markdown → detached DOM → IR → resolved images.
+    // 4. Body: Markdown → detached DOM → IR → resolved images.
     const holder = createDiv();
     const comp = new Component();
     let bodyBlocks: Block[] = [];
@@ -452,13 +460,13 @@ export default class LetterheadPlugin extends Plugin {
       comp.unload();
     }
 
-    // 4. Body pass — cursor hand-off starting at the head's content top.
+    // 5. Body pass — cursor hand-off starting at the head's content top.
     const body = layoutBody(model, settings, bodyBlocks, head.contentTopMm);
 
     // Degradation surfaces as a Notice (replaces the old HTML/print fallback).
     if (simplified > 0) new Notice(t('notice_simplified').replace('{n}', String(simplified)));
 
-    // 5. Merge head + body ops into one writer.
+    // 6. Merge head + body ops into one writer.
     const pageCount = Math.max(1, body.pageCount);
     const writer = new PdfWriter(PAGE_W_PT, PAGE_H_PT);
     const pages: PdfPage[] = [];

@@ -113,7 +113,7 @@ Alles wird unter **Einstellungen → Letterhead** eingestellt; CSS ist für nich
 |--------|------------------------|
 | **Layout & Stil** | `DIN 5008` oder `Modern`; einer von drei Stilen (sachlich / klassisch / technisch); vollständige Infozeile oder schlichte Datumszeile; DIN-Form A (27 mm) oder B (45 mm). |
 | **Absender-Profil** | Name, Zusatz, Straße, PLZ/Ort, Telefon, E-Mail, Web — dazu die Rücksendezeile für das Kuvertfenster. Jedes Feld ist pro Brief im Frontmatter überschreibbar. |
-| **Elemente** | Falzmarken, Lochmarke, Druckversatz (schiebt den Inhalt nach unten, wenn die Anschrift im Fenster zu hoch sitzt), Logo statt Absendername. |
+| **Elemente** | Falzmarken, Lochmarke, Druckversatz (schiebt den Inhalt nach unten, wenn die Anschrift im Fenster zu hoch sitzt), Logo statt Absendername (auf Wunsch mit dem Namen daneben). |
 | **Typografie & Sprache** | Schrift- und Schriftgrößen-Override, Datums-Locale, **Briefsprache** (deutsche oder englische gedruckte Bezeichnungen — unabhängig von der Oberflächensprache), Standard-Grußformel. |
 | **Erweitert** | Ausgabeziel, Dateinamen-Schema, eigenes CSS. |
 

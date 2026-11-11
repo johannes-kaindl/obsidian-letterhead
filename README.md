@@ -114,7 +114,7 @@ Everything is configured in **Settings → Letterhead**; nothing requires CSS. T
 |-------|--------------------|
 | **Layout & style** | `DIN 5008` or `Modern`; one of three styles (matter-of-fact / classic / technical); full info block or plain date line; DIN form A (27 mm) or B (45 mm). |
 | **Sender profile** | Name, addition, street, postcode/city, phone, email, web — plus the return-address line for the envelope window. Every field is overridable per letter in the frontmatter. |
-| **Elements** | Fold marks, hole mark, print offset (shifts the content down if the address sits too high in the window), logo instead of the sender name. |
+| **Elements** | Fold marks, hole mark, print offset (shifts the content down if the address sits too high in the window), logo instead of the sender name (optionally with the name next to it). |
 | **Typography & language** | Font and font size overrides, date locale, **letter language** (German or English printed labels — separate from the plugin's UI language), default closing. |
 | **Advanced** | Output target, filename scheme, custom CSS. |
 

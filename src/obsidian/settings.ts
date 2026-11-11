@@ -115,6 +115,7 @@ export class LetterheadSettingTab extends PluginSettingTab {
           { name: t('set_offset'), desc: t('set_offset_desc'), control: { type: 'text', key: 'printOffsetTopMm', placeholder: '0' } },
           { name: t('set_logo'), desc: t('set_logo_desc'), control: { type: 'toggle', key: 'showLogo' } },
           { name: t('set_logopath'), desc: t('set_logopath_desc'), control: { type: 'text', key: 'logoPath', placeholder: 'assets/logo.png' } },
+          { name: t('set_name_with_logo'), desc: t('set_name_with_logo_desc'), control: { type: 'toggle', key: 'showNameWithLogo' } },
         ],
       },
       {
@@ -244,6 +245,7 @@ export class LetterheadSettingTab extends PluginSettingTab {
       case 'printOffsetTopMm': return s.printOffsetTopMm ? String(s.printOffsetTopMm) : '';
       case 'showLogo': return s.showLogo;
       case 'logoPath': return s.logoPath;
+      case 'showNameWithLogo': return s.showNameWithLogo;
       case 'fontFamily': return s.fontFamily || '';
       // Display string: empty means "style default".
       case 'fontSizePt': return s.fontSizePt === '' || s.fontSizePt == null ? '' : String(s.fontSizePt);
@@ -279,6 +281,7 @@ export class LetterheadSettingTab extends PluginSettingTab {
       }
       case 'showLogo': s.showLogo = Boolean(value); break;
       case 'logoPath': s.logoPath = String(value); break;
+      case 'showNameWithLogo': s.showNameWithLogo = Boolean(value); break;
       case 'fontFamily': s.fontFamily = String(value).trim(); break;
       case 'fontSizePt': {
         const v = String(value); const n = Number(v);

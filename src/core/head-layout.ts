@@ -41,6 +41,9 @@ export interface LetterHeadModel extends LetterModel {
   senderEmail?: string;
   senderWeb?: string;
   logo?: string;
+  /** Size of the logo as drawn, in mm — only needed to place the name next to it (showNameWithLogo). */
+  logoWidthMm?: number;
+  logoHeightMm?: number;
   ruecksende?: string;
   recipient?: string[];
   infozeile?: string;
@@ -94,10 +97,16 @@ export function layoutHead(model: LetterHeadModel, settings: LetterheadSettings)
 
   // ---- Seite 0: Briefkopf (Name links — Logo ergänzt die Orchestrierung als Bild) ----
   const headTopMm = g.headTopMm;
-  if (!model.logo && model.senderName) {
+  // Mit Logo ersetzt das Bild den Namen — außer die Einstellung showNameWithLogo ist an: dann steht der Name
+  // rechts neben dem Logo, auf dessen Höhe zentriert.
+  const nameWithLogo = Boolean(model.logo && model.senderName && settings.showNameWithLogo);
+  if ((!model.logo || nameWithLogo) && model.senderName) {
     const nm = upperName ? String(model.senderName).toUpperCase() : model.senderName;
-    T(0, leftPt, baseAt(headTopMm, nameSizePt), nm, fonts.name, nameSizePt);
-    if (model.senderZusatz) T(0, leftPt, baseAt(headTopMm + mmDown(nameSizePt) + 1.2, 9), model.senderZusatz, fonts.body, 9, MUTED);
+    const nameBlockMm0 = mmDown(nameSizePt) * 1.15 + (model.senderZusatz ? mmDown(9) * 1.2 : 0);
+    const nameX = leftPt + (nameWithLogo ? mmToPt((model.logoWidthMm || 0) + 4) : 0);
+    const nameTop = headTopMm + (nameWithLogo ? Math.max(0, ((model.logoHeightMm || 0) - nameBlockMm0) / 2) : 0);
+    T(0, nameX, baseAt(nameTop, nameSizePt), nm, fonts.name, nameSizePt);
+    if (model.senderZusatz) T(0, nameX, baseAt(nameTop + mmDown(nameSizePt) + 1.2, 9), model.senderZusatz, fonts.body, 9, MUTED);
   }
   // Kontakt rechts (rechtsbündig, gleiche Oberkante wie der Name)
   const contact = [

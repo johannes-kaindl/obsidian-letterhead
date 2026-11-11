@@ -46,6 +46,8 @@ export interface LetterheadSettings {
   showHoleMark: boolean;
   showLogo: boolean;
   logoPath: string;
+  /** DIN layout: with a logo, also show the sender name (and addition) to its right. Off = logo alone, as before. */
+  showNameWithLogo: boolean;
   fontFamily: string;
   fontSizePt: string | number;
   locale: string;
@@ -80,6 +82,7 @@ export const DEFAULT_SETTINGS: LetterheadSettings = {
   showHoleMark: true,
   showLogo: false,
   logoPath: '',              // vault-relative path to an image
+  showNameWithLogo: false,   // off = the logo replaces the name in the DIN head (the layout before this option)
   fontFamily: '',            // empty => style default
   fontSizePt: '',            // empty => style default
   locale: 'de-DE',
