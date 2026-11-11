@@ -43,7 +43,9 @@ import { PdfWriter, type PdfPage } from '../vendor/kit/pdf/writer';
 import { mmToPt, yTopMmToPt, pageSizePt } from '../vendor/kit/pdf/geometry';
 import type { Block, DrawOp } from '../vendor/kit/pdf';
 
-import { buildLetterHtml, buildCss, doPrint, LetterheadPreviewModal, PRESET_CSS } from './html-engine';
+import { buildLetterHtml, buildCss, buildChromiumDoc, doPrint, LetterheadPreviewModal, PRESET_CSS } from './html-engine';
+import { renderPdfBytes } from './pdf-route';
+import { isDesktopPrintAvailable, printHtmlToPdf } from '../vendor/kit-obsidian/print-to-pdf';
 import { LetterheadSettingTab } from './settings';
 import { writePdf, resolveOutputPath, type OutputMode } from './output';
 import { t } from '../i18n/strings';
@@ -94,6 +96,8 @@ type LetterModelResolved = {
 
 export default class LetterheadPlugin extends Plugin {
   declare settings: LetterheadSettings;
+  /** The Kit print module; replaceable so a test or the smoke driver can stand in for the <webview>. */
+  desktopPrint: typeof printHtmlToPdf = printHtmlToPdf;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -103,6 +107,15 @@ export default class LetterheadPlugin extends Plugin {
 
     this.addCommand({ id: 'export-letter', name: t('cmd_export'), callback: () => { void this.exportLetter(); } });
     this.addCommand({ id: 'export-letter-pdf', name: t('cmd_export_pdf'), callback: () => { void this.exportLetterPdf(); } });
+    /* Paper printing needs the OS dialog, which only the desktop app has: no command on mobile. */
+    this.addCommand({
+      id: 'print-letter', name: t('cmd_print'),
+      checkCallback: (checking: boolean) => {
+        if (!Platform.isDesktopApp) return false;
+        if (!checking) void this.printLetter();
+        return true;
+      },
+    });
     this.addCommand({ id: 'open-preview', name: t('cmd_preview'), callback: () => { void this.previewLetter(); } });
     this.addCommand({ id: 'insert-frontmatter', name: t('cmd_insert_fm'), callback: () => { void this.insertFrontmatterTemplate(); } });
   }
@@ -210,17 +223,36 @@ export default class LetterheadPlugin extends Plugin {
     return content;
   }
 
-  async renderMarkdownToHtml(markdown: string, sourcePath: string): Promise<string> {
+  async renderMarkdownToHtml(markdown: string, sourcePath: string, inline = false): Promise<string> {
     const comp = new Component();
     const tmp = createDiv();
     try {
       await MarkdownRenderer.render(this.app, markdown, tmp, sourcePath, comp);
+      if (inline) await this.inlineImages(tmp);
     } catch (e) {
       console.error('Letterhead: markdown render failed', e);
     }
     const html = tmp.innerHTML;
     comp.unload();
     return html;
+  }
+
+  /* The Kit print module draws the letter in a hidden <webview> that has no app:// origin, so the
+     images of the body must travel inside the document as data: URLs. What cannot be read stays as
+     it is (a broken image in the PDF, not a failed export); https images the webview loads itself. */
+  async inlineImages(root: HTMLElement): Promise<void> {
+    for (const img of Array.from(root.querySelectorAll('img'))) {
+      const src = img.getAttribute('src') || '';
+      if (!src || /^(data:|https?:)/i.test(src)) continue;
+      try {
+        const res = await activeWindow.fetch(src);
+        if (!res.ok) continue;
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        const ext = (src.split(/[?#]/)[0].split('.').pop() || '').toLowerCase();
+        const mime = (res.headers.get('content-type') || '').split(';')[0].trim() || mimeForExtension(ext) || 'image/jpeg';
+        img.setAttribute('src', `data:${mime};base64,${bytesToBase64(bytes)}`);
+      } catch (e) { console.warn('Letterhead: image not inlined', src, e); }
+    }
   }
 
   formatDate(value: unknown): string {
@@ -463,8 +495,8 @@ export default class LetterheadPlugin extends Plugin {
     return buildFilename(this.settings.filenameTemplate, this.filenameValues(model));
   }
 
-  async exportViaPdf(model: LetterModelResolved): Promise<void> {
-    const bytes = await this.buildPdfBytes(model);
+  /** Hands finished PDF bytes to the configured output target (and, on mobile, to the share sheet). */
+  async savePdf(model: LetterModelResolved, bytes: Uint8Array): Promise<void> {
     const noteDir = model.sourceFile && model.sourceFile.parent ? model.sourceFile.parent.path : '';
     const baseName = this.letterFilename(model);
     const mode = (this.settings.outputMode || 'nextToNote') as OutputMode;
@@ -478,31 +510,51 @@ export default class LetterheadPlugin extends Plugin {
     await writePdf(this.app, bytes, mode, { baseName, resolvedPath, isMobile: Platform.isMobile });
   }
 
+  async exportViaPdf(model: LetterModelResolved): Promise<void> {
+    await this.savePdf(model, await this.buildPdfBytes(model));
+  }
+
+  /** The letter as the print dialog would draw it, printed to PDF by the Kit print module (desktop only). */
+  async buildChromiumPdfBytes(model: LetterModelResolved): Promise<Uint8Array> {
+    const bodyHtml = await this.renderMarkdownToHtml(model.bodyMarkdown, model.sourcePath, true);
+    const html = buildChromiumDoc(buildLetterHtml(model, this.settings, bodyHtml), buildCss(this.settings, model.stil));
+    return this.desktopPrint(activeDocument, html, { pageSize: 'A4', printBackground: true });
+  }
+
   /* ---- export commands ---- */
 
-  /* Default: Desktop uses the HTML print dialog; Mobile always builds the
-     vector PDF (no fallback). */
+  /* Main command: picks the way itself. Desktop prints the HTML letter to a PDF file through the
+     Kit print module (no dialog, Custom CSS applies), mobile builds the vector PDF; if the print
+     module fails the vector PDF takes over with a notice. */
   async exportLetter(): Promise<void> {
     const m = await this.resolveLetter();
     if (!m) return;
-    if (Platform.isDesktopApp) {
-      /* The third argument is the filename the OS print dialog proposes: it
-         takes the TOP-LEVEL window title, not the printed document's <title>
-         (verified on macOS 26.5 / Electron with 1.4.1, which offered
-         "<note> - <vault> - Obsidian <version>.pdf"). doPrint swaps it in and
-         restores it on cleanup. */
-      doPrint(buildLetterHtml(m, this.settings, m.bodyHtml), buildCss(this.settings, m.stil),
-        this.letterFilename(m));
-      return;
-    }
-    await this.exportViaPdf(m);
+    const bytes = await renderPdfBytes({
+      chromium: Platform.isDesktopApp && isDesktopPrintAvailable() ? () => this.buildChromiumPdfBytes(m) : null,
+      vector: () => this.buildPdfBytes(m),
+    });
+    await this.savePdf(m, bytes);
   }
 
-  /* Explicit "vector PDF" command — both platforms. */
+  /* Explicit vector PDF — both platforms, fixed DIN layout (Custom CSS only as --bk-* values). */
   async exportLetterPdf(): Promise<void> {
     const m = await this.resolveLetter();
     if (!m) return;
     await this.exportViaPdf(m);
+  }
+
+  /* Paper printing: the OS print dialog (desktop only; guarded in the command's checkCallback). */
+  async printLetter(): Promise<void> {
+    if (!Platform.isDesktopApp) return;
+    const m = await this.resolveLetter();
+    if (!m) return;
+    /* The third argument is the filename the OS print dialog proposes: it
+       takes the TOP-LEVEL window title, not the printed document's <title>
+       (verified on macOS 26.5 / Electron with 1.4.1, which offered
+       "<note> - <vault> - Obsidian <version>.pdf"). doPrint swaps it in and
+       restores it on cleanup. */
+    doPrint(buildLetterHtml(m, this.settings, m.bodyHtml), buildCss(this.settings, m.stil),
+      this.letterFilename(m));
   }
 
   /* ---- on-screen preview ---- */

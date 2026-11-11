@@ -18,13 +18,14 @@
  *
  * ## Was er bewusst NICHT auslöst
  *
- * `letterhead:export-letter` — der Haupt-/Ribbon-Befehl — ruft auf dem Desktop `doPrint()`
- * und öffnet damit den **OS-Druckdialog**. Ein modaler Systemdialog blockiert jede weitere
- * CDP-Kommunikation, der Lauf hinge und niemand sähe warum. Gemessen wird stattdessen
- * `letterhead:export-letter-pdf` (`exportViaPdf`), der auf beiden Plattformen dieselbe
- * Vektor-Engine fährt und die Datei in den Vault schreibt. Der Druckpfad bleibt Handarbeit
- * und steht als übersprungener Punkt im Protokoll — eine stillschweigend ausgelassene
- * Prüfung liest sich hinterher wie eine grüne.
+ * `letterhead:print-letter` ruft auf dem Desktop `doPrint()` und öffnet damit den
+ * **OS-Druckdialog**. Ein modaler Systemdialog blockiert jede weitere CDP-Kommunikation, der
+ * Lauf hinge und niemand sähe warum. Der Haupt-/Ribbon-Befehl `letterhead:export-letter` ist
+ * seit der Zusammenlegung der PDF-Wege dialogfrei (Kit-Druckmodul, Gruppe J) und wird gemessen.
+ * Die Gruppen B–I fahren `letterhead:export-letter-pdf` (`exportViaPdf`), die Vektor-Engine,
+ * deren Content-Streams der Treiber ohne PDF-Bibliothek liest. Der Druckdialog bleibt
+ * Handarbeit und steht als übersprungener Punkt im Protokoll — eine stillschweigend
+ * ausgelassene Prüfung liest sich hinterher wie eine grüne.
  *
  * ## Voraussetzung
  *
@@ -54,7 +55,8 @@
  * Typen: `tsconfig.scripts.json` (im `gate` über `npm run typecheck:scripts`).
  */
 
-import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync, readdirSync, renameSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 
@@ -74,7 +76,7 @@ const FIXTURE_DIR = join(REPO_ROOT, 'fixtures/vault');
  *  aufgezeichnet wird, zählt als „nichts gemessen“ und setzt Exit 1. */
 const PUNKTE = [
   'A1 Plugin geladen',
-  'A2 alle vier Befehle registriert',
+  'A2 alle fünf Befehle registriert',
   'A3 Ribbon-Knopf vorhanden',
   'B0 Kein liegen gebliebener Test-Ausgabepfad aus einem abgebrochenen Vorlauf',
   'B1 PDF entsteht neben der Notiz',
@@ -115,7 +117,9 @@ const PUNKTE = [
   'I2 Teilen: „Delete them“ löscht die Fremddatei, eigene Reste verschwinden in beiden Fällen',
   'I3 Teilen: ohne Fremddatei keine Rückfrage, die Datei geht an die Standard-App (Stub)',
   'I4 Teilen: die Antwort auf die Rückfrage entscheidet (Gegenprobe zu I1 und I2)',
-  'Desktop-Druckpfad (letterhead:export-letter)',
+  'J1 Haupt-Befehl: Browser-PDF über das Kit-Druckmodul, Datei ohne Druckdialog',
+  'J2 Rückfall: scheitert das Druckmodul, entsteht das Vektor-PDF und der Hinweis',
+  'Druckdialog (letterhead:print-letter)',
   'iOS-Share-Kaskade (navigator.canShare → share → openWithDefaultApp)',
   'SVG-Logo im Briefkopf',
 ] as const;
@@ -246,13 +250,13 @@ async function readSettings(cdp: Cdp): Promise<Record<string, unknown>> {
  * Schreibdauer mal Text und mal nicht: sporadisch rot bei intaktem Code, und das ist
  * teurer als dauerhaft rot.
  */
-async function exportPdf(cdp: Cdp, notePath: string): Promise<string> {
+async function exportPdf(cdp: Cdp, notePath: string, befehl = 'export-letter-pdf'): Promise<string> {
   await clearNotices(cdp);
   const offen = await openExisting(cdp, notePath, 'preview');
   if (!offen) throw new Error(`Notiz ließ sich nicht öffnen oder rendern: ${notePath}`);
   await closeExtraLeaves(cdp);
   await cdp.evaluate(`
-    app.commands.executeCommandById(${JSON.stringify(`${PLUGIN_ID}:export-letter-pdf`)});
+    app.commands.executeCommandById(${JSON.stringify(`${PLUGIN_ID}:${befehl}`)});
     return true;
   `);
   const text = await pollUntil<string>(
@@ -333,13 +337,13 @@ async function pruefeGrundlage(cdp: Cdp, v: VaultInfo): Promise<void> {
   if (!geladen) throw new Error('Ohne geladenes Plugin ist jeder weitere Punkt gegenstandslos.');
 
   const befehle = await cdp.evaluate<string[]>(`
-    const ids = ["export-letter", "export-letter-pdf", "open-preview", "insert-frontmatter"];
+    const ids = ["export-letter", "export-letter-pdf", "print-letter", "open-preview", "insert-frontmatter"];
     return ids.filter((id) => Boolean(app.commands.commands[${JSON.stringify(PLUGIN_ID)} + ":" + id]));
   `);
   record(
-    'A2 alle vier Befehle registriert',
-    befehle.length === 4,
-    `${befehle.length}/4: ${befehle.join(' · ') || 'keiner'}`,
+    'A2 alle fünf Befehle registriert',
+    befehle.length === 5,
+    `${befehle.length}/5: ${befehle.join(' · ') || 'keiner'}`,
   );
 
   // Über den plugin-eigenen aria-label einsteigen, nicht über `.side-dock-ribbon-action`:
@@ -813,6 +817,88 @@ async function pruefeTeilen(cdp: Cdp, vaultDir: string): Promise<void> {
   }
 }
 
+/** Text einer PDF-Datei über Poppler (`pdftotext`), unabhängig vom Vektor-Leser dieses Treibers:
+ *  ein Chromium-PDF hat komprimierte Streams, den Leser oben kann es nicht bedienen. */
+function popplerText(pfad: string): string | null {
+  const r = spawnSync('pdftotext', ['-layout', pfad, '-'], { encoding: 'utf8' });
+  return r.status === 0 ? r.stdout : null;
+}
+
+const SMOKE_MARKER = ['MARKEMPFA', 'MARKEMPFB', 'MARKEMPFC', 'MARKBETREFF', 'MARKANREDE', 'MARKGRUSS', 'MARKSIG', 'MARKBODY', 'MARKSENDNAME'];
+
+async function pruefeBrowserPdf(cdp: Cdp, vaultDir: string, behalten: boolean): Promise<void> {
+  console.log('\nJ · Haupt-Befehl: Browser-PDF (Kit-Druckmodul)');
+  raeumePdfs(vaultDir);
+  await setSettings(cdp, { outputMode: 'nextToNote', outputFolder: '', filenameTemplate: '{notiz}' });
+  const ziel = join(vaultDir, 'Smoke.pdf');
+
+  // J1 — der Weg ist am Producer erkennbar: Chromium schreibt „Skia/PDF“, die eigene Engine nicht.
+  // Der Text kommt aus Poppler, nicht aus dem Vektor-Leser (komprimierte Streams).
+  const notice = await exportPdf(cdp, 'Smoke.md', 'export-letter');
+  const da = await warteAufDatei(ziel, 30_000);
+  if (!da) {
+    unmeasured('J1 Haupt-Befehl: Browser-PDF über das Kit-Druckmodul, Datei ohne Druckdialog', `Gegenstand nicht erreicht: keine Datei nach 30 s · Notice: ${notice || '(keine)'}`);
+    unmeasured('J2 Rückfall: scheitert das Druckmodul, entsteht das Vektor-PDF und der Hinweis', 'J1 erreichte keine Datei, der Rückfall hat keinen Vergleichspunkt');
+    return;
+  }
+  const bytes = readFileSync(ziel);
+  const skia = /\/Producer\s*\(Skia\/PDF/.test(bytes.toString('latin1'));
+  const text = popplerText(ziel);
+  if (text === null) {
+    unmeasured('J1 Haupt-Befehl: Browser-PDF über das Kit-Druckmodul, Datei ohne Druckdialog', 'pdftotext (Poppler) nicht verfügbar — der Text der Datei ist nicht gelesen');
+  } else {
+    const m = markerBilanz(text, SMOKE_MARKER);
+    record(
+      'J1 Haupt-Befehl: Browser-PDF über das Kit-Druckmodul, Datei ohne Druckdialog',
+      skia && m.ok && !pdfHatVektorText(bytes),
+      `${skia ? 'Producer Skia/PDF' : 'KEIN Skia/PDF-Producer — nicht der Chromium-Weg'} · ${m.detail} · ${bytes.length} Bytes · ${pdfSeiten(bytes)} Seite(n)`,
+    );
+  }
+
+  // J2 — Gegenprobe zum Weg: das Druckmodul wird im Renderer durch einen Wurf ersetzt, der Export muss auf das
+  // Vektor-PDF zurückfallen (Producer ohne Skia, Vektor-Leser findet die Marker) und den Hinweis zeigen.
+  // --keep: das Browser-PDF zum Ansehen stehen lassen (Smoke-Browser.pdf), sonst weg.
+  if (behalten) renameSync(ziel, join(vaultDir, 'Smoke-Browser.pdf'));
+  else rmSync(ziel, { force: true });
+  await cdp.evaluate(`
+    const p = app.plugins.plugins[${JSON.stringify(PLUGIN_ID)}];
+    window.__lhOrigPrint = p.desktopPrint;
+    p.desktopPrint = async () => { throw new Error('smoke: Druckmodul abgeschaltet'); };
+    return true;
+  `);
+  try {
+    await exportPdf(cdp, 'Smoke.md', 'export-letter');
+    const da2 = await warteAufDatei(ziel, 30_000);
+    const hinweis = await notices(cdp);
+    if (!da2) {
+      record('J2 Rückfall: scheitert das Druckmodul, entsteht das Vektor-PDF und der Hinweis', false, `keine Datei nach dem Fehler des Druckmoduls · Notice: ${hinweis || '(keine)'}`);
+    } else {
+      const b2 = readFileSync(ziel);
+      const skia2 = /\/Producer\s*\(Skia\/PDF/.test(b2.toString('latin1'));
+      const m2 = markerBilanz(pdfText(b2), SMOKE_MARKER);
+      const hinweisDa = /browser PDF failed/i.test(hinweis);
+      record(
+        'J2 Rückfall: scheitert das Druckmodul, entsteht das Vektor-PDF und der Hinweis',
+        !skia2 && m2.ok && hinweisDa,
+        `${skia2 ? 'Skia/PDF (Rückfall blieb aus)' : 'Vektor-PDF'} · ${m2.detail} · Hinweis ${hinweisDa ? 'ja' : 'NEIN'}: ${hinweis || '(keine Notice)'}`,
+      );
+    }
+  } finally {
+    await cdp.evaluate(`
+      const p = app.plugins.plugins[${JSON.stringify(PLUGIN_ID)}];
+      if (window.__lhOrigPrint) p.desktopPrint = window.__lhOrigPrint;
+      delete window.__lhOrigPrint;
+      return true;
+    `);
+  }
+  if (!behalten) raeumePdfs(vaultDir);
+}
+
+/** Hat die Datei Vektor-Textläufe der eigenen Engine (`(...) Tj` in unkomprimierten Streams)? */
+function pdfHatVektorText(bytes: Buffer): boolean {
+  return pdfText(bytes).includes('MARKBODY');
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.has('setup')) {
@@ -894,10 +980,11 @@ async function main(): Promise<void> {
     await pruefeMehrseitig(cdp, vaultDir);
     await pruefeAblage(cdp, vaultDir, port, vaultFilter);
     await pruefeVorschau(cdp);
+    await pruefeBrowserPdf(cdp, vaultDir, behalten);
     await pruefeTeilen(cdp, vaultDir);
 
     skipped(
-      'Desktop-Druckpfad (letterhead:export-letter)',
+      'Druckdialog (letterhead:print-letter)',
       'ruft doPrint() und öffnet den OS-Druckdialog — ein modaler Systemdialog blockiert jede weitere CDP-Kommunikation. Bleibt Handarbeit',
     );
     skipped(

@@ -14,6 +14,6 @@ describe('detectUiLang — obsidian.getLanguage primary path', () => {
 
   it('t() resolves to the German table when the app locale is German', async () => {
     const { t } = await import('../../src/i18n/strings');
-    expect(t('cmd_export')).toBe('Brief als PDF exportieren / drucken');
+    expect(t('cmd_export')).toBe('Brief als PDF exportieren');
   });
 });

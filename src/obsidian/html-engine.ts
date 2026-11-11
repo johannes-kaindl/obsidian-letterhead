@@ -209,6 +209,18 @@ export function buildStandaloneDoc(letterHtml: string, css: string): string {
     `</head><body>${letterHtml}</body></html>`;
 }
 
+/* Content-Security-Policy of the document the Kit print module writes into its hidden <webview>:
+   no scripts, no frames, no network except https images. The letter body comes from Obsidian's
+   renderer (other plugins' post-processors included), and the <webview> is not the app's iframe. */
+export const PRINT_CSP = "default-src 'none'; style-src 'unsafe-inline'; img-src data: https:; font-src data:";
+
+/* The standalone document for the Kit print module (`printHtmlToPdf`): the same letter as the print
+   dialog, plus a CSP. Images must already be data: URLs (see inlineImages in main.ts). */
+export function buildChromiumDoc(letterHtml: string, css: string): string {
+  return buildStandaloneDoc(letterHtml, css)
+    .replace('<meta charset="utf-8">', () => `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${PRINT_CSP}">`);
+}
+
 /* main.js.reference:665-679 */
 export const SCREEN_PREVIEW_CSS = `
   html,body{ margin:0; padding:0; }

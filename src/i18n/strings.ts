@@ -10,8 +10,9 @@ import { getLanguage } from 'obsidian';
 
 /** English UI strings — canonical source; every key must exist here. */
 const en = {
-  cmd_export: 'Export letter as PDF / print',
-  cmd_export_pdf: 'Export letter as PDF (vector)',
+  cmd_export: 'Export letter as PDF',
+  cmd_export_pdf: 'Export letter as PDF (vector, fixed DIN layout)',
+  cmd_print: 'Print letter (print dialog)',
   cmd_preview: 'Open letter preview',
   cmd_insert_fm: 'Insert letter frontmatter into note',
   notice_open_note: 'Letterhead: Open a Markdown note first.',
@@ -20,6 +21,7 @@ const en = {
   notice_logo_failed: 'Letterhead: Could not load the logo – ',
   notice_no_recipient: 'Letterhead: No recipient in the frontmatter (field "empfaenger").',
   notice_print_failed: 'Letterhead: Printing is not possible.',
+  notice_browser_pdf_failed: 'Letterhead: The browser PDF failed, using the vector PDF instead.',
   notice_simplified: 'Letterhead: {n} element(s) were simplified for the PDF.',
   modal_title: 'Letter preview',
   modal_export: 'Export PDF',
@@ -124,8 +126,9 @@ const en = {
 
 /** German UI strings — must carry exactly the same keys as `en`. */
 const de: Record<keyof typeof en, string> = {
-  cmd_export: 'Brief als PDF exportieren / drucken',
-  cmd_export_pdf: 'Brief als PDF exportieren (Vektor)',
+  cmd_export: 'Brief als PDF exportieren',
+  cmd_export_pdf: 'Brief als PDF exportieren (Vektor, feste DIN-Gestaltung)',
+  cmd_print: 'Brief drucken (Druckdialog)',
   cmd_preview: 'Brief-Vorschau öffnen',
   cmd_insert_fm: 'Brief-Frontmatter in Notiz einfügen',
   notice_open_note: 'Letterhead: Bitte zuerst eine Markdown-Notiz öffnen.',
@@ -134,6 +137,7 @@ const de: Record<keyof typeof en, string> = {
   notice_logo_failed: 'Letterhead: Logo konnte nicht geladen werden – ',
   notice_no_recipient: 'Letterhead: Kein Empfänger im Frontmatter (Feld „empfaenger").',
   notice_print_failed: 'Letterhead: Druck nicht möglich.',
+  notice_browser_pdf_failed: 'Letterhead: Das Browser-PDF ist fehlgeschlagen, es wird das Vektor-PDF erzeugt.',
   notice_simplified: 'Letterhead: {n} Element(e) wurden für das PDF vereinfacht.',
   modal_title: 'Brief-Vorschau',
   modal_export: 'PDF-Export',

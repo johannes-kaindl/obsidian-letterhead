@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCss, buildStandaloneDoc, STANDALONE_WRAPPER_CSS } from '../../src/obsidian/html-engine';
+import { buildCss, buildChromiumDoc, buildStandaloneDoc, PRINT_CSP, STANDALONE_WRAPPER_CSS } from '../../src/obsidian/html-engine';
 import { DEFAULT_SETTINGS } from '../../src/core/model';
 
 describe('html-engine', () => {
@@ -41,5 +41,14 @@ describe('html-engine', () => {
     expect(base).toBeGreaterThan(-1);
     expect(custom).toBeGreaterThan(base);
     expect(wrapper).toBeGreaterThan(custom);
+  });
+
+  it('buildChromiumDoc is the standalone document plus a CSP that forbids scripts', () => {
+    const doc = buildChromiumDoc('<x>', '.a{color:red}');
+    expect(doc).toContain(`http-equiv="Content-Security-Policy" content="${PRINT_CSP}"`);
+    expect(doc.indexOf('Content-Security-Policy')).toBeLessThan(doc.indexOf('<style>'));
+    expect(PRINT_CSP).toContain("default-src 'none'");
+    expect(PRINT_CSP).not.toContain('script-src');
+    expect(doc.replace(/<meta http-equiv[^>]*>/, '')).toBe(buildStandaloneDoc('<x>', '.a{color:red}'));
   });
 });
