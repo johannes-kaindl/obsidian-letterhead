@@ -401,7 +401,8 @@ export default class LetterheadPlugin extends Plugin {
     if (jp) {
       const maxHmm = Math.max(8, g.addrTopMm - g.headTopMm - 8);
       const ratio = jp.wPx / jp.hPx;
-      logoHmm = Math.min(maxHmm, 22);
+      // Mit dem Namen daneben (showNameWithLogo) bleibt das Logo auf 14 mm Höhe, damit der Name Platz hat.
+      logoHmm = Math.min(maxHmm, settings.showNameWithLogo && model.senderName ? 14 : 22);
       logoWmm = logoHmm * ratio;
       if (logoWmm > 90) { logoWmm = 90; logoHmm = logoWmm / ratio; }
     }

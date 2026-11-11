@@ -67,6 +67,19 @@ export interface LayoutHeadResult {
    marks) as absolute Draw-Ops (PDF-pt, origin bottom-left), all on page 0.
    The logo image is NOT drawn here — it is added by the orchestration (D4)
    as a separate image op, per main.js.reference:1924. */
+/* Greedy-Umbruch an Leerzeichen auf höchstens drei Zeilen; ein Wort, das allein zu breit ist, bleibt ganz (kein Trennen). */
+function wrapWords(text: string, maxWidthPt: number, width: (s: string) => number): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let cur = '';
+  for (const w of words) {
+    const next = cur ? `${cur} ${w}` : w;
+    if (cur && width(next) > maxWidthPt && lines.length < 2) { lines.push(cur); cur = w; } else cur = next;
+  }
+  if (cur) lines.push(cur);
+  return lines.length ? lines : [text];
+}
+
 export function layoutHead(model: LetterHeadModel, settings: LetterheadSettings): LayoutHeadResult {
   const g = dinGeometry(settings.dinForm);
   const off = Number(settings.printOffsetTopMm) || 0;
@@ -97,23 +110,34 @@ export function layoutHead(model: LetterHeadModel, settings: LetterheadSettings)
 
   // ---- Seite 0: Briefkopf (Name links — Logo ergänzt die Orchestrierung als Bild) ----
   const headTopMm = g.headTopMm;
-  // Mit Logo ersetzt das Bild den Namen — außer die Einstellung showNameWithLogo ist an: dann steht der Name
-  // rechts neben dem Logo, auf dessen Höhe zentriert.
-  const nameWithLogo = Boolean(model.logo && model.senderName && settings.showNameWithLogo);
-  if ((!model.logo || nameWithLogo) && model.senderName) {
-    const nm = upperName ? String(model.senderName).toUpperCase() : model.senderName;
-    const nameBlockMm0 = mmDown(nameSizePt) * 1.15 + (model.senderZusatz ? mmDown(9) * 1.2 : 0);
-    const nameX = leftPt + (nameWithLogo ? mmToPt((model.logoWidthMm || 0) + 4) : 0);
-    const nameTop = headTopMm + (nameWithLogo ? Math.max(0, ((model.logoHeightMm || 0) - nameBlockMm0) / 2) : 0);
-    T(0, nameX, baseAt(nameTop, nameSizePt), nm, fonts.name, nameSizePt);
-    if (model.senderZusatz) T(0, nameX, baseAt(nameTop + mmDown(nameSizePt) + 1.2, 9), model.senderZusatz, fonts.body, 9, MUTED);
-  }
   // Kontakt rechts (rechtsbündig, gleiche Oberkante wie der Name)
   const contact = [
     [model.senderStrasse, model.senderPlzOrt].filter(Boolean).join(' · '),
     [model.senderTelefon ? ((model.labels && model.labels.telPrefix) || '') + model.senderTelefon : '', model.senderEmail].filter(Boolean).join(' · '),
     model.senderWeb || ''
   ].filter(Boolean);
+  // Mit Logo ersetzt das Bild den Namen — außer die Einstellung showNameWithLogo ist an: dann steht der Name
+  // rechts neben dem Logo, auf dessen Höhe zentriert.
+  const nameWithLogo = Boolean(model.logo && model.senderName && settings.showNameWithLogo);
+  if ((!model.logo || nameWithLogo) && model.senderName) {
+    const nm = upperName ? String(model.senderName).toUpperCase() : model.senderName;
+    // Neben dem Logo steht der Name höchstens in 12 pt (das Logo ist dann auf 14 mm Höhe begrenzt, siehe main.ts).
+    const nameSz = nameWithLogo ? Math.min(nameSizePt, 12) : nameSizePt;
+    const nameX = leftPt + (nameWithLogo ? mmToPt((model.logoWidthMm || 0) + 4) : 0);
+    // Neben dem Logo ist die Breite begrenzt: der Name bricht an Wortgrenzen um (höchstens drei Zeilen), damit er
+    // nicht in die Kontaktzeilen läuft. Ohne Logo bleibt es bei einer Zeile wie bisher.
+    let nameLines = [nm];
+    if (nameWithLogo) {
+      const contactW = contact.reduce((w, c) => Math.max(w, textWidthPt(fonts.body, contactPt, c)), 0);
+      const availPt = Math.max(mmToPt(20), rightEdge - contactW - mmToPt(6) - nameX);
+      nameLines = wrapWords(nm, availPt, (str) => textWidthPt(fonts.name, nameSz, str));
+    }
+    const nameLineMm = mmDown(nameSz) * 1.15;
+    const nameBlockMm0 = nameLines.length * nameLineMm + (model.senderZusatz ? mmDown(9) * 1.2 : 0);
+    const nameTop = headTopMm + (nameWithLogo ? Math.max(0, ((model.logoHeightMm || 0) - nameBlockMm0) / 2) : 0);
+    nameLines.forEach((line, i) => T(0, nameX, baseAt(nameTop + i * nameLineMm, nameSz), line, fonts.name, nameSz));
+    if (model.senderZusatz) T(0, nameX, baseAt(nameTop + (nameLines.length - 1) * nameLineMm + mmDown(nameSz) + 1.2, 9), model.senderZusatz, fonts.body, 9, MUTED);
+  }
   for (let i = 0; i < contact.length; i++) {
     const wpt = textWidthPt(fonts.body, contactPt, contact[i]);
     T(0, rightEdge - wpt, baseAt(headTopMm + mmDown(i * contactPt * 1.4), contactPt), contact[i], fonts.body, contactPt, MUTED);

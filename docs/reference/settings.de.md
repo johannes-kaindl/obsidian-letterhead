@@ -46,7 +46,7 @@ erscheint links im Briefkopf, die Kontaktdaten rechts.
 | **Hole mark** | Lochmarke bei 148,5 mm zum Abheften. |
 | **Print offset top (mm)** | Druckversatz-Feinjustierung (Standard 0): schiebt den gesamten Briefinhalt nach unten, falls die Anschrift im Kuvertfenster zu hoch sitzt; 2–4 mm probieren. Falt-/Lochmarken bleiben papierbezogen unverändert, damit die Faltung stimmt. Druckränder setzt das Plugin immer automatisch: Seite 1 oben 10 mm (der DIN-Briefkopf sitzt konstruktionsbedingt hoch), Folgeseiten oben 25 mm, unten überall 20 mm. |
 | **Show logo** + **Logo path** | Bild statt Name im Briefkopf; vault-relativer Pfad (z. B. `assets/logo.png`), als data-URL eingebettet. |
-| **Show name next to the logo** | DIN-Layout, mit Logo: zeigt zusätzlich den Absendernamen (und Zusatz) rechts neben dem Logo, auf dessen Höhe zentriert. Standardmäßig aus — nur das Logo, wie bisher. Gilt für Browser-PDF, Druckdialog, Vorschau und Vektor-PDF gleichermaßen. Den Namen kurz halten: er steht zwischen Logo und Kontaktzeilen. |
+| **Show name next to the logo** | DIN-Layout, mit Logo: zeigt zusätzlich den Absendernamen (und Zusatz) rechts neben dem Logo, auf dessen Höhe zentriert. Standardmäßig aus — nur das Logo, wie bisher. Gilt für Browser-PDF, Druckdialog, Vorschau und Vektor-PDF gleichermaßen. Damit Platz bleibt, wird das Logo auf 14 mm Höhe begrenzt, der Name steht in höchstens 12 pt und bricht auf bis zu drei Zeilen um; ein sehr langer Name kann trotzdem an die Kontaktzeilen stoßen, also kurz halten. |
 
 ## Typography & language (Typografie & Sprache)
 

@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **The vector command is renamed to "Export letter as PDF (vector, fixed DIN layout)"** and still works on both platforms. It ignores class and font rules from your Custom CSS (only the plain `--bk-*` values count), which is the difference from the main command.
 
 ### Added
-- **New setting "Show name next to the logo"** (Settings → Letterhead elements, off by default). With a logo in the DIN layout the letterhead normally shows the logo alone; switched on, it also shows the sender name (and addition) to the right of the logo, centred on its height — in the browser PDF, the print dialog, the preview and the vector PDF alike. Existing letters look the same until you switch it on.
+- **New setting "Show name next to the logo"** (Settings → Letterhead elements, off by default). With a logo in the DIN layout the letterhead normally shows the logo alone; switched on, it also shows the sender name (and addition) to the right of the logo, centred on its height — in the browser PDF, the print dialog, the preview and the vector PDF alike. To make room the logo is then limited to 14 mm height and the name is set in at most 12 pt, wrapping to up to three lines. Existing letters look the same until you switch it on.
 - **"Print letter (print dialog)"** (desktop only) opens the operating system's print dialog, as "Export letter as PDF / print" used to, for printing on paper.
 
 ## [1.10.2] — 2026-11-10

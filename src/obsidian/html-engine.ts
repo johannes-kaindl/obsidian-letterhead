@@ -119,7 +119,11 @@ export function buildCss(s: LetterheadSettings, stilKey: string | null | undefin
   .bk-din .bk-head-name{ font-family:var(--bk-name-font); font-size:var(--bk-name-size);
     font-weight:var(--bk-name-weight); letter-spacing:var(--bk-name-spacing);
     text-transform:var(--bk-name-transform); line-height:1.1; white-space:nowrap; }
-  .bk-din .bk-head-brand{ display:flex; align-items:center; gap:4mm; }
+  .bk-din .bk-head-brand{ display:flex; align-items:center; gap:4mm; min-width:0; }
+  .bk-din .bk-head-brand img{ flex-shrink:0; max-height:14mm; }
+  .bk-din .bk-head-brand > div{ min-width:0; }
+  .bk-din .bk-head-brand .bk-head-name{ white-space:normal; font-size:min(var(--bk-name-size), 12pt); }
+  .bk-din .bk-head-brand + .bk-head-contact{ flex-shrink:0; white-space:nowrap; }
   .bk-din .bk-head-zusatz{ font-size:9pt; color:var(--bk-color-muted); margin-top:1mm; }
   .bk-din .bk-head-contact{ text-align:right; font-size:8.5pt; line-height:1.5; color:var(--bk-color-muted); }
 
