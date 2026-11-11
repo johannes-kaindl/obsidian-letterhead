@@ -50,6 +50,31 @@
         "confirm",
         "share-export"
       ]
+    },
+    {
+      "dir": "src/vendor/kit",
+      "source": "code-kit",
+      "from": "src/ts/pure",
+      "modules": [
+        "timeout"
+      ],
+      "ref": "0.63.0"
+    },
+    {
+      "dir": "src/vendor/kit-obsidian",
+      "source": "obsidian-kit",
+      "from": "src/obsidian",
+      "modules": [
+        "clock",
+        "print-to-pdf"
+      ],
+      "ref": "0.82.2",
+      "rewrite": [
+        [
+          "../vendor/code-kit/pure/",
+          "../kit/"
+        ]
+      ]
     }
   ]
 }

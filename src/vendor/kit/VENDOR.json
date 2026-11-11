@@ -5,6 +5,6 @@
   "vendored": "pdf/*.ts (obsidian-kit@0.82.2, 920cf2f), vault-path.ts",
   "code_kit_version": "0.27.1",
   "code_kit_sha": "ac89f10",
-  "code_kit_vendored": "filename-template.ts, data-url.ts, local-stamp.ts",
+  "code_kit_vendored": "filename-template.ts, data-url.ts, local-stamp.ts, timeout.ts (code-kit@0.63.0, ce90bf0)",
   "note": "Verbatim snapshot aus ZWEI Quellen. Never hand-edit. Pins in tools/kit-sync.json, re-vendor via tools/sync-kit.sh (zentrales kit-sync im Dach, liest aus den Tag-Refs). Seit obsidian-kit 2ab1bb5 liegt die domaenenfreie pure-Teilmenge in code-kit; der Kopf jeder Datei nennt ihre Herkunft."
 }
