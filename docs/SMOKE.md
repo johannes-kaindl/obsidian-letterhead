@@ -95,6 +95,7 @@ instanzgebunden. Dann warten.
 | **H · Vorschau** | Modal öffnet · paginiert in `.bk-sheet` · Falz- und Lochmarken gezeichnet |
 | **I · Teilen** | Fremddatei im Export-Ordner löst die Rückfrage aus, „Keep them“ lässt sie liegen · „Delete them“ löscht sie · ohne Fremddatei keine Rückfrage, die Datei geht einmal an die (Stub-)Standard-App · Gegenprobe: die Antwort entscheidet. Prüfung und Stub liegen in `tools/obsidian-cdp/teilen.ts` im Dach |
 | **J · Browser-PDF** | `export-letter` schreibt am Desktop ein Chromium-PDF (Producer `Skia/PDF`, Marker per Poppler `pdftotext` gelesen, nicht mit dem Vektor-Leser des Treibers) · Rückfall: ist `plugin.desktopPrint` durch einen Wurf ersetzt, entsteht das Vektor-PDF (kein Skia-Producer, Marker im Vektor-Text) und der Hinweis «The browser PDF failed …» erscheint. Beide Punkte tragen die Gegenprobe im jeweils anderen |
+| **K · Name neben dem Logo** | PNG-Logo, Rücksendezeile fest gesetzt (automatisch trüge sie den Namen auch ohne die Option): der Absendername steht nur bei eingeschalteter `showNameWithLogo` im PDF, im Vektor-PDF (K1) und im Browser-PDF (K2), je Richtung gemessen |
 
 **Nicht mechanisch geprüft und deshalb weiter Handarbeit:** wie der Brief *aussieht* — die
 DIN-Maße am Fensterkuvert, Grauwert, Umbruchästhetik, Logo-Platzierung. Dafür bleibt der
@@ -108,6 +109,7 @@ Blick aufs Papier (siehe `tools/render-hero.sh`).
 | 2026-09-02 (Kit 0.30.0) | 1.13.7 | **34/34 grün** | **33/34 — genau D4 rot** |
 | 2026-10-18 (Teilen I1–I4) | 1.14.4 | **40 grün · 0 rot · 3 übersprungen · 0 nichts gemessen** von 43 (davor 36 von 39) | **38 grün · 2 rot — genau I1 und I4** (in `share-export.ts` die Zeile `if (!clear) return;` ausgebaut, danach zurückgesetzt und neu gebaut: wieder 40 grün) |
 | 2026-11-10 (Formeln D5/E8, Kit `pdf/*` 0.82.2) | 1.15.1 | **42 grün · 0 rot · 3 übersprungen · 0 nichts gemessen** von 45 (G5 in 2 von 5 Läufen auf dem neuen Build rot, siehe unten) | **40 grün · 2 rot — genau D5 und E8** (Build vom Stand `29cae5a`, Kit 0.60.2, zurückgesetzt und neu gebaut: wieder 42 grün) |
+| 2026-11-11 (Welle 32: Drei Befehle, Browser-PDF J1/J2, Name neben Logo K1/K2) | 1.15.1 | **46 grün · 0 rot · 3 übersprungen · 0 nichts gemessen** von 49 (Baseline davor 42 von 45) | J2 ist die Gegenprobe zu J1 (abgeschaltetes Druckmodul → Vektor-PDF ohne Skia-Producer); K1/K2 messen beide Richtungen. Läufe unter `--exclusive all`: 1 von 6 brach in F mit „Zeitüberschreitung: Runtime.evaluate“ ab (frischer Lauf danach grün), unter `focus` nicht wiederholt |
 
 **Zur Gegenprobe vom 2026-09-02:** ausgebaut wurde die Leerzeilen-Polsterung in
 `extractCodeBlocks` (`src/vendor/kit/pdf/code-blocks.ts`) — der Fix, der den

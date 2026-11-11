@@ -119,6 +119,8 @@ const PUNKTE = [
   'I4 Teilen: die Antwort auf die Rückfrage entscheidet (Gegenprobe zu I1 und I2)',
   'J1 Haupt-Befehl: Browser-PDF über das Kit-Druckmodul, Datei ohne Druckdialog',
   'J2 Rückfall: scheitert das Druckmodul, entsteht das Vektor-PDF und der Hinweis',
+  'K1 Name neben dem Logo: Vektor-PDF zeigt den Absendernamen nur mit eingeschalteter Option',
+  'K2 Name neben dem Logo: Browser-PDF zeigt den Absendernamen nur mit eingeschalteter Option',
   'Druckdialog (letterhead:print-letter)',
   'iOS-Share-Kaskade (navigator.canShare → share → openWithDefaultApp)',
   'SVG-Logo im Briefkopf',
@@ -899,6 +901,42 @@ function pdfHatVektorText(bytes: Buffer): boolean {
   return pdfText(bytes).includes('MARKBODY');
 }
 
+/** K — „Namen neben dem Logo anzeigen“ (showNameWithLogo, Standard aus): mit PNG-Logo steht der Absendername
+ *  (Marker MARKSENDNAME aus den Einstellungen) nur bei eingeschalteter Option im PDF. Beide Richtungen werden
+ *  gemessen, auf beiden Wegen: ohne die Gegenrichtung wäre „fehlt“ von „nie gezeichnet“ nicht zu trennen.
+ *  Die Rücksendezeile bekommt einen eigenen Text: automatisch setzt sie sich aus Absendername und Anschrift zusammen und
+ *  trüge den Marker auch ohne die Option (erster Lauf: beide Punkte rot, „Name steht im PDF“ bei Option aus). */
+async function pruefeNameNebenLogo(cdp: Cdp, vaultDir: string): Promise<void> {
+  console.log('\nK · Name neben dem Logo');
+  raeumePdfs(vaultDir);
+  const ziel = join(vaultDir, 'Smoke.pdf');
+  const lauf = async (befehl: string, mitName: boolean): Promise<string | null> => {
+    await setSettings(cdp, { outputMode: 'nextToNote', outputFolder: '', filenameTemplate: '{notiz}', showLogo: true, logoPath: 'assets/probe.png', showNameWithLogo: mitName, returnAddressLine: 'MARKRUECK Rücksendezeile' });
+    rmSync(ziel, { force: true });
+    await exportPdf(cdp, 'Smoke.md', befehl);
+    if (!(await warteAufDatei(ziel, 30_000))) return null;
+    const bytes = readFileSync(ziel);
+    return befehl === 'export-letter' ? popplerText(ziel) : pdfText(bytes);
+  };
+  const urteil = (id: (typeof PUNKTE)[number], aus: string | null, an: string | null): void => {
+    if (aus === null || an === null) { unmeasured(id, `Gegenstand nicht erreicht: ${aus === null ? 'ohne' : 'mit'} Option entstand keine lesbare Datei`); return; }
+    const ohne = aus.includes('MARKSENDNAME');
+    const mit = an.includes('MARKSENDNAME');
+    record(id, !ohne && mit, `Option aus: Name ${ohne ? 'STEHT im PDF' : 'fehlt (Logo allein)'} · Option an: Name ${mit ? 'steht neben dem Logo' : 'FEHLT'}`);
+  };
+  try {
+    const vAus = await lauf('export-letter-pdf', false);
+    const vAn = await lauf('export-letter-pdf', true);
+    urteil('K1 Name neben dem Logo: Vektor-PDF zeigt den Absendernamen nur mit eingeschalteter Option', vAus, vAn);
+    const bAus = await lauf('export-letter', false);
+    const bAn = await lauf('export-letter', true);
+    urteil('K2 Name neben dem Logo: Browser-PDF zeigt den Absendernamen nur mit eingeschalteter Option', bAus, bAn);
+  } finally {
+    await setSettings(cdp, { showLogo: false, logoPath: '', showNameWithLogo: false, returnAddressLine: '' });
+    raeumePdfs(vaultDir);
+  }
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.has('setup')) {
@@ -981,6 +1019,7 @@ async function main(): Promise<void> {
     await pruefeAblage(cdp, vaultDir, port, vaultFilter);
     await pruefeVorschau(cdp);
     await pruefeBrowserPdf(cdp, vaultDir, behalten);
+    await pruefeNameNebenLogo(cdp, vaultDir);
     await pruefeTeilen(cdp, vaultDir);
 
     skipped(
