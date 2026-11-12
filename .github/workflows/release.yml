@@ -81,13 +81,17 @@ jobs:
       - name: Build zip and checksums
         run: node scripts/build-release-assets.mjs release-assets
 
+      # Build provenance is not available for user-owned PRIVATE repositories; without this condition the step
+      # fails before the release is created (measured 2026-08-12, wikijs-maintainer 0.1.0). Public repos attest as before.
       - name: Attest build provenance
+        if: ${{ !github.event.repository.private }}
         uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
             main.js
             manifest.json
             styles.css
+            release-assets/*
 
       - name: Create or update release
         env:
