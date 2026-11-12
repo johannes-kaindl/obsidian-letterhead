@@ -6,6 +6,12 @@ describe('frontmatter', () => {
     const idx = buildFmIndex({ 'Empfänger': 'Max' });
     expect(getField(idx, ALIASES.recipient)).toBe('Max');
   });
+  it('subject comes from betreff, subject or re, never from the vault axis "thema"', () => {
+    expect(getField(buildFmIndex({ thema: '🏗️ Vault-Architektur' }), ALIASES.betreff)).toBeUndefined();
+    expect(getField(buildFmIndex({ thema: 'X', betreff: 'Kündigung' }), ALIASES.betreff)).toBe('Kündigung');
+    expect(getField(buildFmIndex({ Re: 'Ihr Schreiben' }), ALIASES.betreff)).toBe('Ihr Schreiben');
+    expect(getField(buildFmIndex({ Subject: 'Hello' }), ALIASES.betreff)).toBe('Hello');
+  });
   it('normalises keys (case/space/underscore insensitive)', () => {
     const idx = buildFmIndex({ 'Ihr Zeichen': 'AZ-1' });
     expect(getField(idx, ['ihrzeichen'])).toBe('AZ-1');

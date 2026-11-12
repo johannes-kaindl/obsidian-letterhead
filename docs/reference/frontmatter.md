@@ -23,7 +23,7 @@ a compact field overview.
 | Field | Aliases | Description |
 |-------|---------|-------------|
 | `recipient` | `empfaenger`, `empfänger`, `an`, `to`, `adresse`, `anschrift` | Recipient address as a list — one bullet per envelope line (alternatively a block scalar). |
-| `subject` | `betreff`, `thema`, `re` | Subject line. |
+| `subject` | `betreff`, `re` | Subject line. |
 | `salutation` | `anrede`, `greeting` | e.g. "Dear Ms Beispiel,". |
 | `closing` | `gruss`, `grußformel`, `grussformel`, `signoff` | Closing; defaults from the settings, otherwise the language default ("Mit freundlichen Grüßen" / "Kind regards"). |
 | `signature` | `unterschrift`, `signatur`, `gezeichnet` | Name below the closing; default = sender name. |

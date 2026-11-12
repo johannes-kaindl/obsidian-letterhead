@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- **The frontmatter key `thema` is no longer read as the subject line.** In vaults that use `thema` as a classification field on every note, a letter without `betreff:` printed that value (for example a topic label) as its subject. Use `betreff:`, `subject:` or `re:`; a letter that relied on `thema:` shows an empty subject until the key is renamed.
+
 ## [1.11.0] — 2026-11-11
 
 ### Changed

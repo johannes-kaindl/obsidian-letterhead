@@ -24,7 +24,7 @@ Einstellungen zeigen zusätzlich eine kompakte Feldübersicht.
 | Feld | Aliasse | Beschreibung |
 |------|---------|--------------|
 | `empfaenger` | `empfänger`, `recipient`, `an`, `to`, `adresse`, `anschrift` | Empfängeranschrift als Liste — ein Listenpunkt pro Kuvertzeile (alternativ Blockskalar). |
-| `betreff` | `subject`, `thema`, `re` | Betreffzeile. |
+| `betreff` | `subject`, `re` | Betreffzeile. |
 | `anrede` | `salutation`, `greeting` | z. B. „Sehr geehrte Frau Beispiel,". |
 | `gruss` | `grußformel`, `grussformel`, `closing`, `signoff` | Grußformel; Default aus Einstellungen, sonst Sprach-Standard („Mit freundlichen Grüßen" / „Kind regards"). |
 | `unterschrift` | `signatur`, `signature`, `gezeichnet` | Name unter dem Gruß; Default = Absendername. |

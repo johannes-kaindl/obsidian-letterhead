@@ -34,7 +34,7 @@ export function normInfozeile(v: unknown): string | null {
 
 export const ALIASES: Record<string, string[]> = {
   recipient:   ['empfaenger', 'empfänger', 'recipient', 'an', 'to', 'adresse', 'anschrift'],
-  betreff:     ['betreff', 'subject', 're', 'thema'],
+  betreff:     ['betreff', 'subject', 're'],
   anrede:      ['anrede', 'salutation', 'greeting'],
   gruss:       ['gruss', 'gruß', 'grußformel', 'grussformel', 'closing', 'signoff'],
   unterschrift:['unterschrift', 'signatur', 'signature', 'gezeichnet'],

@@ -140,7 +140,7 @@ export default class LetterheadPlugin extends Plugin {
         const has = (...keys: string[]): boolean => keys.some((k) => fm[k] !== undefined);
         const labels = (LETTER_LABELS as Record<string, typeof LETTER_LABELS.de>)[lang] || LETTER_LABELS.de;
         if (!has('empfaenger', 'empfänger', 'recipient', 'an', 'to', 'adresse', 'anschrift')) fm[K.recipient] = ['', '', '', ''];
-        if (!has('betreff', 'subject', 'thema')) fm[K.betreff] = '';
+        if (!has('betreff', 'subject', 're')) fm[K.betreff] = '';
         if (!has('anrede', 'salutation')) fm[K.anrede] = labels.salutation;
         if (!has('ort', 'place', 'stadt', 'city')) fm[K.ort] = '';
         if (!has('datum', 'date')) fm[K.datum] = iso;
