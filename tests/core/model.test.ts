@@ -46,6 +46,13 @@ describe('resolveTokens — eine Quelle für CSS- und PDF-Pfad', () => {
     expect(t.space).toBe(STILE.sachlich.tokens.space);
     expect(t.fontFamily).toBe(STILE.sachlich.tokens.fontFamily);
   });
+  it('Hex-Farben: #rgb und #rrggbb in jeder Schreibung, nicht #rgba, #rrggbbaa oder halbe Längen', () => {
+    const d = STILE.sachlich.tokens;
+    const farbe = (wert: string) => resolveTokens('sachlich', css(`:root{ --bk-color-text: ${wert}; }`)).colorText;
+    expect(farbe('#ABC')).toBe('#ABC');
+    expect(farbe('#0a7D3c')).toBe('#0a7D3c');
+    for (const falsch of ['#abcd', '#12345', '#1234567', '#12345678', 'abc', '#ggg']) expect(farbe(falsch)).toBe(d.colorText);
+  });
   it('speist den Kopf-/Rumpf-Pfad: bodyLayoutOptions übernimmt die Farbe aus Custom CSS', () => {
     const o = bodyLayoutOptions({ stil: 'sachlich' }, css(':root{ --bk-color-text: #123456; }'), 500);
     expect(o.colors.text).toBe('#123456');

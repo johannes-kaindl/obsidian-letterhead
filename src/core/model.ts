@@ -18,6 +18,7 @@ import { mmToPt, hexToRgb01 } from '../vendor/kit/pdf/geometry';
 import { DEFAULT_OPTIONS, type LayoutOptions, type FontChoice } from '../vendor/kit/pdf';
 import { normStil, asText } from './frontmatter';
 import { DEFAULT_FILENAME_TEMPLATE } from './filename';
+import { isHexColor } from '../vendor/kit/css-color';
 
 export { hexToRgb01 };
 
@@ -258,7 +259,6 @@ export const STILE: Record<'sachlich' | 'klassisch' | 'technisch', StyleDef> = {
  *  custom `--bk-font-family` cannot reach it — that limit is by design.
  * ------------------------------------------------------------------ */
 
-const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 const LENGTH = /^-?\d+(?:\.\d+)?(?:pt|mm)$/;
 const NUMBER = /^\d+(?:\.\d+)?$/;
 
@@ -296,21 +296,23 @@ export function resolveTokens(stilKey: string | null | undefined, settings: Lett
   const base = (STILE[(normStil(stilKey) || 'sachlich') as keyof typeof STILE] || STILE.sachlich).tokens;
   const t: StyleTokens = { ...base, fontSizePt: Number(settings.fontSizePt) || base.fontSizePt };
   const custom = parseCustomTokens(typeof settings.customCss === 'string' ? settings.customCss : '');
-  const take = (name: string, ok: RegExp, set: (v: string) => void) => {
+  const take = (name: string, ok: (v: string) => boolean, set: (v: string) => void) => {
     const v = custom.get(name);
-    if (v !== undefined && ok.test(v)) set(v);
+    if (v !== undefined && ok(v)) set(v);
   };
-  take('font-size', LENGTH, (v) => { if (v.endsWith('pt')) t.fontSizePt = parseFloat(v); });
-  take('line-height', NUMBER, (v) => { t.lineHeight = v; });
-  take('color-text', HEX_COLOR, (v) => { t.colorText = v; });
-  take('color-muted', HEX_COLOR, (v) => { t.colorMuted = v; });
-  take('color-rule', HEX_COLOR, (v) => { t.colorRule = v; });
-  take('color-hairline', HEX_COLOR, (v) => { t.colorHairline = v; });
-  take('space', LENGTH, (v) => { t.space = v; });
-  take('block-gap', LENGTH, (v) => { t.blockGap = v; });
-  take('signature-gap', LENGTH, (v) => { t.signatureGap = v; });
-  take('name-size', LENGTH, (v) => { t.nameSize = v; });
-  take('name-transform', /^(?:none|uppercase)$/, (v) => { t.nameTransform = v; });
+  const isLength = (v: string): boolean => LENGTH.test(v);
+  const isNumber = (v: string): boolean => NUMBER.test(v);
+  take('font-size', isLength, (v) => { if (v.endsWith('pt')) t.fontSizePt = parseFloat(v); });
+  take('line-height', isNumber, (v) => { t.lineHeight = v; });
+  take('color-text', isHexColor, (v) => { t.colorText = v; });
+  take('color-muted', isHexColor, (v) => { t.colorMuted = v; });
+  take('color-rule', isHexColor, (v) => { t.colorRule = v; });
+  take('color-hairline', isHexColor, (v) => { t.colorHairline = v; });
+  take('space', isLength, (v) => { t.space = v; });
+  take('block-gap', isLength, (v) => { t.blockGap = v; });
+  take('signature-gap', isLength, (v) => { t.signatureGap = v; });
+  take('name-size', isLength, (v) => { t.nameSize = v; });
+  take('name-transform', (v) => /^(?:none|uppercase)$/.test(v), (v) => { t.nameTransform = v; });
   return t;
 }
 
