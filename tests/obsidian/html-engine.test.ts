@@ -16,6 +16,12 @@ describe('html-engine', () => {
     expect(doc).toContain('<x>');
   });
 
+  it('buildCss draws table cells with the hairline colour, and Custom CSS still wins', () => {
+    const css = buildCss({ ...DEFAULT_SETTINGS, customCss: '.bk-body td{ border:none; }' }, 'sachlich');
+    const regel = css.indexOf('.bk-body th, .bk-body td{ border:0.25mm solid var(--bk-color-hairline)');
+    expect(regel).toBeGreaterThan(-1);
+    expect(css.indexOf('.bk-body td{ border:none; }')).toBeGreaterThan(regel);
+  });
   it('buildCss defines the three print-margin tokens with the built-in defaults', () => {
     const css = buildCss(DEFAULT_SETTINGS, 'sachlich');
     expect(css).toContain('--bk-print-margin-top:10mm');

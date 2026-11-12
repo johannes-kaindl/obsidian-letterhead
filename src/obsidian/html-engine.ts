@@ -168,6 +168,10 @@ export function buildCss(s: LetterheadSettings, stilKey: string | null | undefin
   .bk-body ul, .bk-body ol{ margin:0 0 var(--bk-space); padding-left:6mm; }
   .bk-body h1, .bk-body h2, .bk-body h3{ font-size:1em; font-weight:bold; margin:4mm 0 2mm; }
   .bk-body{ text-align:left; }
+  /* Tables: a plain hairline grid like the vector PDF (its table border is the same --bk-color-hairline); Custom CSS comes later and wins. */
+  .bk-body table{ border-collapse:collapse; margin:0 0 var(--bk-space); max-width:100%; }
+  .bk-body th, .bk-body td{ border:0.25mm solid var(--bk-color-hairline); padding:1mm 2mm; text-align:left; vertical-align:top; }
+  .bk-body th{ font-weight:bold; }
   .bk-closing{ margin-top:var(--bk-block-gap); }
   .bk-signature{ margin-top:var(--bk-signature-gap); white-space:pre-line; }
   .bk-enclosures{ margin-top:14mm; font-size:9.5pt; line-height:1.45; color:var(--bk-color-muted); }
