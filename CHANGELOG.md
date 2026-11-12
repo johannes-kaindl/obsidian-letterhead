@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.12.0] — 2026-11-12
+
 ### Fixed
 - **Tables in the browser PDF and in the print dialog now have a thin grid.** Before, cells had no borders at all, while the vector PDF always drew one. The lines use the `--bk-color-hairline` colour, so a theme's colour applies to both; your Custom CSS can still restyle `.bk-body table`, `th` and `td`.
 
