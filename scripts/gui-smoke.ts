@@ -619,15 +619,25 @@ async function messeOrdnerFeld(cdp: Cdp, port: number, vault: string): Promise<{
     const findeFeld = `[...document.querySelectorAll('input[type="text"]')].find((i) => i.placeholder.startsWith('Export/'))`;
     const feldDa = await pollUntil<boolean>(fenster, `return ${findeFeld} ? true : null;`, 8_000, 250);
     if (feldDa !== true) return { feld: false, items: [] };
-    return await fenster.evaluate<{ feld: boolean; items: string[] }>(`
+    // Die Vorschlagsliste füllt sich asynchron (Ordnerliste des Vaults); ein fester Schlaf nach dem
+    // input-Ereignis las auf 1.15.1 in manchen Läufen vor dem Füllen (0 statt 4 Vorschläge).
+    // Darum: input erneut auslösen und die Liste abwarten, statt zu raten.
+    const items = await pollUntil<string[]>(
+      fenster,
+      `
       const feld = ${findeFeld};
+      if (!feld) return null;
       feld.focus();
       feld.value = '';
       feld.dispatchEvent(new Event('input'));
-      await new Promise((r) => setTimeout(r, 400));
-      const items = [...document.querySelectorAll('.suggestion-container .suggestion-item')].map((e) => e.textContent);
-      return { feld: true, items };
-    `);
+      await new Promise((r) => setTimeout(r, 150));
+      const liste = [...document.querySelectorAll('.suggestion-container .suggestion-item')].map((e) => e.textContent);
+      return liste.length > 0 ? liste : null;
+    `,
+      8_000,
+      250,
+    );
+    return { feld: true, items: items ?? [] };
   } finally {
     if (fenster && fenster !== cdp) fenster.close();
     await schliesseEinstellungen(cdp).catch(() => undefined);
