@@ -21,6 +21,7 @@ Verzeichnis ist die Quelle** — verloren heißt neu gebaut, nicht rekonstruiert
 | `Smoke.md` | Grundfall: alle Briefteile deutsch, Infoblock, Anlagen, Umlaute/€ (WinAnsi) |
 | `Smoke-Englisch.md` | Englische Aliasse **und** die Schlüssel-Normalisierung: `Subject`, `SALUTATION`, `Your ref`, `our-ref` müssen dieselben Felder treffen wie ihre kanonischen Namen |
 | `Smoke-Reich.md` | Degradation: Tabelle, Task-Zustände, Codeblöcke (darunter der **klebende Fence**, der bis 1.6.4 einen Codeblock verschluckte), rohes SVG → `[Grafik]`, eingebettetes Bild |
+| `Smoke-Degradation.md` | Dekoration ist keine Grafik: Callout-Icon, zwei Formeln und ein rohes SVG, die Notice zählt genau drei Elemente (Gruppe M) |
 | `Smoke-Mermaid.md` | Mermaid-Fence in Callout und Zitat (Quelltext lesbar im Vektor-PDF) und das PNG im Browser-PDF (Gruppe L) |
 | `Smoke-Lang.md` | Mehrseitigkeit: 40 Absätze erzwingen den Seitenumbruch; der letzte Marker belegt, dass hinten nichts abfällt |
 | `Unterordner/Smoke-Unterordner.md` | `nextToNote` aus einem Unterordner — die Pfad-Fügung, die seit 1.6.5 aus dem Kit kommt |

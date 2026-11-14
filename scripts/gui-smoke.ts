@@ -124,6 +124,7 @@ const PUNKTE = [
   'K2 Name neben dem Logo: Browser-PDF zeigt den Absendernamen nur mit eingeschalteter Option',
   'L1 Mermaid-Fence in Callout und Zitat: der Quelltext steht lesbar im Vektor-PDF',
   'L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF',
+  'M1 Callout-Icon ist Dekoration: genau drei vereinfachte Elemente (zwei Formeln, ein SVG), ein [Grafik]',
   'Druckdialog (letterhead:print-letter)',
   'iOS-Share-Kaskade (navigator.canShare → share → openWithDefaultApp)',
   'SVG-Logo im Briefkopf',
@@ -1019,6 +1020,33 @@ async function pruefeMermaid(cdp: Cdp, vaultDir: string, behalten: boolean): Pro
   raeumePdfs(vaultDir);
 }
 
+/** M — Dekoration ist keine Grafik (1.6.3): das Icon eines Callouts darf `[Grafik]` nicht vermehren, sonst wäre die Unterscheidung
+ *  dekorativ/inhaltlich kaputt und die Sammel-Notice zählte zu viel. `Smoke-Degradation.md` trägt zwei Formeln, ein rohes SVG und ein Callout:
+ *  erwartet sind genau ein `[Grafik]`, zwei `[Formel: …]` und eine Notice «3 Element(e)». Beide Richtungen stehen im Punkt: das Callout
+ *  muss mit seinem Text da sein (sonst wäre «kein Icon-Platzhalter» ein verlorenes Callout). */
+async function pruefeDekoration(cdp: Cdp, vaultDir: string): Promise<void> {
+  console.log('\nM · Dekoration ist keine Grafik');
+  raeumePdfs(vaultDir);
+  await setSettings(cdp, { outputMode: 'nextToNote', outputFolder: '', filenameTemplate: '{notiz}' });
+  const ziel = join(vaultDir, 'Smoke-Degradation.pdf');
+  const notice = await exportPdf(cdp, 'Smoke-Degradation.md', 'export-letter-pdf');
+  if (!(await warteAufDatei(ziel))) {
+    unmeasured('M1 Callout-Icon ist Dekoration: genau drei vereinfachte Elemente (zwei Formeln, ein SVG), ein [Grafik]', `Gegenstand nicht erreicht: keine Datei · Notice: ${notice || '(keine)'}`);
+    return;
+  }
+  const text = pdfText(readFileSync(ziel));
+  const grafik = text.split('[Grafik]').length - 1;
+  const formeln = text.split('[Formel:').length - 1;
+  const zahl = /(\d+)\s*(Element|element)/.exec(notice);
+  const rahmen = markerBilanz(text, ['MARKDEGCALLOUT', 'MARKDEGCALLOUTTEXT', 'MARKDEGENDE']);
+  record(
+    'M1 Callout-Icon ist Dekoration: genau drei vereinfachte Elemente (zwei Formeln, ein SVG), ein [Grafik]',
+    grafik === 1 && formeln === 2 && zahl !== null && Number(zahl[1]) === 3 && rahmen.ok,
+    `[Grafik] ${grafik}× (erwartet 1) · [Formel: …] ${formeln}× (erwartet 2) · Notice ${zahl ? `${zahl[1]} Element(e)` : `ohne Zahl: ${notice || '(keine)'}`} (erwartet 3) · ${rahmen.detail}`,
+  );
+  raeumePdfs(vaultDir);
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.has('setup')) {
@@ -1103,6 +1131,7 @@ async function main(): Promise<void> {
     await pruefeBrowserPdf(cdp, vaultDir, behalten);
     await pruefeNameNebenLogo(cdp, vaultDir);
     await pruefeMermaid(cdp, vaultDir, behalten);
+    await pruefeDekoration(cdp, vaultDir);
     await pruefeTeilen(cdp, vaultDir);
 
     skipped(
