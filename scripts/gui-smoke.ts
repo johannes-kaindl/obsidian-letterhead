@@ -56,7 +56,8 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, renameSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { cwd } from 'node:process';
 
@@ -121,6 +122,8 @@ const PUNKTE = [
   'J2 Rückfall: scheitert das Druckmodul, entsteht das Vektor-PDF und der Hinweis',
   'K1 Name neben dem Logo: Vektor-PDF zeigt den Absendernamen nur mit eingeschalteter Option',
   'K2 Name neben dem Logo: Browser-PDF zeigt den Absendernamen nur mit eingeschalteter Option',
+  'L1 Mermaid-Fence in Callout und Zitat: der Quelltext steht lesbar im Vektor-PDF',
+  'L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF',
   'Druckdialog (letterhead:print-letter)',
   'iOS-Share-Kaskade (navigator.canShare → share → openWithDefaultApp)',
   'SVG-Logo im Briefkopf',
@@ -947,6 +950,75 @@ async function pruefeNameNebenLogo(cdp: Cdp, vaultDir: string): Promise<void> {
   }
 }
 
+/** `--keep` für Gruppe L: kopiert die Datei in `$SMOKE_KEEP_DIR` (Vorgabe: Ordner des Treibers im Temp-Verzeichnis), weil die
+ *  Folgegruppen jedes PDF im Vault räumen. */
+function bewahre(quelle: string, name: string): void {
+  const dir = process.env.SMOKE_KEEP_DIR ?? join(tmpdir(), 'letterhead-smoke-keep');
+  mkdirSync(dir, { recursive: true });
+  copyFileSync(quelle, join(dir, name));
+  console.log(`  behalten: ${join(dir, name)}`);
+}
+
+/** L — Mermaid in Callout und Zitat. Letterhead zeichnet kein Mermaid (anders als Paperize wartet es nicht auf das svg): der Fence
+ *  bleibt ein Codeblock, im Callout und im Zitat ebenso (`extractCodeBlocks` zieht nur oberste Ebene heraus, der Rest kommt als `<pre>`).
+ *  Gemessen wird deshalb, was der Brief verspricht: der Quelltext steht lesbar im Vektor-PDF, mit Leerzeichen, nichts ist verklebt oder
+ *  weg (L1, die Rahmentexte stehen dabei mit, sonst wäre «nichts verklebt» ein leeres PDF). Kommt später ein Mermaid-Weg wie in Paperize,
+ *  wird dieser Punkt zur Markierung `[Grafik]` (Kit 0.86.0, `dom-to-ir`) umgeschrieben.
+ *  L2 fährt dieselbe Notiz über den Haupt-Befehl: das Chromium-PDF braucht das PNG als data:-URL (Kit `inlineImages`, das
+ *  `<webview>` kennt kein app://); gelesen mit Poppler (`pdftotext`, `pdfimages`). */
+async function pruefeMermaid(cdp: Cdp, vaultDir: string, behalten: boolean): Promise<void> {
+  console.log('\nL · Mermaid in Callout und Zitat, Bild im Browser-PDF');
+  raeumePdfs(vaultDir);
+  await setSettings(cdp, { outputMode: 'nextToNote', outputFolder: '', filenameTemplate: '{notiz}' });
+  const ziel = join(vaultDir, 'Smoke-Mermaid.pdf');
+  const rahmen = ['MARKMERMANFANG', 'MARKMERMCALLOUT', 'MARKMERMZITAT', 'MARKMERMENDE'];
+  const knoten = ['MARKMERMKNOTENA', 'MARKMERMKNOTENB', 'MARKMERMKNOTENC', 'MARKMERMKNOTEND'];
+
+  const notice = await exportPdf(cdp, 'Smoke-Mermaid.md', 'export-letter-pdf');
+  if (!(await warteAufDatei(ziel))) {
+    unmeasured('L1 Mermaid-Fence in Callout und Zitat: der Quelltext steht lesbar im Vektor-PDF', `Gegenstand nicht erreicht: keine Datei · Notice: ${notice || '(keine)'}`);
+  } else {
+    const text = pdfText(readFileSync(ziel));
+    const r = markerBilanz(text, rahmen);
+    const quelle = [['A[MARKMERMKNOTENA] --> B[MARKMERMKNOTENB]'], ['C[MARKMERMKNOTENC] --> D[MARKMERMKNOTEND]']].flat();
+    const lesbar = quelle.filter((z) => text.includes(z));
+    const kopf = text.split('graph LR').length - 1;
+    record(
+      'L1 Mermaid-Fence in Callout und Zitat: der Quelltext steht lesbar im Vektor-PDF',
+      r.ok && lesbar.length === quelle.length && kopf === 2,
+      `${r.detail} · Quellzeilen ${lesbar.length}/${quelle.length} · «graph LR» ${kopf}× (erwartet 2)`,
+    );
+  }
+
+  if (behalten && existsSync(ziel)) bewahre(ziel, 'Smoke-Mermaid-Vektor.pdf');
+  rmSync(ziel, { force: true });
+  await exportPdf(cdp, 'Smoke-Mermaid.md', 'export-letter');
+  if (!(await warteAufDatei(ziel, 30_000))) {
+    unmeasured('L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF', 'Gegenstand nicht erreicht: keine Datei nach 30 s');
+    return;
+  }
+  const text = popplerText(ziel);
+  const img = spawnSync('pdfimages', ['-list', ziel], { encoding: 'utf8' });
+  if (text === null || img.status !== 0) {
+    unmeasured('L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF', 'pdftotext oder pdfimages (Poppler) nicht verfügbar');
+  } else {
+    // Gezählt wird das PNG der Fixture (64×64, `make-assets.mjs`), nicht «irgendein Rasterbild»: ein Bild, das das `<webview>` nicht
+    // laden kann, druckt Chromium als Symbol «kaputtes Bild» (14×16), und das zählte als Bild (Mutationsprobe: Einbetten abgeschaltet,
+    // «≥ 1 Rasterbild» blieb grün).
+    const zeilen = img.stdout.split('\n').slice(2).map((z) => z.trim().split(/\s+/)).filter((c) => c[2] === 'image');
+    const probe = zeilen.filter((c) => c[3] === '64' && c[4] === '64').length;
+    const r = markerBilanz(text, rahmen);
+    const beschriftet = knoten.filter((k) => text.includes(k));
+    record(
+      'L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF',
+      r.ok && probe === 1 && beschriftet.length === knoten.length,
+      `${r.detail} · PNG 64×64 ${probe}× im PDF (erwartet 1; Rasterbilder insgesamt ${zeilen.length}) · Quelltext-Knoten ${beschriftet.length}/${knoten.length}`,
+    );
+  }
+  if (behalten) bewahre(ziel, 'Smoke-Mermaid-Browser.pdf');
+  raeumePdfs(vaultDir);
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.has('setup')) {
@@ -1030,6 +1102,7 @@ async function main(): Promise<void> {
     await pruefeVorschau(cdp);
     await pruefeBrowserPdf(cdp, vaultDir, behalten);
     await pruefeNameNebenLogo(cdp, vaultDir);
+    await pruefeMermaid(cdp, vaultDir, behalten);
     await pruefeTeilen(cdp, vaultDir);
 
     skipped(
