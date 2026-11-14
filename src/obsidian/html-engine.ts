@@ -224,7 +224,7 @@ export function buildStandaloneDoc(letterHtml: string, css: string): string {
 export const PRINT_CSP = "default-src 'none'; style-src 'unsafe-inline'; img-src data: https:; font-src data:";
 
 /* The standalone document for the Kit print module (`printHtmlToPdf`): the same letter as the print
-   dialog, plus a CSP. Images must already be data: URLs (see inlineImages in main.ts). */
+   dialog, plus a CSP. Images must already be data: URLs (see renderMarkdownToHtml in main.ts: kit inlineImages). */
 export function buildChromiumDoc(letterHtml: string, css: string): string {
   return buildStandaloneDoc(letterHtml, css)
     .replace('<meta charset="utf-8">', () => `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${PRINT_CSP}">`);

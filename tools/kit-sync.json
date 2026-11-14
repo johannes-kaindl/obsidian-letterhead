@@ -19,7 +19,7 @@
           "../"
         ]
       ],
-      "ref": "0.82.2"
+      "ref": "0.86.0"
     },
     {
       "dir": "src/vendor/kit",
@@ -67,13 +67,38 @@
       "from": "src/obsidian",
       "modules": [
         "clock",
-        "print-to-pdf"
+        "print-to-pdf",
+        {
+          "name": "inline-images",
+          "ref": "0.86.0"
+        }
       ],
       "ref": "0.82.2",
       "rewrite": [
         [
           "../vendor/code-kit/pure/",
           "../kit/"
+        ],
+        [
+          "../pure/",
+          "../kit/"
+        ]
+      ]
+    },
+    {
+      "dir": "src/vendor/kit",
+      "source": "obsidian-kit",
+      "from": "src/pure",
+      "modules": [
+        {
+          "name": "image-source",
+          "ref": "0.86.0"
+        }
+      ],
+      "rewrite": [
+        [
+          "../vendor/code-kit/pure/",
+          "./"
         ]
       ]
     }

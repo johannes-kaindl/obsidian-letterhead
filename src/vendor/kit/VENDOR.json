@@ -2,7 +2,7 @@
   "source": "obsidian-kit",
   "version": "0.60.2",
   "sha": "3029c00",
-  "vendored": "pdf/*.ts (obsidian-kit@0.82.2, 920cf2f), vault-path.ts",
+  "vendored": "pdf/*.ts (obsidian-kit@0.86.0, 3c30343), vault-path.ts, image-source.ts (obsidian-kit@0.86.0, 3c30343)",
   "code_kit_version": "0.27.1",
   "code_kit_sha": "ac89f10",
   "code_kit_vendored": "filename-template.ts, data-url.ts, local-stamp.ts, timeout.ts (code-kit@0.63.0, ce90bf0), css-color.ts (code-kit@0.63.0, ce90bf0)",

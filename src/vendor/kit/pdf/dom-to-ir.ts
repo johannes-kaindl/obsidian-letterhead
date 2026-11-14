@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.82.2, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.86.0, src/pure/pdf/dom-to-ir.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { Block, Inline, ListItem, Cell, Align } from './ir';
 import type { ExtractedCode } from './code-blocks';
 
@@ -75,14 +75,27 @@ function graphicPlaceholder(el: Element, ph: ResolvedPlaceholders): string | nul
   // MathJax 4 (CHTML) writes the glyphs as real text, so a formula is recognised before the
   // text check — otherwise `runsFrom` takes the glyphs over and the PDF shows `=2` (2026-11-09).
   if (isMath) return mathMarker(el, ph);
-  if ((el.textContent || '').trim()) return null;
   const nm = nameOf(el);
   const self = nm === 'SVG' || nm === 'CANVAS';
+  // A drawn Mermaid diagram (`div.mermaid` holding a svg) and any svg with labels carry their text in the
+  // graphic itself (`svg text`, `foreignObject`): the labels are part of the picture, not prose. Taking them
+  // over as text put the nodes into the PDF without spaces ("janeinStart der PruefungAlles gut?Ende"), and inside
+  // an embed even uncounted (measured 2026-11-12, Obsidian 1.15.1, pilot/mermaid-dom.ts). Only an undrawn
+  // Mermaid block (no svg yet) keeps its source text.
+  if (hasClass(el, 'mermaid') && el.querySelector('svg')) return ph.graphic;
   const inner = el.querySelector('svg, canvas');
   if (!self && !inner) return null;
-  // A wrapper whose only graphic is a decorative icon is decorative itself.
   if (!self && inner && isDecorative(inner)) return null;
+  if (!self && textOutsideGraphics(el)) return null;
   return ph.graphic;
+}
+
+// The text of a wrapper without its drawn parts: a wrapper that holds prose next to a graphic is walked
+// (the prose is text, the graphic is found one by one), a wrapper that holds only the graphic is the graphic.
+function textOutsideGraphics(el: Element): boolean {
+  const copy = el.cloneNode(true) as Element;
+  for (const g of Array.from(copy.querySelectorAll('svg, canvas'))) g.parentNode?.removeChild(g);
+  return !!(copy.textContent || '').trim();
 }
 
 // A rendered task list item keeps its state only in the checkbox element; without a marker

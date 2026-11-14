@@ -46,6 +46,7 @@ import type { Block, DrawOp } from '../vendor/kit/pdf';
 import { buildLetterHtml, buildCss, buildChromiumDoc, doPrint, LetterheadPreviewModal, PRESET_CSS } from './html-engine';
 import { renderPdfBytes } from './pdf-route';
 import { isDesktopPrintAvailable, printHtmlToPdf } from '../vendor/kit-obsidian/print-to-pdf';
+import { inlineImages } from '../vendor/kit-obsidian/inline-images';
 import { LetterheadSettingTab } from './settings';
 import { writePdf, resolveOutputPath, type OutputMode } from './output';
 import { t } from '../i18n/strings';
@@ -228,31 +229,16 @@ export default class LetterheadPlugin extends Plugin {
     const tmp = createDiv();
     try {
       await MarkdownRenderer.render(this.app, markdown, tmp, sourcePath, comp);
-      if (inline) await this.inlineImages(tmp);
+      /* The Kit print module draws the letter in a hidden <webview> without an app:// origin, so the images
+         of the body travel inside the document as data: URLs (https ones too, loaded in the main process; a
+         failure leaves the image as it was: a broken image in the PDF, not a failed export). */
+      if (inline) await inlineImages(tmp, { onFail: (src, e) => console.warn('Letterhead: image not inlined', src, e) });
     } catch (e) {
       console.error('Letterhead: markdown render failed', e);
     }
     const html = tmp.innerHTML;
     comp.unload();
     return html;
-  }
-
-  /* The Kit print module draws the letter in a hidden <webview> that has no app:// origin, so the
-     images of the body must travel inside the document as data: URLs. What cannot be read stays as
-     it is (a broken image in the PDF, not a failed export); https images the webview loads itself. */
-  async inlineImages(root: HTMLElement): Promise<void> {
-    for (const img of Array.from(root.querySelectorAll('img'))) {
-      const src = img.getAttribute('src') || '';
-      if (!src || /^(data:|https?:)/i.test(src)) continue;
-      try {
-        const res = await activeWindow.fetch(src);
-        if (!res.ok) continue;
-        const bytes = new Uint8Array(await res.arrayBuffer());
-        const ext = (src.split(/[?#]/)[0].split('.').pop() || '').toLowerCase();
-        const mime = (res.headers.get('content-type') || '').split(';')[0].trim() || mimeForExtension(ext) || 'image/jpeg';
-        img.setAttribute('src', `data:${mime};base64,${bytesToBase64(bytes)}`);
-      } catch (e) { console.warn('Letterhead: image not inlined', src, e); }
-    }
   }
 
   formatDate(value: unknown): string {
