@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.12.1] — 2026-11-14
+
 ### Fixed
 - **The browser PDF and the print dialog no longer show the grey "copy" button under code blocks.** Obsidian adds that button to every code block; on paper it printed as a small box with an icon. The vector PDF was never affected. If you want the button back in your letters, `.bk-body .copy-code-button{ display:inline; }` in Custom CSS does it.
 
