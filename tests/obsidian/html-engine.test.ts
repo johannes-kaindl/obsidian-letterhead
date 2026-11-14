@@ -22,6 +22,12 @@ describe('html-engine', () => {
     expect(regel).toBeGreaterThan(-1);
     expect(css.indexOf('.bk-body td{ border:none; }')).toBeGreaterThan(regel);
   });
+  it('buildCss hides the copy button Obsidian adds to code blocks, and Custom CSS still wins', () => {
+    const css = buildCss({ ...DEFAULT_SETTINGS, customCss: '.bk-body .copy-code-button{ display:inline; }' }, 'sachlich');
+    const regel = css.indexOf('.bk-body .copy-code-button{ display:none; }');
+    expect(regel).toBeGreaterThan(-1);
+    expect(css.indexOf('.bk-body .copy-code-button{ display:inline; }')).toBeGreaterThan(regel);
+  });
   it('buildCss defines the three print-margin tokens with the built-in defaults', () => {
     const css = buildCss(DEFAULT_SETTINGS, 'sachlich');
     expect(css).toContain('--bk-print-margin-top:10mm');

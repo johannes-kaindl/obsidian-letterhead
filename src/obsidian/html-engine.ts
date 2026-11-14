@@ -172,6 +172,8 @@ export function buildCss(s: LetterheadSettings, stilKey: string | null | undefin
   .bk-body table{ border-collapse:collapse; margin:0 0 var(--bk-space); max-width:100%; }
   .bk-body th, .bk-body td{ border:0.25mm solid var(--bk-color-hairline); padding:1mm 2mm; text-align:left; vertical-align:top; }
   .bk-body th{ font-weight:bold; }
+  /* Obsidian puts a copy button into every code block; on paper (browser PDF, print dialog, preview) it is a grey box with an icon. */
+  .bk-body .copy-code-button{ display:none; }
   .bk-closing{ margin-top:var(--bk-block-gap); }
   .bk-signature{ margin-top:var(--bk-signature-gap); white-space:pre-line; }
   .bk-enclosures{ margin-top:14mm; font-size:9.5pt; line-height:1.45; color:var(--bk-color-muted); }

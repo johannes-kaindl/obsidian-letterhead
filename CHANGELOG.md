@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+- **The browser PDF and the print dialog no longer show the grey "copy" button under code blocks.** Obsidian adds that button to every code block; on paper it printed as a small box with an icon. The vector PDF was never affected. If you want the button back in your letters, `.bk-body .copy-code-button{ display:inline; }` in Custom CSS does it.
+
+### Changed
+- **Images in the body now reach the browser PDF the same way for local and web images.** `https` images are embedded into the document (with a 15 second limit per image; one that cannot be loaded stays as it was) instead of being left for the print view to fetch. An image of unknown type without a file extension is now embedded as `application/octet-stream` instead of being guessed as JPEG. Nothing changes for normal PNG, JPEG or SVG images.
+
 ## [1.12.0] — 2026-11-12
 
 ### Fixed
