@@ -23,6 +23,7 @@ Verzeichnis ist die Quelle** — verloren heißt neu gebaut, nicht rekonstruiert
 | `Smoke-Reich.md` | Degradation: Tabelle, Task-Zustände, Codeblöcke (darunter der **klebende Fence**, der bis 1.6.4 einen Codeblock verschluckte), rohes SVG → `[Grafik]`, eingebettetes Bild |
 | `Smoke-Degradation.md` | Dekoration ist keine Grafik: Callout-Icon, zwei Formeln und ein rohes SVG, die Notice zählt genau drei Elemente (Gruppe M) |
 | `Smoke-Mermaid.md` | Mermaid-Fence in Callout und Zitat (Quelltext lesbar im Vektor-PDF) und das PNG im Browser-PDF (Gruppe L) |
+| `Smoke-Waisen.md` | Waisenschutz: 18 Füllzeilen lassen die Überschrift ohne Schutz als letzte Zeile der ersten Seite stehen und das Bild auf der zweiten. Gegenstand von Gruppe N und von `tests/core/waisenschutz.test.ts`, das die Zahl der Füllzeilen an die Engine bindet (±1 Zeile Spielraum) |
 | `Smoke-Lang.md` | Mehrseitigkeit: 40 Absätze erzwingen den Seitenumbruch; der letzte Marker belegt, dass hinten nichts abfällt |
 | `Unterordner/Smoke-Unterordner.md` | `nextToNote` aus einem Unterordner — die Pfad-Fügung, die seit 1.6.5 aus dem Kit kommt |
 

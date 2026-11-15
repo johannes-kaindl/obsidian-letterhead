@@ -125,6 +125,7 @@ const PUNKTE = [
   'L1 Mermaid-Fence in Callout und Zitat: der Quelltext steht lesbar im Vektor-PDF',
   'L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF',
   'M1 Callout-Icon ist Dekoration: genau drei vereinfachte Elemente (zwei Formeln, ein SVG), ein [Grafik]',
+  'N1 Waisenschutz: Überschrift steht mit dem Bild auf einer Seite, nicht allein am Seitenende',
   'Druckdialog (letterhead:print-letter)',
   'iOS-Share-Kaskade (navigator.canShare → share → openWithDefaultApp)',
   'SVG-Logo im Briefkopf',
@@ -207,6 +208,30 @@ function pdfFonts(bytes: Buffer): string[] {
  *  `[Bild: …]`-Platzhalter, der nur Text wäre. */
 function pdfHatBild(bytes: Buffer): boolean {
   return /\/DCTDecode/.test(bytes.toString('latin1'));
+}
+
+/** Inhalt je Seite (Reihenfolge der Seiten), aus den Content-Streams: Textläufe als eigene Zeilen, ein Bild als `[Bild]`.
+ *  Die Engine schreibt je Seite ein `/Type /Page` mit `/Contents <n> 0 R` und den Stream unkomprimiert; wer eine
+ *  Seite zuordnen will, braucht also keinen Parser. Leer, wenn die Struktur nicht erkennbar ist (dann ist der
+ *  Aufrufer „nichts gemessen“, nicht rot). */
+function pdfSeitenInhalt(bytes: Buffer): string[] {
+  const roh = bytes.toString('latin1');
+  const streams = new Map<number, string>();
+  const objRe = /(\d+) 0 obj\n<< \/Length \d+ >>\nstream\n([\s\S]*?)\nendstream/g;
+  let o: RegExpExecArray | null;
+  while ((o = objRe.exec(roh)) !== null) streams.set(Number(o[1]), o[2]);
+  const seiten: string[] = [];
+  const pageRe = /\/Type \/Page \/Parent[\s\S]*?\/Contents (\d+) 0 R/g;
+  let p: RegExpExecArray | null;
+  while ((p = pageRe.exec(roh)) !== null) {
+    const stream = streams.get(Number(p[1])) ?? '';
+    const teile: string[] = [];
+    const opRe = /\(((?:\\.|[^()\\])*)\)\s*Tj|\/(\w+) Do/g;
+    let t: RegExpExecArray | null;
+    while ((t = opRe.exec(stream)) !== null) teile.push(t[1] !== undefined ? t[1].replace(/\\([()\\])/g, '$1') : '[Bild]');
+    seiten.push(winAnsi(teile.join('\n')));
+  }
+  return seiten;
 }
 
 /* ------------------------------------------------------------------ Helfer */
@@ -1047,6 +1072,39 @@ async function pruefeDekoration(cdp: Cdp, vaultDir: string): Promise<void> {
   raeumePdfs(vaultDir);
 }
 
+/** N · Waisenschutz. `Smoke-Waisen.md` trägt so viele Füllzeilen, dass die Überschrift ohne Schutz als letzte Zeile der
+ *  ersten Seite stünde und das Bild auf der zweiten (das Fixture ist im Unit-Test `waisenschutz.test.ts` an die Engine
+ *  gebunden, samt Gegenprobe ohne Schutz). Hier gemessen wird die ganze Kette über Obsidians DOM: Überschrift und Bild
+ *  stehen auf derselben Seite, und zwar auf der zweiten, die letzte Füllzeile auf der ersten. Steht die Überschrift
+ *  samt Bild auf Seite 1, hat der Aufbau den Fall nicht hergestellt (Brief kürzer als erwartet): dann „nichts gemessen“. */
+async function pruefeWaisenschutz(cdp: Cdp, vaultDir: string): Promise<void> {
+  const name = 'N1 Waisenschutz: Überschrift steht mit dem Bild auf einer Seite, nicht allein am Seitenende';
+  console.log('\nN · Waisenschutz');
+  raeumePdfs(vaultDir);
+  await setSettings(cdp, { outputMode: 'nextToNote', outputFolder: '', filenameTemplate: '{notiz}' });
+  const ziel = join(vaultDir, 'Smoke-Waisen.pdf');
+  const notice = await exportPdf(cdp, 'Smoke-Waisen.md', 'export-letter-pdf');
+  if (!(await warteAufDatei(ziel))) {
+    unmeasured(name, `Gegenstand nicht erreicht: keine Datei · Notice: ${notice || '(keine)'}`);
+    return;
+  }
+  const seiten = pdfSeitenInhalt(readFileSync(ziel));
+  const seiteVon = (marker: string): number => seiten.findIndex((t) => t.includes(marker));
+  const kopf = seiteVon('MARKWAISEKOPF');
+  const letzteFuell = seiteVon('MARKWAISE18');
+  const bild = seiten.findIndex((t) => t.includes('[Bild]'));
+  const ende = seiteVon('MARKWAISEENDE');
+  const lage = `${seiten.length} Seite(n) · letzte Füllzeile S${letzteFuell + 1} · Überschrift S${kopf + 1} · Bild S${bild + 1} · Schluss S${ende + 1}`;
+  if (seiten.length < 2 || kopf < 0 || letzteFuell < 0 || bild < 0 || ende < 0) {
+    unmeasured(name, `Gegenstand nicht erreicht (Seiten oder Marker nicht lesbar) · ${lage}`);
+  } else if (kopf === 0 && bild === 0) {
+    unmeasured(name, `Fall nicht hergestellt: Überschrift und Bild passen noch auf Seite 1, der Schutz wurde nicht gebraucht · ${lage}`);
+  } else {
+    record(name, kopf === bild && kopf === letzteFuell + 1, lage);
+  }
+  raeumePdfs(vaultDir);
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.has('setup')) {
@@ -1132,6 +1190,7 @@ async function main(): Promise<void> {
     await pruefeNameNebenLogo(cdp, vaultDir);
     await pruefeMermaid(cdp, vaultDir, behalten);
     await pruefeDekoration(cdp, vaultDir);
+    await pruefeWaisenschutz(cdp, vaultDir);
     await pruefeTeilen(cdp, vaultDir);
 
     skipped(
