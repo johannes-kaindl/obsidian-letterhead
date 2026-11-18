@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.60.2, src/obsidian/settings_walker.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.96.0, src/obsidian/settings_walker.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // obsidian-kit/src/obsidian/settings_walker.ts
 //
 // Der gemeinsame Fallback-Walker fuer zweigleisige deklarative Settings-Tabs
@@ -16,14 +16,19 @@ export interface SettingControlHost {
 
 type RenderHatch = (setting: Setting) => void | (() => void);
 
-/** Macht eine Setting-Zeile zum leeren Block-Container fuer Hatches mit
- *  Zusatz-DOM (Endpoint-Listen, Status-Anzeigen). Leert settingEl und entfernt
- *  die Zwei-Spalten-Klasse -- Name/Desc muss die Hatch selbst neu setzen. */
-export function settingBodyHost(setting: Setting): HTMLElement {
-  setting.settingEl.empty();
-  setting.settingEl.removeClass("setting-item");
-  return setting.settingEl;
+/** Der Wert eines Zahlenfelds für `save`: auf `[min, max]` geklemmt (eine Seite entfällt, wenn ihre Grenze fehlt; bei `min > max` gilt `max`). Ein leeres Feld, nur Leerraum, `NaN` oder eine unendliche Zahl
+ *  sind kein Wert: `undefined`, es wird nichts gespeichert (vorher speicherte das leere Feld `0`). Die Schrittweite `step` ist ein Eingabehinweis des Feldes, hier wird nicht auf sie gerundet. */
+function parseNumberInput(raw: string, min?: number, max?: number): number | undefined {
+  if (raw.trim() === "") return undefined;
+  let n = Number(raw);
+  if (!Number.isFinite(n)) return undefined;
+  if (min !== undefined && n < min) n = min;
+  if (max !== undefined && n > max) n = max;
+  return n;
 }
+
+// `settingBodyHost` liegt seit 0.89.0 in setting-body-host.ts (Welle 34, Paket 6); der Re-Export haelt bestehende Importe und Vendorings dicht.
+export { settingBodyHost } from "./setting-body-host";
 
 /** Erkennt die native 1.13-update()-API (partielles Re-Render der deklarativen
  *  Registrierung); faellt sonst auf den uebergebenen vollen Rebuild zurueck. */
@@ -59,7 +64,19 @@ export function refreshSettingsTab(
  *  ruft ueblicherweise selbst `update()` (haelt `settingItems`/die Einstellungs-Suche
  *  synchron), und `update()`s native Implementierung ruft intern wieder `renderTab()` des
  *  aktiven Tabs auf -- ohne Guard waere das erneut `fullRebuild()` in Rekursion. Additiv:
- *  ein Tab, der den Hook nicht installiert, verhaelt sich wie zuvor. */
+ *  ein Tab, der den Hook nicht installiert, verhaelt sich wie zuvor.
+ *
+ *  **Vertrag (gemessen an Obsidian 1.14.5, Pilot `tab-refresh`, 2026-10-25, Task „installTabRefreshOnOpen hängt sich nicht ein“):**
+ *  `renderTab` ist beim Bau des Tabs und nach `addSettingTab` eine Funktion; der Hook ersetzt sie, in beiden Einbaustellen (Konstruktor und
+ *  nach `addSettingTab`), und jedes Öffnen baut neu auf (zwei Aufbauten beim ersten Öffnen, einer je weiteres). Die Vermutung „`renderTab`
+ *  existiert beim `new PluginSettingTab()` noch nicht“ trifft nicht zu. **Der Hook trägt nur, solange er installiert bleibt:** das Öffnen ruft
+ *  `renderTab()`, nicht `display()`. Wer den zurückgegebenen Abbau in `hide()` ruft (slide-deck, settings-assistant, json-editor, lingotuner,
+ *  image-to-markdown, gemessen als Variante E), baut beim ersten Öffnen auf und danach nie wieder; ein Blick auf `tab.renderTab` am offenen Tab
+ *  zeigt dann die native Funktion. **Der Abbau gehört in `onunload` des Plugins, nicht in `hide()`** (ghostline lässt ihn in `hide()` weg und
+ *  installiert bei Bedarf neu, Final-Review M3). Ein bloßes `update()` in `hide()` (Variante C) und das Leeren des Containers in `hide()`
+ *  (Variante D) bauen beim Öffnen nicht auf. **Ungemessen:** ob die native `renderTab` in 1.14.5 bei gleicher `settingItems.length` immer neu
+ *  zeichnet (in der Messung tat sie es an einer Render-Definition ohne Hook; die 1.14.2-Messung oben sah es nicht) und ob das für Definitionen
+ *  mit `control` gilt. */
 export function installTabRefreshOnOpen(
   tab: PluginSettingTab & { renderTab?: () => void },
   fullRebuild: () => void,
@@ -144,14 +161,23 @@ export function renderSettingDefinitions(
           new FolderSuggest(app, t.inputEl);
         });
         break;
-      case "number":
-        setting.addText((t) =>
-          t
-            .setPlaceholder((control as { placeholder?: string }).placeholder ?? "")
+      case "number": {
+        const c = control as { placeholder?: string; min?: number; max?: number; step?: number | "any" };
+        setting.addText((t) => {
+          t.setPlaceholder(c.placeholder ?? "")
             .setValue(String(current))
-            .onChange((v) => save(Number(v))),
-        );
+            .onChange((v) => {
+              const n = parseNumberInput(v, c.min, c.max);
+              if (n !== undefined) save(n);
+            });
+          // Dieselben Grenzen wie der native Weg (1.13: `SettingNumberControl` bekommt `min`/`max`/`step` aus derselben Deklaration): das Feld ist ein Zahlenfeld mit den gesetzten Attributen.
+          t.inputEl.type = "number";
+          if (c.min !== undefined) t.inputEl.setAttribute("min", String(c.min));
+          if (c.max !== undefined) t.inputEl.setAttribute("max", String(c.max));
+          if (c.step !== undefined) t.inputEl.setAttribute("step", String(c.step));
+        });
         break;
+      }
       case "text":
       default:
         setting.addText((t) =>

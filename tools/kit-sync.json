@@ -1,7 +1,7 @@
 {
   "sources": {
     "obsidian-kit": {
-      "ref": "0.60.2"
+      "ref": "0.96.0"
     },
     "code-kit": {
       "ref": "0.27.1"
@@ -19,14 +19,15 @@
           "../"
         ]
       ],
-      "ref": "0.86.0"
+      "ref": "0.96.0"
     },
     {
       "dir": "src/vendor/kit",
       "source": "obsidian-kit",
       "from": "src/pure",
       "modules": [
-        "vault-path"
+        "vault-path",
+        "mermaid-wait"
       ]
     },
     {
@@ -48,7 +49,14 @@
         "folder-suggest",
         "help-setting",
         "confirm",
-        "share-export"
+        "share-export",
+        "setting-body-host"
+      ],
+      "rewrite": [
+        [
+          "../vendor/code-kit/pure/",
+          "../kit/"
+        ]
       ]
     },
     {
@@ -68,12 +76,8 @@
       "modules": [
         "clock",
         "print-to-pdf",
-        {
-          "name": "inline-images",
-          "ref": "0.86.0"
-        }
+        "inline-images"
       ],
-      "ref": "0.82.2",
       "rewrite": [
         [
           "../vendor/code-kit/pure/",
@@ -90,10 +94,7 @@
       "source": "obsidian-kit",
       "from": "src/pure",
       "modules": [
-        {
-          "name": "image-source",
-          "ref": "0.86.0"
-        }
+        "image-source"
       ],
       "rewrite": [
         [
@@ -101,6 +102,26 @@
           "./"
         ]
       ]
+    },
+    {
+      "dir": "src/vendor/kit",
+      "source": "code-kit",
+      "from": "src/ts/pure",
+      "modules": [
+        "fences"
+      ],
+      "ref": "0.77.0"
+    },
+    {
+      "dir": "src/vendor/kit",
+      "source": "code-kit",
+      "from": "src/ts/pure",
+      "modules": [
+        "rel-path",
+        "run-exclusive",
+        "error-message"
+      ],
+      "ref": "0.76.0"
     }
   ]
 }

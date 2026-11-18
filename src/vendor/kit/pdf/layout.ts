@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.86.0, src/pure/pdf/layout.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.96.0, src/pure/pdf/layout.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // src/pure/pdf/layout.ts
 import { mmToPt, pageSizePt, hexToRgb01 } from './geometry';
 import { textWidthPt } from './metrics';
@@ -20,6 +20,8 @@ const ASCENT = 0.78;
 // proportions. `headingScale` in options acts as an overall tuning multiplier.
 const HEADING_MUL: Record<number, number> = { 1: 1.45, 2: 1.25, 3: 1.12, 4: 1.0, 5: 0.94, 6: 0.9 };
 const TITLE_MUL = 1.7;
+const HEADING_SPACE_ABOVE_MUL = 0.55; // of the heading's own size
+const HEADING_CHAIN_DEPTH = 3; // the orphan lookahead follows at most this many headings in a row; beyond, the line proxy (an outline without text must not recurse into emptiness)
 
 export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResult {
   const { wPt: PAGE_W, hPt: PAGE_H } = pageSizePt(options.page.size);
@@ -96,6 +98,7 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
   };
 
   const paraGap = baseSize * 0.7;
+  const headingGapAfter = baseSize * 0.28; // one source for the heading's render and its orphan lookahead
 
   // Ordered/unordered list with nested children (indent grows per level).
   const renderListItems = (items: { inlines: Inline[]; children?: Block[] }[], ordered: boolean, level: number) => {
@@ -201,6 +204,29 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
     ops.push({ page, kind: 'image', data: b.data, wPx: b.wPx, hPx: b.hPx, x: leftPt + indentPt, y: imgBottom, w: wPt, h: hPt });
   };
 
+  // Geometry of a table — single source of truth shared by the renderer (rowHeight/drawRow), the keep-together pre-check and the heading orphan lookahead.
+  const tableGeometry = (b: Extract<Block, { type: 'table' }>) => {
+    const sz = baseSize - 1;
+    const cols = columnWidths(b.header, b.rows, sz);
+    const padPt = mmToPt(1.5);
+    // Height a row would occupy — shared by drawRow (render) and total (keep-together pre-check), so the two can never drift apart.
+    const rowHeight = (cells: { inlines: Inline[]; align?: 'left' | 'center' | 'right' }[], headerRow: boolean): number => {
+      const wrapped = cols.map((cw, c) => {
+        const cell = cells[c] || { inlines: [] };
+        const runs: WrapRun[] = (cell.inlines.length ? cell.inlines : [{ text: '' }]).map((r) => ({ text: r.text, fontKey: headerRow ? F.bold : runFont(r) }));
+        return wrapRuns(runs, cw - 2 * padPt, sz);
+      });
+      const maxLines = Math.max(1, ...wrapped.map((w) => w.length));
+      return maxLines * sz * lineH + 2 * padPt;
+    };
+    const total = (): number => {
+      let h = b.header.length ? rowHeight(b.header, true) : 0;
+      for (const r of b.rows) h += rowHeight(r, false);
+      return h;
+    };
+    return { sz, cols, padPt, rowHeight, total };
+  };
+
   // Height of the first n wrapped lines of a block — a lookahead heuristic used to decide
   // whether a heading would be orphaned at the bottom of a page. For text-bearing blocks
   // (paragraph/heading) this wraps exactly like the renderer does.
@@ -211,9 +237,32 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
   // page (Paperize acceptance run, 2026-08-04). Its full height is the only honest measure.
   // Tables and code blocks keep the proxy on purpose: they *can* split (with header repetition),
   // so a partial fit is a real fit.
-  const measureFirstLines = (b: Block, n: number): number => {
+  // What a heading consumes before its follower starts — space above, its lines, the gap after it (`headingGapAfter`, the value `emitInlines` subtracts) — plus, if a
+  // block follows at top level, what that follower needs to stay with it (`measureFirstLines`). `idx` is the heading's index in `doc` (undefined for nested blocks: no lookahead).
+  const headingLead = (b: Extract<Block, { type: 'heading' }>, idx: number | undefined, depth: number): number => {
+    const sz = baseSize * (HEADING_MUL[b.level] || 1) * hScale;
+    const runs: WrapRun[] = (b.inlines.length ? b.inlines : [{ text: '' }]).map((r) => ({ text: r.text, fontKey: F.bold }));
+    let h = sz * HEADING_SPACE_ABOVE_MUL + wrapRuns(runs, contentWidthPt, sz).length * sz * lineH + headingGapAfter;
+    const follower = idx === undefined ? undefined : doc[idx + 1];
+    if (PAG.headingKeepWithLines > 0 && follower) h += measureFirstLines(follower, PAG.headingKeepWithLines, idx === undefined ? undefined : idx + 1, depth + 1);
+    return h;
+  };
+
+  const measureFirstLines = (b: Block, n: number, idx?: number, depth = 0): number => {
     if (n <= 0) return 0;
     if (b.type === 'image') return imageSizePt(b).hPt + baseSize * 0.6;
+    // A following heading brings its own space above, its gap after it and its own follower (a chain of at most HEADING_CHAIN_DEPTH headings; deeper, the line proxy below).
+    if (b.type === 'heading' && depth < HEADING_CHAIN_DEPTH) return headingLead(b, idx, depth);
+    // A table or code block that fits a fresh page is atomic under keep-together: it moves whole, so the heading needs its whole height (the table case adds the
+    // `baseSize * 0.2` the renderer subtracts before the check). One that does not fit splits, and the line proxy below is the honest measure.
+    if (b.type === 'table' && PAG.keepTablesTogether) {
+      const h = tableGeometry(b).total();
+      if (h <= freshPageCapacity) return baseSize * 0.2 + h;
+    }
+    if (b.type === 'code' && PAG.keepCodeTogether) {
+      const h = measureCode(b.text);
+      if (h <= freshPageCapacity) return h;
+    }
     if (b.type === 'paragraph' || b.type === 'heading') {
       const sz = b.type === 'heading' ? baseSize * (HEADING_MUL[b.level] || 1) * hScale : baseSize;
       const runs: WrapRun[] = (b.inlines.length ? b.inlines : [{ text: '' }]).map((r) => ({ text: r.text, fontKey: runFont(r) }));
@@ -223,18 +272,15 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
     return n * baseSize * lineH;
   };
 
-  const renderBlock = (b: Block, next?: Block) => {
+  const renderBlock = (b: Block, next?: Block, idx?: number) => {
     switch (b.type) {
       case 'heading': {
         const sz = baseSize * (HEADING_MUL[b.level] || 1) * hScale;
-        const runs: WrapRun[] = (b.inlines.length ? b.inlines : [{ text: '' }]).map((r) => ({ text: r.text, fontKey: F.bold }));
-        const headingLines = wrapRuns(runs, contentWidthPt, sz).length;
-        const headH = sz * 0.55 + headingLines * sz * lineH;
-        if (PAG.headingKeepWithLines > 0 && next) {
-          breakBeforeIfNeeded(headH + measureFirstLines(next, PAG.headingKeepWithLines));
-        }
-        y -= sz * 0.55; // space above heading scales with its size (groups toward following content)
-        emitInlines(b.inlines, sz, () => F.bold, TEXT, baseSize * 0.28, 0);
+        const spaceAbove = sz * HEADING_SPACE_ABOVE_MUL; // scales with the heading's size (groups toward following content)
+        // Lookahead = exactly what the heading consumes before its follower starts (`headingLead`), plus what the follower needs to stay with it.
+        if (PAG.headingKeepWithLines > 0 && next) breakBeforeIfNeeded(headingLead(b, idx, 0));
+        y -= spaceAbove;
+        emitInlines(b.inlines, sz, () => F.bold, TEXT, headingGapAfter, 0);
         break;
       }
       case 'paragraph':
@@ -280,25 +326,7 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
         break;
       }
       case 'table': {
-        const sz = baseSize - 1;
-        const cols = columnWidths(b.header, b.rows, sz);
-        const padPt = mmToPt(1.5);
-        // Height a row would occupy — single source of truth shared by drawRow (render) and
-        // measureTable (keep-together pre-check), so the two can never drift apart.
-        const rowHeight = (cells: { inlines: Inline[]; align?: 'left' | 'center' | 'right' }[], headerRow: boolean): number => {
-          const wrapped = cols.map((cw, c) => {
-            const cell = cells[c] || { inlines: [] };
-            const runs: WrapRun[] = (cell.inlines.length ? cell.inlines : [{ text: '' }]).map((r) => ({ text: r.text, fontKey: headerRow ? F.bold : runFont(r) }));
-            return wrapRuns(runs, cw - 2 * padPt, sz);
-          });
-          const maxLines = Math.max(1, ...wrapped.map((w) => w.length));
-          return maxLines * sz * lineH + 2 * padPt;
-        };
-        const measureTable = (): number => {
-          let h = b.header.length ? rowHeight(b.header, true) : 0;
-          for (const r of b.rows) h += rowHeight(r, false);
-          return h;
-        };
+        const { sz, cols, padPt, rowHeight, total: measureTable } = tableGeometry(b);
         const drawRow = (cells: { inlines: Inline[]; align?: 'left' | 'center' | 'right' }[], headerRow: boolean) => {
           // Wrap each cell, find the tallest, reserve that height, then paint cells + borders.
           const wrapped = cols.map((cw, c) => {
@@ -394,7 +422,7 @@ export function layoutDocument(doc: Block[], options: LayoutOptions): LayoutResu
 
   for (let i = 0; i < doc.length; i++) {
     const blk = doc[i];
-    if (blk) renderBlock(blk, doc[i + 1]);
+    if (blk) renderBlock(blk, doc[i + 1], i);
   }
 
   // Page numbers (footer, centred) — drawn after content so pageCount is known.

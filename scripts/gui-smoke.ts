@@ -123,7 +123,7 @@ const PUNKTE = [
   'K1 Name neben dem Logo: Vektor-PDF zeigt den Absendernamen nur mit eingeschalteter Option',
   'K2 Name neben dem Logo: Browser-PDF zeigt den Absendernamen nur mit eingeschalteter Option',
   'L1 Mermaid-Fence in Callout und Zitat: der Quelltext steht lesbar im Vektor-PDF',
-  'L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF',
+  'L2 Browser-PDF: Mermaid gezeichnet (Knotenbeschriftung, kein Quelltext), Rahmentexte und das eingebettete PNG stehen im PDF',
   'M1 Callout-Icon ist Dekoration: genau drei vereinfachte Elemente (zwei Formeln, ein SVG), ein [Grafik]',
   'N1 Waisenschutz: Überschrift steht mit dem Bild auf einer Seite, nicht allein am Seitenende',
   'Druckdialog (letterhead:print-letter)',
@@ -985,11 +985,11 @@ function bewahre(quelle: string, name: string): void {
   console.log(`  behalten: ${join(dir, name)}`);
 }
 
-/** L — Mermaid in Callout und Zitat. Letterhead zeichnet kein Mermaid (anders als Paperize wartet es nicht auf das svg): der Fence
- *  bleibt ein Codeblock, im Callout und im Zitat ebenso (`extractCodeBlocks` zieht nur oberste Ebene heraus, der Rest kommt als `<pre>`).
- *  Gemessen wird deshalb, was der Brief verspricht: der Quelltext steht lesbar im Vektor-PDF, mit Leerzeichen, nichts ist verklebt oder
- *  weg (L1, die Rahmentexte stehen dabei mit, sonst wäre «nichts verklebt» ein leeres PDF). Kommt später ein Mermaid-Weg wie in Paperize,
- *  wird dieser Punkt zur Markierung `[Grafik]` (Kit 0.86.0, `dom-to-ir`) umgeschrieben.
+/** L — Mermaid in Callout und Zitat. Der Vektor-Weg zeichnet kein Mermaid: der Fence bleibt ein Codeblock, im Callout und im Zitat ebenso
+ *  (`extractCodeBlocks` zieht nur oberste Ebene heraus, der Rest kommt als `<pre>`). Gemessen wird dort, dass der Quelltext lesbar im
+ *  Vektor-PDF steht, mit Leerzeichen, nichts verklebt oder weg (L1, die Rahmentexte stehen dabei mit, sonst wäre «nichts verklebt» ein
+ *  leeres PDF). Der Browser-Weg wartet seit obsidian-kit 0.96.0 auf das svg (`waitForMermaid`) und druckt das gezeichnete Diagramm:
+ *  L2 verlangt die Knotenbeschriftung ohne den Quelltext «graph LR» (Gegenprobe ist L1: derselbe Fence, anderer Weg).
  *  L2 fährt dieselbe Notiz über den Haupt-Befehl: das Chromium-PDF braucht das PNG als data:-URL (Kit `inlineImages`, das
  *  `<webview>` kennt kein app://); gelesen mit Poppler (`pdftotext`, `pdfimages`). */
 async function pruefeMermaid(cdp: Cdp, vaultDir: string, behalten: boolean): Promise<void> {
@@ -1020,13 +1020,13 @@ async function pruefeMermaid(cdp: Cdp, vaultDir: string, behalten: boolean): Pro
   rmSync(ziel, { force: true });
   await exportPdf(cdp, 'Smoke-Mermaid.md', 'export-letter');
   if (!(await warteAufDatei(ziel, 30_000))) {
-    unmeasured('L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF', 'Gegenstand nicht erreicht: keine Datei nach 30 s');
+    unmeasured('L2 Browser-PDF: Mermaid gezeichnet (Knotenbeschriftung, kein Quelltext), Rahmentexte und das eingebettete PNG stehen im PDF', 'Gegenstand nicht erreicht: keine Datei nach 30 s');
     return;
   }
   const text = popplerText(ziel);
   const img = spawnSync('pdfimages', ['-list', ziel], { encoding: 'utf8' });
   if (text === null || img.status !== 0) {
-    unmeasured('L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF', 'pdftotext oder pdfimages (Poppler) nicht verfügbar');
+    unmeasured('L2 Browser-PDF: Mermaid gezeichnet (Knotenbeschriftung, kein Quelltext), Rahmentexte und das eingebettete PNG stehen im PDF', 'pdftotext oder pdfimages (Poppler) nicht verfügbar');
   } else {
     // Gezählt wird das PNG der Fixture (64×64, `make-assets.mjs`), nicht «irgendein Rasterbild»: ein Bild, das das `<webview>` nicht
     // laden kann, druckt Chromium als Symbol «kaputtes Bild» (14×16), und das zählte als Bild (Mutationsprobe: Einbetten abgeschaltet,
@@ -1035,10 +1035,11 @@ async function pruefeMermaid(cdp: Cdp, vaultDir: string, behalten: boolean): Pro
     const probe = zeilen.filter((c) => c[3] === '64' && c[4] === '64').length;
     const r = markerBilanz(text, rahmen);
     const beschriftet = knoten.filter((k) => text.includes(k));
+    const quelltext = text.split('graph LR').length - 1;
     record(
-      'L2 Browser-PDF: Rahmentexte, Quelltext und das eingebettete PNG stehen im PDF',
-      r.ok && probe === 1 && beschriftet.length === knoten.length,
-      `${r.detail} · PNG 64×64 ${probe}× im PDF (erwartet 1; Rasterbilder insgesamt ${zeilen.length}) · Quelltext-Knoten ${beschriftet.length}/${knoten.length}`,
+      'L2 Browser-PDF: Mermaid gezeichnet (Knotenbeschriftung, kein Quelltext), Rahmentexte und das eingebettete PNG stehen im PDF',
+      r.ok && probe === 1 && beschriftet.length === knoten.length && quelltext === 0,
+      `${r.detail} · PNG 64×64 ${probe}× im PDF (erwartet 1; Rasterbilder insgesamt ${zeilen.length}) · Knotenbeschriftung ${beschriftet.length}/${knoten.length} · «graph LR» ${quelltext}× (erwartet 0: gezeichnet)`,
     );
   }
   if (behalten) bewahre(ziel, 'Smoke-Mermaid-Browser.pdf');

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+- **A heading no longer stays alone at the bottom of a page.** When a heading was followed by an image, table or code block that did not fit on the same page, the heading was left behind alone and the block moved to the next page. The heading now moves with it (obsidian-kit 0.96.0). This concerns the vector PDF (iPhone, iPad, and the "Export as PDF (vector)" command).
+
+### Changed
+- **Mermaid diagrams are now drawn in the browser PDF.** A ` ```mermaid ` block in your letter, also inside a callout or a quote, used to print as source text. The browser PDF (the main export command on the desktop) now waits for Obsidian to draw the diagram and prints it. If a diagram is not drawn within 10 seconds, it is missing from the PDF and the console says how many. The vector PDF keeps the source text.
+
 ## [1.12.1] — 2026-11-14
 
 ### Fixed

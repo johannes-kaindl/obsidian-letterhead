@@ -1,4 +1,4 @@
-// vendored from obsidian-kit@0.86.0, src/pure/image-source.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.96.0, src/pure/image-source.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 // Pure Weichen fürs Einbetten von Bildern in ein Druckdokument: woher kommt die Quelle, und welcher MIME-Typ gehört zu den Bytes? Kein obsidian-Import.
 //
 // Herkunft: `obsidian-paperize/src/core/image-source.ts` (`imageSourceKind`, `mimeForBytes`) und die Typ-Wahl in `obsidian-letterhead/src/obsidian/main.ts` (`inlineImages`); zusammengeführt

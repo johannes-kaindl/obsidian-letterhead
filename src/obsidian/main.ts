@@ -29,6 +29,8 @@ import { layoutHead } from '../core/head-layout';
 import { layoutBody } from '../core/body-ir';
 import { domToIrSync, resolveImages } from '../vendor/kit/pdf/dom-to-ir';
 import { extractCodeBlocks, parseCodePlaceholder } from '../vendor/kit/pdf/code-blocks';
+import { waitForMermaid } from '../vendor/kit/mermaid-wait';
+import { countFences } from '../vendor/kit/fences';
 import { imageToJpeg } from '../vendor/kit/pdf/image';
 import { bytesToBase64, mimeForExtension } from '../vendor/kit/data-url';
 import { localDate } from '../vendor/kit/local-stamp';
@@ -226,9 +228,18 @@ export default class LetterheadPlugin extends Plugin {
 
   async renderMarkdownToHtml(markdown: string, sourcePath: string, inline = false): Promise<string> {
     const comp = new Component();
-    const tmp = createDiv();
+    /* Browser-PDF (inline): the host hangs in the document, off screen, because Obsidian draws Mermaid only into an attached
+       element and sets the svg afterwards (kit waitForMermaid). The vector way keeps a detached element: the fence stays source text there. */
+    const tmp = inline
+      ? activeDocument.body.createDiv({ cls: 'letterhead-render-host markdown-preview-view markdown-rendered' })
+      : createDiv();
     try {
       await MarkdownRenderer.render(this.app, markdown, tmp, sourcePath, comp);
+      if (inline) {
+        const expected = countFences(markdown, 'mermaid');
+        const { drawn, timedOut } = await waitForMermaid(tmp, expected);
+        if (timedOut) console.warn(`Letterhead: ${expected - drawn} Mermaid diagram(s) not drawn in time`);
+      }
       /* The Kit print module draws the letter in a hidden <webview> without an app:// origin, so the images
          of the body travel inside the document as data: URLs (https ones too, loaded in the main process; a
          failure leaves the image as it was: a broken image in the PDF, not a failed export). */
@@ -238,6 +249,7 @@ export default class LetterheadPlugin extends Plugin {
     }
     const html = tmp.innerHTML;
     comp.unload();
+    if (inline) tmp.remove();
     return html;
   }
 

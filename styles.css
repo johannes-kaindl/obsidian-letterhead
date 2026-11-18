@@ -69,6 +69,15 @@
   border: 0;
 }
 
+/* Render host of the Browser-PDF body: Obsidian draws Mermaid only into an element that hangs in the document. Off screen, at the
+   width of the letter body (210 mm minus 25 mm and 20 mm margins), so the diagrams are sized as they will print. */
+.letterhead-render-host {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 165mm;
+}
+
 /* Invisible host for the desktop PDF export (Kit print module).
    ORIGIN: obsidian-kit#0.82.2, PRINT_TO_PDF_CSS from src/obsidian/print-to-pdf.ts.
    The Kit exports the CSS as a string and the consumer copies it; whoever re-vendors

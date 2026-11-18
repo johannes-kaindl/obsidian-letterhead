@@ -1,6 +1,7 @@
-// vendored from obsidian-kit@0.82.2, src/obsidian/print-to-pdf.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.96.0, src/obsidian/print-to-pdf.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { Platform } from "obsidian";
 import { withTimeout } from "../kit/timeout";
+import { errorMessage } from "../kit/error-message";
 import { realClock } from "./clock";
 
 /**
@@ -43,7 +44,11 @@ export const EMPTY_PDF_MAX_BYTES = 4096;
  * (`overflow` ≠ visible oder `contain` mit paint/strict/content) außerhalb dessen Rahmens. Das fängt
  * `contain: strict` am `body`, `display: none`, `visibility: hidden`, Höhe 0 mit `overflow: hidden`
  * und leere Wrapper, die die Größenschwelle nicht trennt (gemessen: kaputte PDFs 786 bis 6495 Bytes,
- * ein gesundes Ein-Wort-PDF 7242 Bytes). Nicht erkannt: Text mit transparenter Farbe.
+ * ein gesundes Ein-Wort-PDF 7242 Bytes). Nicht erkannt: Text mit transparenter Farbe (`color: transparent`, Alpha 0); `pilot/druck-leer.ts` zeigt es an der Variante
+ * `kaputt-text-transparent`. Bewusst nicht gebaut: gemessen am 2026-11-12 (Quelltext, nicht am Rendering), dass keines der vier Themes (birds-of-yore, field-report, kuro,
+ * outpost) und kein Druck-CSS in Kit, Paperize und Letterhead eine Textfarbe auf `transparent` oder Alpha 0 setzt, weder direkt noch über eine Variable mit diesem Wert; der
+ * einzige Fund (`color: var(--background-modifier-border)`, ein `::after`-Zeichen von Dataview) färbt erzeugten Inhalt, und die Variable ist nur im Eigenschaften-Panel
+ * transparent. Fremde Themes und Snippets der Nutzer sind ungemessen; taucht dort ein Fall auf, wird der Fühler um `getComputedStyle(...).color` erweitert.
  */
 export const PRINT_CONTENT_PROBE: string = `(() => {
   const clips = (cs) => cs.overflowX !== "visible" || cs.overflowY !== "visible" || /strict|content|paint/.test(cs.contain);
@@ -168,7 +173,7 @@ export async function printHtmlToPdf(
     return result.value;
   } catch (e) {
     if (e instanceof PrintToPdfError) throw e;
-    throw new PrintToPdfError("failed", e instanceof Error ? e.message : String(e));
+    throw new PrintToPdfError("failed", errorMessage(e));
   } finally {
     if (signal && onAbort) signal.removeEventListener("abort", onAbort);
     if (domReadyFn) wv.removeEventListener("dom-ready", domReadyFn);

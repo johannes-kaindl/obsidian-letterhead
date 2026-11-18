@@ -1,6 +1,8 @@
-// vendored from obsidian-kit@0.60.2, src/obsidian/share-export.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
+// vendored from obsidian-kit@0.96.0, src/obsidian/share-export.ts — do not hand-edit; re-vendor via tools/sync-kit.sh
 import { Notice, type App } from "obsidian";
 import { confirmAction } from "./confirm";
+import { baseName, isPathSegment } from "../kit/rel-path";
+import { runExclusive } from "../kit/run-exclusive";
 
 /** Eine erzeugte Datei (PDF, EPUB …) dem Nutzer übergeben: in einen versteckten Ordner im Vault schreiben und
  *  über das Teilen-Blatt des Systems anbieten, ersatzweise mit der Standard-App öffnen. Der „Teilen“-Weg der
@@ -107,7 +109,8 @@ function assertExportDir(dir: string, configDir: string | undefined): void {
 }
 
 function assertFileName(name: string): void {
-  if (name === "" || name === "." || name === ".." || /[\\/\0]/.test(name) || extOf(name) === "") {
+  // Die Segmentregeln (leer, `.`, `..`, auch mit Leerraum drumherum, `/`, `\`, NUL) kommen aus code-kit `rel-path`; die Endung ist hier fachlich.
+  if (!isPathSegment(name) || extOf(name) === "") {
     throw new Error(`share-export: ungültiger Dateiname „${name}“ (erwartet: ein Pfadsegment mit Endung)`);
   }
 }
@@ -116,7 +119,6 @@ function assertFileName(name: string): void {
 const SYSTEM_JUNK = new Set([".ds_store", "thumbs.db", "desktop.ini"]);
 
 const extOf = (name: string): string => { const i = name.lastIndexOf("."); return i > 0 ? name.slice(i).toLowerCase() : ""; };
-const baseOf = (path: string): string => path.slice(path.lastIndexOf("/") + 1);
 
 /** Leert den Export-Ordner. **Eigen** ist eine Datei mit der Endung des Exports (`.pdf`, `.epub`): der Helfer legt dort
  *  nur solche an, und die Reste früherer Fassungen der Plugins tragen sie ebenfalls (eine Markierungsdatei hielte sie für
@@ -126,12 +128,12 @@ const baseOf = (path: string): string => path.slice(path.lastIndexOf("/") + 1);
 async function clearExportDir(app: App, adapter: ExportAdapter, dir: string, ext: string, strings: ShareExportStrings): Promise<void> {
   if (!(await adapter.exists(dir))) { await adapter.mkdir(dir); return; }
   const listing = await adapter.list(dir);
-  const isOwn = (f: string): boolean => extOf(f) === ext || SYSTEM_JUNK.has(baseOf(f).toLowerCase());
+  const isOwn = (f: string): boolean => extOf(f) === ext || SYSTEM_JUNK.has(baseName(f).toLowerCase());
   const own = listing.files.filter(isOwn);
   const foreign = [...listing.files.filter((f) => !isOwn(f)), ...listing.folders];
   for (const f of own) await adapter.remove(f);
   if (foreign.length === 0) return;
-  const names = foreign.map(baseOf);
+  const names = foreign.map(baseName);
   const clear = await confirmAction(app, {
     title: strings.confirm.title,
     message: strings.confirm.message(dir, names),
@@ -162,18 +164,6 @@ export async function shareFile(app: App, bytes: Uint8Array, fileName: string, m
     return "opened";
   }
   return "stored";
-}
-
-const running = new Map<string, Promise<unknown>>();
-
-/** Hintereinander je Schlüssel: der nächste Lauf startet, wenn der vorige fertig ist, auch wenn er fehlschlug. */
-function runExclusive<T>(key: string, job: () => Promise<T>): Promise<T> {
-  const prev = running.get(key) ?? Promise.resolve();
-  const next = prev.then(job, job);
-  const tail = next.catch(() => undefined);
-  running.set(key, tail);
-  void tail.then(() => { if (running.get(key) === tail) running.delete(key); });
-  return next;
 }
 
 /** Schreibt `bytes` in `<dir>/<fileName>` (vorher den Ordner leeren, siehe `clearExportDir`) und übergibt sie dem System. */
