@@ -33,17 +33,11 @@
  * die reguläre Instanz (9222), an der andere Sessions hängen; ein `quit` träfe deren Zustand.
  * `--port` ist Pflicht, einen Standardport gibt es nicht.
  *
- * ```bash
- * npm run build && npm run smoke:gui -- --setup   # Staging-Vault aus fixtures/vault/ ($STAGING_VAULTS_DIR)
- * UD=/tmp/obs-test-obsidian-letterhead; mkdir -p "$UD"
- * cp ~/Library/Application\ Support/obsidian/obsidian-*.asar "$UD"/     # aktuelle App-Version
- * # Vault und "language":"en" in "$UD/obsidian.json" eintragen (Obsidian liest sie nur beim Start)
- * lsof -nP -iTCP:9389 -sTCP:LISTEN                                        # Port frei?
- * /Applications/Obsidian.app/Contents/MacOS/Obsidian --user-data-dir="$UD" --remote-debugging-port=9389 &
- * python3 ~/.claude/hooks/obsidian-cdp-lock.py acquire --label obsidian-letterhead --intent "GUI-Smoke" --exclusive focus --port 9389 --ttl 300
- * npm run smoke:gui -- --port 9389
- * python3 ~/.claude/hooks/obsidian-cdp-lock.py release --port 9389
- * ```
+ * Lauf: `tools/obsidian-cdp/messlauf.sh` (Dach, README § Messlauf in einem Aufruf) startet die Zweitinstanz, hält den Lock (`--exclusive focus`, davor, mit `export`)
+ * und räumt auf; das Rezept steht nur dort. Für diesen Treiber: `REPO=obsidian-letterhead PORT=9389` (Port als Vorschlag, jeder freie geht).
+ *
+ * Besonderheiten dieses Treibers (aus dem früheren Rezept übernommen):
+ *   Setup (`--setup`): Staging-Vault aus fixtures/vault/ ($STAGING_VAULTS_DIR)
  *
  * Vertrauensdialog und Restricted Mode des frischen Profils hebt der Treiber selbst auf
  * (`bereiteInstanzVor`, Punkt A1). Je Messlauf ein frischer Prozess; der erste Lauf nach der
