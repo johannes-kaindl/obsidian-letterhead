@@ -74,7 +74,6 @@ const EINSTELLUNGEN = {
 };
 
 async function vorbereiten(cdp: Cdp): Promise<void> {
-  await cdp.send('Page.bringToFront');
   await setWindowSize(cdp, WINDOW.w, WINDOW.h);
   await setAppConfig(cdp, 'readableLineLength', true);
   await cdp.evaluate(`
