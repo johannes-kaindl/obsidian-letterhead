@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.13.0] — 2026-11-18
+
 ### Fixed
 - **A heading no longer stays alone at the bottom of a page.** When a heading was followed by an image, table or code block that did not fit on the same page, the heading was left behind alone and the block moved to the next page. The heading now moves with it (obsidian-kit 0.96.0). This concerns the vector PDF (iPhone, iPad, and the "Export as PDF (vector)" command).
 
