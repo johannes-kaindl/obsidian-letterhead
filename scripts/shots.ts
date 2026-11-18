@@ -23,6 +23,7 @@ import { join } from 'node:path';
 
 import {
   attachTo,
+  bereiteInstanzVor,
   Cdp,
   closeExtraLeaves,
   openExisting,
@@ -175,6 +176,13 @@ async function main(): Promise<void> {
 
   const cdp = await attachTo('workspace', port, REPO_NAME);
   if (!cdp) throw new Error(`Kein Obsidian-Fenster fuer den Vault "${REPO_NAME}" auf Port ${port}`);
+
+  // Frisches Profil: Vertrauensdialog bestätigen, Restricted Mode aufheben, Plugin laden, Aufnahmesprache setzen. Ohne den Aufruf zeigt jedes Bild
+  // den Vertrauensdialog, und das Plugin fehlt im Renderer (Brücke README § Frisches Profil vorbereiten).
+  const vor = await bereiteInstanzVor(cdp, { pluginIds: [PLUGIN_ID], nurVault: REPO_NAME, sprache: 'en' });
+  console.log(`Instanz: ${vor.hinweis}`);
+  // Der Sprach-Guard unten liest nur `localStorage.language`, das `sprache: 'en'` selbst setzt; die Oberfläche kommt vom Start (`--lang=en-US`).
+  if (vor.sprachePasst === false) throw new Error(`Oberfläche nicht Englisch: ${vor.hinweis}`);
 
   const lang = await cdp.evaluate<string>('return window.localStorage.getItem("language") || "en"');
   if (lang !== 'en') throw new Error(`Oberflaeche steht auf "${lang}", Aufnahme verlangt Englisch`);
