@@ -122,6 +122,12 @@
         "error-message"
       ],
       "ref": "0.76.0"
+    },
+    {
+      "dir": "tests/vendor/kit",
+      "source": "obsidian-kit",
+      "from": "src/testing",
+      "modules": ["linear-probe"]
     }
   ]
 }

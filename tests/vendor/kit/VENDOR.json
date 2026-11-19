@@ -1,0 +1,7 @@
+{
+  "source": "obsidian-kit",
+  "version": "0.96.0",
+  "sha": "6c68cb9",
+  "vendored": "linear-probe.ts",
+  "license": "AGPL-3.0-or-later"
+}
