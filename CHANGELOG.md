@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.13.1] — 2026-11-24
+
 ### Documentation
 - **The privacy statement now says what the plugin does.** README and SECURITY no longer claim “no network calls, fully offline”: since 1.12.1 an `https` image in the letter's body is loaded at export (15 second limit per image on the desktop). There is still no telemetry and no server of the plugin, and a letter without web images makes no request.
 
