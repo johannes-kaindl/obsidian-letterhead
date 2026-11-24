@@ -114,6 +114,8 @@ const PUNKTE = [
   'I4 Teilen: die Antwort auf die Rückfrage entscheidet (Gegenprobe zu I1 und I2)',
   'J1 Haupt-Befehl: Browser-PDF über das Kit-Druckmodul, Datei ohne Druckdialog',
   'J2 Rückfall: scheitert das Druckmodul, entsteht das Vektor-PDF und der Hinweis',
+  'J3 @page-Ränder im Browser-PDF: Standard 10/25/20 mm (Folgeseiten oben ab 25 mm, unten bis 20 mm)',
+  'J4 @page-Ränder im Browser-PDF: Tokens --bk-print-margin-* auf 0mm rücken Folgeseiten bis an den Papierrand (Gegenprobe zu J3)',
   'K1 Name neben dem Logo: Vektor-PDF zeigt den Absendernamen nur mit eingeschalteter Option',
   'K2 Name neben dem Logo: Browser-PDF zeigt den Absendernamen nur mit eingeschalteter Option',
   'L1 Mermaid-Fence in Callout und Zitat: der Quelltext steht lesbar im Vektor-PDF',
@@ -929,6 +931,63 @@ async function pruefeBrowserPdf(cdp: Cdp, vaultDir: string, behalten: boolean): 
   if (!behalten) raeumePdfs(vaultDir);
 }
 
+/** Ränder einer Mehrseiten-PDF aus `pdftotext -bbox` (Poppler): je Seite die Papierhöhe und Ober- und Unterkante des Texts, in pt.
+ *  Gemessen werden Seiten ab der zweiten (Folgeseiten: oben `--bk-print-margin-top-follow`) und, für den unteren Rand, alle Seiten
+ *  außer der letzten (die letzte endet irgendwo). Seite 1 hat DIN-Positionen und taugt nicht für die Randmessung. */
+function seitenRaender(pfad: string): { seiten: number; hoehe: number; obenFolge: number; untenVoll: number } | null {
+  const r = spawnSync('pdftotext', ['-bbox', pfad, '-'], { encoding: 'utf8' });
+  if (r.status !== 0) return null;
+  const seiten = r.stdout.split('<page ').slice(1);
+  if (seiten.length < 3) return { seiten: seiten.length, hoehe: 0, obenFolge: NaN, untenVoll: NaN };
+  const hoehe = parseFloat(/height="([\d.]+)"/.exec(seiten[0])?.[1] ?? '0');
+  const woerter = (blatt: string): { oben: number; unten: number }[] =>
+    [...blatt.matchAll(/yMin="([\d.]+)" xMax="[\d.]+" yMax="([\d.]+)"/g)].map((m) => ({ oben: parseFloat(m[1]), unten: parseFloat(m[2]) }));
+  const folge = seiten.slice(1).flatMap(woerter);
+  const voll = seiten.slice(0, -1).flatMap(woerter);
+  return { seiten: seiten.length, hoehe, obenFolge: Math.min(...folge.map((w) => w.oben)), untenVoll: Math.max(...voll.map((w) => w.unten)) };
+}
+
+/** J3/J4 — die @page-Ränder des Browser-PDFs (Letterhead 1.10.2): Standard 10/25/20 mm, mit den Tokens `--bk-print-margin-*` auf 0mm
+ *  bis an den Papierrand. Gemessen an der Datei (Poppler-Bounding-Boxen von Smoke-Lang), nicht am CSS. J4 ist die Gegenprobe zu J3:
+ *  ohne sie wäre „Rand eingehalten“ von „Text kommt nie in die Nähe des Rands“ nicht zu trennen. */
+async function pruefeSeitenraender(cdp: Cdp, vaultDir: string): Promise<void> {
+  console.log('\nJ · @page-Ränder im Browser-PDF');
+  const ID3 = 'J3 @page-Ränder im Browser-PDF: Standard 10/25/20 mm (Folgeseiten oben ab 25 mm, unten bis 20 mm)';
+  const ID4 = 'J4 @page-Ränder im Browser-PDF: Tokens --bk-print-margin-* auf 0mm rücken Folgeseiten bis an den Papierrand (Gegenprobe zu J3)';
+  const ziel = join(vaultDir, 'Smoke-Lang.pdf');
+  const vorher = (await readSettings(cdp)).customCss as string;
+  const lauf = async (css: string): Promise<ReturnType<typeof seitenRaender>> => {
+    raeumePdfs(vaultDir);
+    await setSettings(cdp, { outputMode: 'nextToNote', outputFolder: '', filenameTemplate: '{notiz}', customCss: css });
+    await exportPdf(cdp, 'Smoke-Lang.md', 'export-letter');
+    if (!(await warteAufDatei(ziel, 30_000))) return null;
+    return seitenRaender(ziel);
+  };
+  const mm = (pt: number): string => `${(pt / 72 * 25.4).toFixed(1)} mm`;
+  try {
+    const std = await lauf('');
+    const null0 = await lauf(':root{--bk-print-margin-top:0mm;--bk-print-margin-top-follow:0mm;--bk-print-margin-bottom:0mm;}');
+    if (!std || !null0 || std.seiten < 3 || null0.seiten < 3) {
+      const grund = !std || !null0 ? 'keine Datei oder pdftotext nicht verfügbar' : `zu wenige Seiten (Standard ${std.seiten}, 0mm ${null0.seiten}; gebraucht: 3)`;
+      unmeasured(ID3, grund);
+      unmeasured(ID4, grund);
+      return;
+    }
+    const PT25 = (25 / 25.4) * 72;
+    const PT20 = (20 / 25.4) * 72;
+    const TOL = 3;
+    const obenOk = std.obenFolge >= PT25 - TOL;
+    const untenOk = std.untenVoll <= std.hoehe - PT20 + TOL;
+    record(ID3, obenOk && untenOk, `Folgeseiten oben ab ${mm(std.obenFolge)} (Soll ≥ 25 mm) · volle Seiten unten bis ${mm(std.hoehe - std.untenVoll)} vor der Kante (Soll ≥ 20 mm) · ${std.seiten} Seiten`);
+    const obenGewinn = std.obenFolge - null0.obenFolge;
+    const untenGewinn = null0.untenVoll - std.untenVoll;
+    record(ID4, obenGewinn >= PT25 - 20 && untenGewinn >= 20, `Folgeseiten oben ab ${mm(null0.obenFolge)} statt ${mm(std.obenFolge)} · volle Seiten unten bis ${mm(null0.hoehe - null0.untenVoll)} vor der Kante statt ${mm(std.hoehe - std.untenVoll)} · ${null0.seiten} Seiten`);
+  } finally {
+    await setSettings(cdp, { customCss: vorher });
+    raeumePdfs(vaultDir);
+  }
+}
+
 /** Hat die Datei Vektor-Textläufe der eigenen Engine (`(...) Tj` in unkomprimierten Streams)? */
 function pdfHatVektorText(bytes: Buffer): boolean {
   return pdfText(bytes).includes('MARKBODY');
@@ -1182,6 +1241,7 @@ async function main(): Promise<void> {
     await pruefeAblage(cdp, vaultDir, port, vaultFilter);
     await pruefeVorschau(cdp);
     await pruefeBrowserPdf(cdp, vaultDir, behalten);
+    await pruefeSeitenraender(cdp, vaultDir);
     await pruefeNameNebenLogo(cdp, vaultDir);
     await pruefeMermaid(cdp, vaultDir, behalten);
     await pruefeDekoration(cdp, vaultDir);
