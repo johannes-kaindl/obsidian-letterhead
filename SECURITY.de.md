@@ -20,22 +20,25 @@ Letterhead ist so gebaut, dass du durch Lesen überprüfen kannst, was es tut:
   Quelle und attestiert es kryptografisch (siehe *Auslieferungswege* unten — dort steht,
   was welcher Weg belegt und was nicht). Die Quelle selbst bleibt vollständig lesbar,
   unminifiziert und dependency-arm.
-- **Keine Netzwerkzugriffe, keine Telemetrie.** Kein `fetch`/`XMLHttpRequest`, keine
-  Remote-Endpunkte, kein Tracking. Alles passiert lokal in deinem Vault.
+- **Keine Telemetrie, keine eigenen Server.** Kein Tracking und keine Remote-Endpunkte
+  des Plugins. Die einzige Netzanfrage gilt einem `https`-Bild, das der Brieftext enthält:
+  Es wird beim Export geladen (am Desktop über Obsidians `requestUrl`, mit 15 Sekunden
+  Frist je Bild; im Vektor-PDF über den Bild-Decoder). Ein Brief ohne Web-Bilder stellt
+  keine Anfrage. Alles Übrige passiert lokal in deinem Vault.
 - **Keine dynamische Code-Ausführung.** Kein `eval`, kein `new Function`, kein
   dynamisches `import()`. Die einzige Laufzeit-Fremdabhängigkeit ist die Obsidian-API
   selbst.
-- **Externe Assets nur als `data:`-URL.** Der Base64-Kodierer
+- **Logo nur aus deinem Vault.** Der Base64-Kodierer
   (`bytesToBase64` im gevendorten `src/vendor/kit/data-url.ts`) bettet dein konfiguriertes
-  Logo (eine lokale Vault-Datei) als `data:`-URL in den Brief ein — es wird nichts aus
-  dem Web geladen.
+  Logo (eine lokale Vault-Datei) als `data:`-URL in den Brief ein — das Logo wird nie
+  aus dem Web geholt.
 - **Minimaler Vault-Zugriff.** Liest Notizen über die Obsidian-API und schreibt nur den
   exportierten Brief (HTML oder das erzeugte PDF) in einen dedizierten Export-Ordner
   (der mobile Export-Pfad).
 - **Eigene PDF-Engine, keine Laufzeit-Dependency.** Der mobile Vektor-PDF-Export
   entsteht in einem abhängigkeitsfreien PDF-Writer (die vendorte
   `obsidian-kit`-PDF-Engine unter `src/vendor/kit/pdf/`) — keine Fremdbibliothek für
-  PDF, kein `fetch`. Die fertige Datei wird über das System-Teilen-Menü ans
+  PDF. Die fertige Datei wird über das System-Teilen-Menü ans
   Betriebssystem übergeben.
 
 ### Hinweis zum Community-Scorecard

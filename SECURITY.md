@@ -19,20 +19,23 @@ Letterhead is built so you can verify what it does by reading it:
   GitHub Actions and cryptographically attested (see *Release channels* below for
   what each distribution channel does and does not prove). The source itself stays
   fully readable, unminified, and dependency-light.
-- **No network, no telemetry.** No `fetch`/`XMLHttpRequest`, no remote endpoints, no
-  tracking. Everything happens locally in your vault.
+- **No telemetry, no servers of its own.** No tracking and no remote endpoints of the
+  plugin. The only network request is for an `https` image that your letter's body
+  contains: it is loaded at export (on the desktop through Obsidian's `requestUrl`, with
+  a 15 second limit per image; in the vector PDF through the image decoder). A letter
+  without web images makes no request. Everything else happens locally in your vault.
 - **No dynamic code execution.** No `eval`, no `new Function`, no dynamic `import()`.
   The only third-party runtime dependency is Obsidian's own API.
-- **External assets only as `data:` URLs.** The Base64 encoder
+- **Logo only from your vault.** The Base64 encoder
   (`bytesToBase64` in the vendored `src/vendor/kit/data-url.ts`) embeds your configured
-  logo (a local vault file) into the letter as a `data:` URL — nothing is fetched from
-  the web.
+  logo (a local vault file) into the letter as a `data:` URL — the logo is never fetched
+  from the web.
 - **Minimal vault access.** Reads notes via the Obsidian API and writes only the
   exported letter (HTML or the generated PDF) into a dedicated export folder
   (the mobile export path).
 - **Own PDF engine, no runtime dependency.** The mobile vector-PDF export is produced
   by a dependency-free PDF writer (the vendored `obsidian-kit` PDF engine under
-  `src/vendor/kit/pdf/`) — no third-party PDF library, no `fetch`. The finished file
+  `src/vendor/kit/pdf/`) — no third-party PDF library. The finished file
   is handed to the OS via the system share sheet.
 
 ### A note on the community scorecard

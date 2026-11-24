@@ -17,7 +17,7 @@ Obsidian-Plugin „Letterhead": macht aus der aktiven Notiz einen formatierten G
 - Reine Funktionen (`src/core/*`, `src/vendor/kit/pdf/*`) sind frei von Obsidian-Imports und damit isoliert mit `vitest` testbar (PROF-OBS-04). `npm run check:pure` (Script `scripts/check-pure.mjs`) erzwingt die Grenze.
 - Styling ausschließlich über CSS Custom Properties (Design-Tokens): Geometrie ist DIN-kritisch (Fensterkuvert), Typo/Farbe/Spacing frei. Token-Referenz: `docs/reference/theming.md`.
 - Der Export ist plattformabhängig, drei Befehle: `export-letter` (Haupt-/Ribbon-Befehl, `renderPdfBytes`) druckt am **Desktop** den HTML-Brief über das Kit-Druckmodul `printHtmlToPdf` in eine Datei (kein Dialog, Rückfall mit Hinweis auf das Vektor-PDF) und baut auf **iOS/iPad** mit `exportViaPdf()` das Vektor-PDF; `export-letter-pdf` fährt auf beiden Plattformen die Vektor-Engine; `print-letter` öffnet über `doPrint()` den OS-Druckdialog für Papier. `Platform.isDesktopApp` ist das Gate für `doPrint` und für den Druckmodul-Weg (`Platform.isMobile` steuert nur das anschließende Teilen in `writePdf`), und `doPrint` darf nur hinter ihr aufgerufen werden. Die Vektor-Engine ist das vendorte Kit `src/vendor/kit/pdf/`. Aufbau beider Wege: `docs/internal/architecture.md`.
-- Keine Netzwerkzugriffe, keine Telemetrie, externe Assets nur als `data:`-URL (Logo).
+- Keine Telemetrie, keine eigenen Server; Netz nur für ein `https`-Bild, das der Brieftext enthält (Desktop: `requestUrl` über das Kit-`inlineImages`, 15 s je Bild; Vektor-Weg: Bild-Decoder). Das Logo kommt nur als `data:`-URL aus dem Vault.
 
 ## Commands
 
